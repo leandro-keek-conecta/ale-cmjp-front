@@ -1,0 +1,83 @@
+:root {
+  --bg: #05070f;
+  --card: rgba(255, 255, 255, 0.05);
+  --card-strong: rgba(255, 255, 255, 0.12);
+  --border: rgba(255, 255, 255, 0.12);
+  --accent: #ff9f43;
+  --accent-2: #1dd3b0;
+  --text: #ffffff;
+  --muted: #9ea6b8;
+}
+
+.container {
+  position: relative;
+  min-height: 100vh;
+  padding: 48px 24px 80px !important;
+  overflow: hidden;
+  background-color: #141e47;
+}
+
+.hero {
+  position: relative;
+  z-index: 1;
+  max-width: 1180px;
+  margin: 0 auto 28px;
+}
+
+.badge {
+  display: inline-flex !important;;
+  align-items: center !important;;
+  gap: 8px !important;;
+  padding: 10px 14px !important;;
+  border-radius: 999px !important;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 159, 67, 0.15),
+    rgba(29, 211, 176, 0.18)
+  ) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text) !important;;
+  text-transform: uppercase !important;;
+  letter-spacing: 0.08em !important;;
+  font-size: 12px !important;;
+}
+
+.title {
+  font-size: 12.5rem !important;
+  font-weight: 700;
+  color: var(--text);
+  margin: 16px 0 0;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(255, 159, 67, 0.15), rgba(29, 211, 176, 0.18));
+  border: 1px solid var(--border);
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 12px;
+}
+
+.cardRight {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.searchCard {
+  margin-top: 20px;
+  padding: 16px !important;
+  background-color: var(--card-strong) !important;
+  border-radius: 12px !important;
+}
+
+.gradientText {
+  background: linear-gradient(90deg, #ff9f43, #1dd3b0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
