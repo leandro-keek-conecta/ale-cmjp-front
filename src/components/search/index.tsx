@@ -10,7 +10,7 @@ export default function Search({opiniao}: SearchProps) {
       disablePortal
       options={opiniao}
       fullWidth
-      renderInput={(params) => <TextField {...params} label="Movie" />}
+      renderInput={(params) => <TextField {...params} label="Opiniões" />}
     />
   );
 }

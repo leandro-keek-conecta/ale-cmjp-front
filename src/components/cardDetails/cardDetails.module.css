@@ -1,0 +1,105 @@
+.opinionCard {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
+  border: 1px solid var(--border);
+  padding: 18px 18px 16px;
+  border-radius: 18px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(10px);
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.opinionCard:hover {
+  transform: translateY(-6px) scale(1.01);
+  border-color: rgba(255, 159, 67, 0.8);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.name {
+  color: var(--text);
+  font-weight: 700;
+  font-size: 17px;
+}
+
+.meta {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.opinionText {
+  color: var(--text);
+  line-height: 1.55;
+  margin: 0 0 14px;
+}
+
+.cardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: linear-gradient(120deg, rgba(255, 159, 67, 0.18), rgba(29, 211, 176, 0.18));
+  color: var(--text);
+  border: 1px solid var(--border);
+  font-size: 13px;
+  letter-spacing: 0.01em;
+}
+
+.pillSubtle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.tags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tag {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  padding: 6px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+}
+
+.skeleton {
+  height: 180px;
+  border-radius: 16px;
+  background: linear-gradient(120deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
+  animation: pulse 1.8s ease-in-out infinite;
+}
+
+.emptyState {
+  grid-column: 1 / -1;
+  padding: 24px;
+  text-align: center;
+  color: var(--muted);
+  border: 1px dashed var(--border);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+}

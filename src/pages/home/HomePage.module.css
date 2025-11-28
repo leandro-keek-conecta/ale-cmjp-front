@@ -25,10 +25,10 @@
 }
 
 .badge {
-  display: inline-flex !important;;
-  align-items: center !important;;
-  gap: 8px !important;;
-  padding: 10px 14px !important;;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 10px 14px !important;
   border-radius: 999px !important;
   background: linear-gradient(
     90deg,
@@ -36,10 +36,10 @@
     rgba(29, 211, 176, 0.18)
   ) !important;
   border: 1px solid var(--border) !important;
-  color: var(--text) !important;;
-  text-transform: uppercase !important;;
-  letter-spacing: 0.08em !important;;
-  font-size: 12px !important;;
+  color: var(--text) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  font-size: 12px !important;
 }
 
 .title {
@@ -55,12 +55,27 @@
   gap: 8px;
   padding: 10px 14px;
   border-radius: 999px;
-  background: linear-gradient(90deg, rgba(255, 159, 67, 0.15), rgba(29, 211, 176, 0.18));
+  background: linear-gradient(
+    90deg,
+    rgba(255, 159, 67, 0.15),
+    rgba(29, 211, 176, 0.18)
+  );
   border: 1px solid var(--border);
   color: var(--text);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   font-size: 12px;
+}
+
+.opinionsContainer {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+  max-width: 1180px;
+  margin: 0 auto;
+  margin-top: 40px;
 }
 
 .cardRight {

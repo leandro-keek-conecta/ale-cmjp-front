@@ -1,12 +1,14 @@
-import { Box, Card, Chip, Typography } from "@mui/material";
+import { Box, Chip, Typography } from "@mui/material";
 import styles from "./HomePage.module.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CardGrid from "../../components/card-grid";
 import CardGridReflect from "../../components/card-grid-reflect";
 import AppChip from "../../components/chip";
 import Search from "../../components/search";
+import CardDetails from "../../components/cardDetails";
+import { getAllOpinions } from "../../services/opiniao/opiniaoService";
 
-type Opinion = {
+export type Opinion = {
   id: number | string;
   usuario_id?: number | string;
   nome?: string;
@@ -32,13 +34,24 @@ const fallbackOpinions: Opinion[] = [
 ];
 
 const typeOfFilter = {
-  title: "Tipo de Opinião",
-  options: ["Reclamação", "Sugestão", "Apoio", "Elogio"],
-}
+  title: "Tipo de Opiniao",
+  options: ["Reclamacao", "Sugestao", "Apoio", "Elogio"],
+};
 
 export default function HomePage() {
   const [opinions, setOpinions] = useState<Opinion[]>([]);
   const [error, setError] = useState("");
+
+  async function fetchOpinions() {
+    try {
+      const response = await getAllOpinions();
+      setOpinions(response);
+    } catch (err) {
+      setError("Erro ao carregar opinioes.");
+    }
+  }
+
+
 
   const uniqueCountBy = (
     items: Opinion[],
@@ -56,7 +69,16 @@ export default function HomePage() {
     <Box className={styles.container}>
       <Box component="header" className={styles.hero}>
         <CardGrid span={3}>
-          <Typography sx={{ fontSize: "12px", letterSpacing: "0.08em", textAlign: "center", color: "var(--accent)", justifyContent: "center", width: "100%" }}>
+          <Typography
+            sx={{
+              fontSize: "12px",
+              letterSpacing: "0.08em",
+              textAlign: "center",
+              color: "var(--accent)",
+              justifyContent: "center",
+              width: "100%",
+            }}
+          >
             Monitorando a voz da cidade
           </Typography>
         </CardGrid>
@@ -64,7 +86,7 @@ export default function HomePage() {
           variant="h3"
           sx={{ fontWeight: "bold", mt: 2, mb: 1, color: "var(--text)" }}
         >
-          Opinião em tempo real{" "}
+          Opiniao em tempo real{" "}
           <span className={styles.gradientText}>sem login</span>
         </Typography>
         <Typography variant="body1" sx={{ mb: 0, color: "var(--muted)" }}>
@@ -86,7 +108,9 @@ export default function HomePage() {
             <div className="stat-value">
               {opinions.length || fallbackOpinions.length}
             </div>
-            <div className="stat-label">Um usuario pode ter varias opinioes.  </div>
+            <div className="stat-label">
+              Um usuario pode ter varias opinioes.{" "}
+            </div>
           </CardGridReflect>
           <CardGridReflect span={4} className={styles.statCard}>
             <div className="stat-label">Bairros mais ativos</div>
@@ -114,11 +138,17 @@ export default function HomePage() {
           </CardGridReflect>
         </Box>
         <CardGrid className={styles.searchCard} span={12}>
-          <Search opiniao={opinions.map(opinion => opinion.opiniao)} />
+          <Search opiniao={opinions.map((opinion) => opinion.opiniao)} />
           {typeOfFilter.options.map((option) => (
             <Chip key={option} label={option} />
           ))}
         </CardGrid>
+
+        <Box className={styles.opinionsContainer}>
+          <CardDetails
+            opinions={opinions.length ? opinions : fallbackOpinions}
+          />
+        </Box>
       </Box>
     </Box>
   );
