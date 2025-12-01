@@ -10,5 +10,6 @@ export async function getAllOpinions(): Promise<Opinion[]> {
     action: "getAll",
     entity: "opiniao",
   });
-  return response.data.data; // ? acessa corretamente o array de projetos
+  const data = response?.data?.data;
+  return Array.isArray(data) ? data : []; // garante array mesmo quando a API não retornar lista
 }

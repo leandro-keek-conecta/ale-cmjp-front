@@ -1,22 +1,37 @@
 :root {
-  --bg: #05070f;
-  --card: rgba(255, 255, 255, 0.05);
-  --card-strong: rgba(255, 255, 255, 0.12);
-  --border: rgba(255, 255, 255, 0.12);
-  --accent: #ff9f43;
-  --accent-2: #1dd3b0;
-  --text: #ffffff;
-  --muted: #9ea6b8;
+  /* ====== PALETA INSTITUCIONAL ====== */
+  --bg: radial-gradient(
+      circle at 20% 20%,
+      rgba(12, 130, 216, 0.18),
+      rgba(12, 130, 216, 0)
+    ),
+    radial-gradient(
+      circle at 85% 0%,
+      rgba(227, 6, 19, 0.14),
+      rgba(227, 6, 19, 0)
+    ),
+    linear-gradient(180deg, #f2f2f2 0%, #ffffff 55%);
+  --card: rgba(255, 255, 255, 0.9);
+  --card-strong: rgba(255, 255, 255, 0.96);
+  --border: rgba(0, 103, 179, 0.22);
+
+  --accent: #e30613; /* Vermelho principal */
+  --accent-2: #ff3a3a; /* Vermelho gradiente */
+
+  --text: #464646; /* Cinza escuro */
+  --muted: rgba(70, 70, 70, 0.75);
 }
 
+/* =========================== */
 .container {
   position: relative;
   min-height: 100vh;
   padding: 48px 24px 80px !important;
   overflow: hidden;
-  background-color: #141e47;
+  background: var(--bg);
 }
 
+/* =========================== */
 .hero {
   position: relative;
   z-index: 1;
@@ -24,6 +39,7 @@
   margin: 0 auto 28px;
 }
 
+/* =========================== */
 .badge {
   display: inline-flex !important;
   align-items: center !important;
@@ -32,8 +48,8 @@
   border-radius: 999px !important;
   background: linear-gradient(
     90deg,
-    rgba(255, 159, 67, 0.15),
-    rgba(29, 211, 176, 0.18)
+    rgba(227, 6, 19, 0.15),
+    rgba(12, 130, 216, 0.12)
   ) !important;
   border: 1px solid var(--border) !important;
   color: var(--text) !important;
@@ -42,6 +58,7 @@
   font-size: 12px !important;
 }
 
+/* =========================== */
 .title {
   font-size: 12.5rem !important;
   font-weight: 700;
@@ -49,24 +66,7 @@
   margin: 16px 0 0;
 }
 
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 14px;
-  border-radius: 999px;
-  background: linear-gradient(
-    90deg,
-    rgba(255, 159, 67, 0.15),
-    rgba(29, 211, 176, 0.18)
-  );
-  border: 1px solid var(--border);
-  color: var(--text);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-size: 12px;
-}
-
+/* =========================== */
 .opinionsContainer {
   position: relative;
   z-index: 1;
@@ -74,16 +74,34 @@
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 14px;
   max-width: 1180px;
-  margin: 0 auto;
-  margin-top: 40px;
+  margin: 10px auto 0;
 }
 
+/* =========================== */
+.divider {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  background-color: var(--card-strong);
+  margin-top: 10px;
+  min-width: 11rem;
+}
+
+/* =========================== */
 .cardRight {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
 }
 
+/* =========================== */
 .searchCard {
   margin-top: 20px;
   padding: 16px !important;
@@ -91,8 +109,9 @@
   border-radius: 12px !important;
 }
 
+/* =========================== */
 .gradientText {
-  background: linear-gradient(90deg, #ff9f43, #1dd3b0);
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }

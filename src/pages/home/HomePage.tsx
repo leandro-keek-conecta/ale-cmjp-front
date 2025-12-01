@@ -45,13 +45,15 @@ export default function HomePage() {
   async function fetchOpinions() {
     try {
       const response = await getAllOpinions();
-      setOpinions(response);
+      setOpinions(Array.isArray(response) ? response : []);
     } catch (err) {
       setError("Erro ao carregar opinioes.");
     }
   }
 
-
+  useEffect(() => {
+    fetchOpinions();
+  }, []);
 
   const uniqueCountBy = (
     items: Opinion[],
@@ -142,6 +144,10 @@ export default function HomePage() {
           {typeOfFilter.options.map((option) => (
             <Chip key={option} label={option} />
           ))}
+        </CardGrid>
+
+        <CardGrid span={2} className={styles.divider} >
+           Cadastrar Opinião
         </CardGrid>
 
         <Box className={styles.opinionsContainer}>
