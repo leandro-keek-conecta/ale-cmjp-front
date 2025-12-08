@@ -1,9 +1,9 @@
 .cardGridReflect {
   padding: 16px 18px !important;
   border-radius: 16px !important;
-  background: var(--card) !important;
-  border: 1px solid var(--border) !important;
-  backdrop-filter: blur(10px) !important;
+  background: var(--card-strong) !important;
+  border: 1px solid var(--border-strong) !important;
+  box-shadow: var(--shadow-soft) !important;
   max-width: 100% !important;
   flex: 1 1 auto !important;
 }

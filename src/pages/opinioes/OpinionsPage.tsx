@@ -35,8 +35,8 @@ const fallbackOpinions: Opinion[] = [
     telefone: "83999990002",
     bairro: "Altiplano",
     horario: "2025-01-24T11:05:00Z",
-    tipo_opiniao: "Sugestao",
-    opiniao: "Sugestao",
+    tipo_opiniao: "Sugestão",
+    opiniao: "Sugestão",
     texto_opiniao: "Transporte noturno com mais linhas de bairro.",
   },
   {
@@ -45,8 +45,8 @@ const fallbackOpinions: Opinion[] = [
     telefone: "83999990003",
     bairro: "Bessa",
     horario: "2025-01-23T19:45:00Z",
-    tipo_opiniao: "Reclamacao",
-    opiniao: "Reclamacao",
+    tipo_opiniao: "Reclamação",
+    opiniao: "Reclamação",
     texto_opiniao: "Coleta de lixo atrasou de novo esta semana.",
   },
   {
@@ -65,8 +65,8 @@ const fallbackOpinions: Opinion[] = [
     telefone: "83999990005",
     bairro: "Bancarios",
     horario: "2025-01-20T16:00:00Z",
-    tipo_opiniao: "Sugestao",
-    opiniao: "Sugestao",
+    tipo_opiniao: "Sugestão",
+    opiniao: "Sugestão",
     texto_opiniao: "Plante mais arvores nas pracas do bairro.",
   },
   {
@@ -231,7 +231,7 @@ function OpinionsPage() {
           <div className="stat-card wide">
             <div className="stat-label">Clima geral</div>
             <div className="stat-pills">
-              {["Apoio", "Sugestao", "Reclamacao", "Elogio"].map((pill) => (
+              {["Apoio", "Sugestão", "Reclamação", "Elogio"].map((pill) => (
                 <span key={pill} className="pill">
                   {pill}
                 </span>

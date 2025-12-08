@@ -1,28 +1,19 @@
 :root {
-  /* ====== PALETA INSTITUCIONAL ====== */
-  --bg: radial-gradient(
-      circle at 20% 20%,
-      rgba(12, 130, 216, 0.18),
-      rgba(12, 130, 216, 0)
-    ),
-    radial-gradient(
-      circle at 85% 0%,
-      rgba(227, 6, 19, 0.14),
-      rgba(227, 6, 19, 0)
-    ),
-    linear-gradient(180deg, #f2f2f2 0%, #ffffff 55%);
-  --card: rgba(255, 255, 255, 0.9);
-  --card-strong: rgba(255, 255, 255, 0.96);
-  --border: rgba(0, 103, 179, 0.22);
+  --bg: linear-gradient(180deg, #f5f7fa 0%, #ffffff 50%, #f5f7fa 100%);
+  --card: rgba(255, 255, 255, 0.95);
+  --card-strong: #ffffff;
+  --border: rgba(12, 130, 216, 0.16);
+  --border-strong: rgba(12, 130, 216, 0.28);
 
-  --accent: #e30613; /* Vermelho principal */
-  --accent-2: #ff3a3a; /* Vermelho gradiente */
+  --accent: #e30613;
+  --accent-2: #0067b3;
+  --accent-soft: #0c82d8;
 
-  --text: #464646; /* Cinza escuro */
-  --muted: rgba(70, 70, 70, 0.75);
+  --text: #1a1a1a;
+  --muted: #667085;
+  --shadow-soft: 0 14px 40px rgba(12, 130, 216, 0.08);
 }
 
-/* =========================== */
 .container {
   position: relative;
   min-height: 100vh;
@@ -31,87 +22,305 @@
   background: var(--bg);
 }
 
-/* =========================== */
 .hero {
   position: relative;
   z-index: 1;
   max-width: 1180px;
   margin: 0 auto 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-/* =========================== */
+.heroTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
 .badge {
   display: inline-flex !important;
   align-items: center !important;
   gap: 8px !important;
   padding: 10px 14px !important;
-  border-radius: 999px !important;
-  background: linear-gradient(
-    90deg,
-    rgba(227, 6, 19, 0.15),
-    rgba(12, 130, 216, 0.12)
-  ) !important;
+  border-radius: 12px !important;
+  background: rgba(12, 130, 216, 0.08) !important;
   border: 1px solid var(--border) !important;
-  color: var(--text) !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.08em !important;
-  font-size: 12px !important;
+  color: var(--accent-2) !important;
+  letter-spacing: 0.04em !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
 }
 
-/* =========================== */
-.title {
-  font-size: 12.5rem !important;
+.gradientText {
+  background: linear-gradient(90deg, var(--accent-2), var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.statsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: stretch;
+  margin-top: 4px;
+}
+
+.statCard {
+  box-shadow: var(--shadow-soft) !important;
+  border: 1px solid var(--border-strong) !important;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.wideCard {
+  min-height: 168px;
+}
+
+.statHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.statIcon {
+  width: 36px;
+  height: 36px;
+  padding: 6px;
+  border-radius: 10px;
+  background: rgba(12, 130, 216, 0.12);
+  color: var(--accent-2);
+}
+
+.statLabel {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+.statHint {
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.statValue {
+  font-size: 2.4rem;
   font-weight: 700;
   color: var(--text);
-  margin: 16px 0 0;
+  line-height: 1.05;
 }
 
-/* =========================== */
+.typeChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.typeChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: rgba(12, 130, 216, 0.08);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 0.95rem;
+}
+
+.typeChip[data-type="Reclamação"] {
+  background: rgba(227, 6, 19, 0.08);
+  border-color: rgba(227, 6, 19, 0.2);
+}
+
+.typeChip[data-type="Sugestão"] {
+  background: rgba(12, 130, 216, 0.08);
+}
+
+.typeChip[data-type="Apoio"] {
+  background: rgba(18, 183, 106, 0.08);
+  border-color: rgba(18, 183, 106, 0.2);
+}
+
+.typeChip[data-type="Elogio"] {
+  background: rgba(255, 179, 71, 0.14);
+  border-color: rgba(255, 179, 71, 0.26);
+}
+
+.typeIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-2);
+}
+
+.typeCount {
+  font-weight: 700;
+  color: var(--accent-2);
+}
+
+.searchCard {
+  margin-top: 16px;
+  padding: 18px !important;
+  background-color: var(--card-strong) !important;
+  border-radius: 16px !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: var(--shadow-soft) !important;
+  display: flex !important;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.searchHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.searchIntro {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+.controls {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.searchInput {
+  flex: 1 1 260px;
+}
+
+.searchInput :global(.MuiOutlinedInput-root) {
+  background: #ffffff;
+}
+
+.searchInput :global(.MuiOutlinedInput-notchedOutline) {
+  border-color: var(--border);
+}
+
+.searchInput :global(.Mui-focused .MuiOutlinedInput-notchedOutline) {
+  border-color: var(--accent-2);
+  box-shadow: 0 0 0 3px rgba(12, 130, 216, 0.2);
+}
+
+.filterGroup {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.filterGroup :global(.MuiToggleButton-root) {
+  text-transform: none;
+  border-radius: 12px !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text);
+  padding: 8px 12px;
+  min-width: 90px;
+  background: rgba(12, 130, 216, 0.06);
+}
+
+.filterGroup :global(.MuiToggleButton-root.Mui-selected) {
+  background: var(--accent-2);
+  color: #ffffff;
+  border-color: var(--accent-2) !important;
+}
+
+.filterGroup :global(.MuiToggleButton-root:hover) {
+  background: rgba(12, 130, 216, 0.16);
+}
+
+.ctaButton {
+  background: var(--accent);
+  color: #ffffff;
+  padding: 12px 18px;
+  border-radius: 12px;
+  text-transform: none;
+  font-weight: 700;
+  border-radius: 10px !important;
+  box-shadow: 10px 10px 6px 0px rgba(0, 0, 0, 0.75);
+  -webkit-box-shadow: 10px 10px 24px 0px rgba(0, 0, 0, 0.75);
+  -moz-box-shadow: 10px 10px 24px 0px rgba(0, 0, 0, 0.75);
+}
+
+.ctaButton:hover {
+  transform: translateY(-2px);
+  background: #e30613;
+  color: #ffffff;
+  font-weight: 700;
+  border-radius: 25px !important;
+}
+
 .opinionsContainer {
   position: relative;
+  display: flex;
+  flex-direction: column;
   z-index: 1;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 14px;
+  gap: 16px;
   max-width: 1180px;
-  margin: 10px auto 0;
+  margin: 18px auto 0;
 }
 
-/* =========================== */
-.divider {
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--text);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 20px;
-  background-color: var(--card-strong);
-  margin-top: 10px;
-  min-width: 11rem;
+@media (max-width: 1024px) {
+  .statsRow {
+    overflow-x: auto;
+    padding-bottom: 8px;
+    scroll-snap-type: x mandatory;
+  }
+
+  .statCard {
+    width: 82% !important;
+    min-width: 260px;
+    max-width: 320px !important;
+    flex: 0 0 auto !important;
+    scroll-snap-align: start;
+  }
+
+  .ctaButton {
+    position: sticky;
+    top: 12px;
+    width: 100%;
+    max-width: 15rem;
+  }
 }
 
-/* =========================== */
-.cardRight {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
+@media (max-width: 720px) {
+  .container {
+    padding: 32px 18px 60px !important;
+  }
 
-/* =========================== */
-.searchCard {
-  margin-top: 20px;
-  padding: 16px !important;
-  background-color: var(--card-strong) !important;
-  border-radius: 12px !important;
-}
+  .controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
 
-/* =========================== */
-.gradientText {
-  background: linear-gradient(90deg, var(--accent), var(--accent-2));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  .filterGroup {
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 6px;
+  }
+
+  .filterGroup :global(.MuiToggleButton-root) {
+    min-width: 120px;
+  }
+
+  .ctaButton {
+    position: fixed;
+    bottom: 16px;
+    left: 16px;
+    right: 16px;
+    top: auto;
+    width: auto;
+    z-index: 20;
+    box-shadow: 0 14px 40px rgba(227, 6, 19, 0.35);
+  }
 }
