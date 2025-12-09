@@ -64,18 +64,6 @@
   flex-wrap: wrap;
 }
 
-<<<<<<< ours
-.heroLabel {
-  color: white;
-  font-weight: 800;
-  letter-spacing: 0.05em;
-  font-size: 13px;
-  text-transform: uppercase;
-  padding: 6px 0;
-}
-
-=======
->>>>>>> theirs
 .badge {
   display: inline-flex !important;
   align-items: center !important;

@@ -4,7 +4,7 @@ import { ArrowBackIosNew, ArrowForwardIos } from "@mui/icons-material";
 import styles from "./Slide.module.css";
 import aleSlide1 from "../../assets/ale/ale-1.jpg";
 import aleSlide2 from "../../assets/ale/ale-2.jpg";
-import aleSlide3 from "../../assets/ale/ale-3.jpg";
+import aleSlide3 from "../../assets/ale/ale-4.jpg";
 import CardGrid from "../card-grid";
 import PlaceIcon from '@mui/icons-material/Place';
 
