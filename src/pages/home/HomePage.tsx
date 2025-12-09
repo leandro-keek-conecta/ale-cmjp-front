@@ -6,6 +6,7 @@ import {
   ToggleButtonGroup,
   Typography,
 } from "@mui/material";
+
 import {
   Add,
   ChatBubbleOutline,
@@ -62,8 +63,6 @@ const typeOfFilter = {
   options: ["Reclamação", "Sugestão", "Apoio", "Elogio"],
 };
 
-
-
 export default function HomePage() {
   const [opinions, setOpinions] = useState<Opinion[]>([]);
   const [todayOpinions, setTodayOpinions] = useState<Opinion[]>([]);
@@ -82,7 +81,7 @@ export default function HomePage() {
     // Removendo o -1 e usando a variável
     return currentPage * itensPerPage;
   }
-  
+
   async function fetchTodayOpinions() {
     try {
       const response = await getTodayOpinions();
@@ -138,8 +137,6 @@ export default function HomePage() {
 
     return () => observer.disconnect();
   }, []);
-
-
 
   const uniqueCountBy = (
     items: Opinion[],
@@ -250,13 +247,24 @@ export default function HomePage() {
                   Monitorando a voz da cidade
                 </Typography>
               </CardGrid>
-              <Button
-                className={styles.ctaButton}
-                startIcon={<Add />}
-                aria-label="Cadastrar nova opiniao"
-              >
-                Cadastrar Opiniao
-              </Button>
+
+              <CardGrid span={2} onClick={() => setShowPresentationModal(true)}>
+                <Add />
+                <Typography
+                  sx={{
+                    fontSize: "13px",
+                    letterSpacing: "0.04em",
+                    textAlign: "center",
+                    color: "var(--accent-2)",
+                    justifyContent: "center",
+                    width: "100%",
+                    fontWeight: 600,
+                    cursor: "pointer",
+                  }}
+                >
+                  Cadastrar Opiniao
+                </Typography>
+              </CardGrid>
             </Box>
             <Typography
               variant="h3"
@@ -266,8 +274,8 @@ export default function HomePage() {
               <span className={styles.gradientText}>sem login</span>
             </Typography>
             <Typography variant="body1" sx={{ mb: 0, color: "var(--muted)" }}>
-              Veja o que as pessoas estao falando, explore temas e acompanhe como as
-              opinioes evoluem.
+              Veja o que as pessoas estao falando, explore temas e acompanhe
+              como as opinioes evoluem.
             </Typography>
             <Typography variant="body1" sx={{ mb: 4, color: "var(--muted)" }}>
               Inspirado em sites de streaming de dados com foco em clareza e
@@ -289,9 +297,7 @@ export default function HomePage() {
                 </div>
               </div>
               {/* _________________________________________ */}
-              <div className={styles.statValue}>
-                {todayOpinions.length }
-              </div>
+              <div className={styles.statValue}>{todayOpinions.length}</div>
               <div className={styles.statHint}>
                 Atualiza assim que a API responder.
               </div>
@@ -306,7 +312,9 @@ export default function HomePage() {
                 <LocationOnOutlined className={styles.statIcon} />
                 <div>
                   <div className={styles.statLabel}>Bairros mais ativos</div>
-                  <div className={styles.statHint}>Participacao distribuida</div>
+                  <div className={styles.statHint}>
+                    Participacao distribuida
+                  </div>
                 </div>
               </div>
               <div className={styles.statValue}>
@@ -324,7 +332,9 @@ export default function HomePage() {
                 <ThermostatOutlined className={styles.statIcon} />
                 <div>
                   <div className={styles.statLabel}>Clima geral</div>
-                  <div className={styles.statHint}>Distribuicao das opinioes</div>
+                  <div className={styles.statHint}>
+                    Distribuicao das opinioes
+                  </div>
                 </div>
               </div>
               <div className={styles.typeChips}>

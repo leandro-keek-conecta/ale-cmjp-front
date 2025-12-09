@@ -4,6 +4,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogContentText,
+  Divider,
 } from "@mui/material";
 import type { Opinion } from "../../pages/home/HomePage";
 import formatDate from "../../utils/formatDate";
@@ -65,7 +66,8 @@ export default function CardDetails({ opinions }: CardDetailsProps) {
         </article>
       ))}
       <Dialog open={modalOpen} onClose={closeModal} fullWidth maxWidth="sm">
-        <DialogTitle sx={{fontSize: "1.2rem", pl: 2}}>Opinião Completa</DialogTitle>
+        <DialogTitle sx={{fontSize: "1.2rem", pl: 2, pb: 1, mb: 0}}>Opinião Completa</DialogTitle>
+        <Divider sx={{ mt: 0, mb: 2}}/>
           <DialogContentText component="div" sx={{pl:2,pr:2, pb: 2, fontSize: "1rem"}}>
             {selectedOpinion?.texto_opiniao || "Sem texto"}
           </DialogContentText>
