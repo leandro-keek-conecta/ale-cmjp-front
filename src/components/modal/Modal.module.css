@@ -75,6 +75,41 @@
   background: linear-gradient(180deg, rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.18));
 }
 
+.audioPrompt {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  text-align: center;
+  padding: 16px;
+}
+
+.audioButton {
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: rgba(12, 130, 216, 0.92);
+  color: #fff;
+  border-radius: 999px;
+  padding: 10px 18px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+}
+
+.audioButton:hover {
+  background: rgba(12, 130, 216, 1);
+}
+
+.audioHint {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.82);
+}
+
 .closeButton {
   position: absolute !important;
   top: 12px;

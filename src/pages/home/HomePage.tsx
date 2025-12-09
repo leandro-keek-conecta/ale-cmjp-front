@@ -70,7 +70,7 @@ export default function HomePage() {
   const [error, setError] = useState("");
   const [filterType, setFilterType] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
-  const [itensPerPage] = useState(10);
+  const [itensPerPage] = useState(12);
   const [currentPage, setCurrentPage] = useState(1);
   const [showPresentationModal, setShowPresentationModal] = useState(true);
 
@@ -117,6 +117,27 @@ export default function HomePage() {
       console.log("Opinions carregadas:", opinions);
     }
   }, [opinions]);
+
+  useEffect(() => {
+    const elements = document.querySelectorAll<HTMLElement>("[data-reveal]");
+    if (!elements.length) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add(styles.revealed);
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.18 }
+    );
+
+    elements.forEach((element) => observer.observe(element));
+
+    return () => observer.disconnect();
+  }, []);
 
 
 
@@ -201,48 +222,65 @@ export default function HomePage() {
       />
       <Box className={styles.container}>
         <Box component="header" className={styles.hero}>
-          <SlideComponent />
-          <Box className={styles.heroTop}>
-            <CardGrid span={3}>
-              <Typography
-                sx={{
-                  fontSize: "13px",
-                  letterSpacing: "0.04em",
-                  textAlign: "center",
-                  color: "var(--accent-2)",
-                  justifyContent: "center",
-                  width: "100%",
-                  fontWeight: 600,
-                }}
-              >
-                Monitorando a voz da cidade
-              </Typography>
-            </CardGrid>
-            <Button
-              className={styles.ctaButton}
-              startIcon={<Add />}
-              aria-label="Cadastrar nova opiniao"
-            >
-              Cadastrar Opiniao
-            </Button>
-          </Box>
-          <Typography
-            variant="h3"
-            sx={{ fontWeight: "bold", mt: 2, mb: 1, color: "var(--text)" }}
+          <div
+            className={styles.reveal}
+            data-reveal
+            style={{ ["--reveal-delay" as any]: "0s" }}
           >
-            Opiniao em tempo real{" "}
-            <span className={styles.gradientText}>sem login</span>
-          </Typography>
-          <Typography variant="body1" sx={{ mb: 0, color: "var(--muted)" }}>
-            Veja o que as pessoas estao falando, explore temas e acompanhe como as
-            opinioes evoluem.
-          </Typography>
-          <Typography variant="body1" sx={{ mb: 4, color: "var(--muted)" }}>
-            Inspirado em sites de streaming de dados com foco em clareza e
-            movimento.
-          </Typography>
+            <SlideComponent />
+          </div>
+          <div
+            className={styles.reveal}
+            data-reveal
+            style={{ ["--reveal-delay" as any]: "0.08s" }}
+          >
+            <Box className={styles.heroTop}>
+              <CardGrid span={3}>
+                <Typography
+                  sx={{
+                    fontSize: "13px",
+                    letterSpacing: "0.04em",
+                    textAlign: "center",
+                    color: "var(--accent-2)",
+                    justifyContent: "center",
+                    width: "100%",
+                    fontWeight: 600,
+                  }}
+                >
+                  Monitorando a voz da cidade
+                </Typography>
+              </CardGrid>
+              <Button
+                className={styles.ctaButton}
+                startIcon={<Add />}
+                aria-label="Cadastrar nova opiniao"
+              >
+                Cadastrar Opiniao
+              </Button>
+            </Box>
+            <Typography
+              variant="h3"
+              sx={{ fontWeight: "bold", mt: 2, mb: 1, color: "var(--text)" }}
+            >
+              Opiniao em tempo real{" "}
+              <span className={styles.gradientText}>sem login</span>
+            </Typography>
+            <Typography variant="body1" sx={{ mb: 0, color: "var(--muted)" }}>
+              Veja o que as pessoas estao falando, explore temas e acompanhe como as
+              opinioes evoluem.
+            </Typography>
+            <Typography variant="body1" sx={{ mb: 4, color: "var(--muted)" }}>
+              Inspirado em sites de streaming de dados com foco em clareza e
+              movimento.
+            </Typography>
+          </div>
           <Box className={styles.statsRow}>
-            <CardGridReflect span={4} className={styles.statCard}>
+            <CardGridReflect
+              span={4}
+              className={`${styles.statCard} ${styles.reveal}`}
+              data-reveal
+              style={{ ["--reveal-delay" as any]: "0.12s" }}
+            >
               <div className={styles.statHeader}>
                 <InsertChartOutlined className={styles.statIcon} />
                 <div>
@@ -258,7 +296,12 @@ export default function HomePage() {
                 Atualiza assim que a API responder.
               </div>
             </CardGridReflect>
-            <CardGridReflect span={4} className={styles.statCard}>
+            <CardGridReflect
+              span={4}
+              className={`${styles.statCard} ${styles.reveal}`}
+              data-reveal
+              style={{ ["--reveal-delay" as any]: "0.18s" }}
+            >
               <div className={styles.statHeader}>
                 <LocationOnOutlined className={styles.statIcon} />
                 <div>
@@ -273,7 +316,9 @@ export default function HomePage() {
             </CardGridReflect>
             <CardGridReflect
               span={6}
-              className={`${styles.statCard} ${styles.wideCard}`}
+              className={`${styles.statCard} ${styles.wideCard} ${styles.reveal}`}
+              data-reveal
+              style={{ ["--reveal-delay" as any]: "0.24s" }}
             >
               <div className={styles.statHeader}>
                 <ThermostatOutlined className={styles.statIcon} />
@@ -301,7 +346,12 @@ export default function HomePage() {
               {error ? <div className={styles.statHint}>{error}</div> : null}
             </CardGridReflect>
           </Box>
-          <CardGrid className={styles.searchCard} span={12}>
+          <CardGrid
+            className={`${styles.searchCard} ${styles.reveal}`}
+            span={12}
+            data-reveal
+            style={{ ["--reveal-delay" as any]: "0.28s" }}
+          >
             <div className={styles.searchHeader}>
               <div className={styles.searchIntro}>
                 <Typography
@@ -343,7 +393,11 @@ export default function HomePage() {
             </div>
           </CardGrid>
 
-          <Box className={styles.opinionsContainer}>
+          <Box
+            className={`${styles.opinionsContainer} ${styles.reveal}`}
+            data-reveal
+            style={{ ["--reveal-delay" as any]: "0.32s" }}
+          >
             <CardDetails opinions={paginatedOpinions} />
           </Box>
           <Box sx={{ width: "100%" }}>

@@ -7,7 +7,7 @@ import {
   Modal,
   Typography,
 } from "@mui/material";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import styles from "./Modal.module.css";
 import alePresentation from "../../assets/ale/ale-apresentacao.mp4";
@@ -21,6 +21,7 @@ export default function PresentationModal({
   open,
   onClose,
 }: PresentationModalProps) {
+  const [hasAudioConsent, setHasAudioConsent] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
@@ -29,13 +30,19 @@ export default function PresentationModal({
 
     if (open) {
       video.currentTime = 0;
-      video.play().catch(() => {
-        /* autoplay can be blocked; ignore */
-      });
+      video.pause();
     } else {
       video.pause();
+      video.currentTime = 0;
+      setHasAudioConsent(false);
     }
   }, [open]);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.muted = !hasAudioConsent;
+  }, [hasAudioConsent]);
 
   const handleClose = () => {
     const video = videoRef.current;
@@ -43,7 +50,24 @@ export default function PresentationModal({
       video.pause();
       video.currentTime = 0;
     }
+    setHasAudioConsent(false);
     onClose();
+  };
+
+  const handleEnableAudio = async () => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    try {
+      video.currentTime = 0;
+      video.muted = false;
+      setHasAudioConsent(true);
+      if (video.paused) {
+        await video.play();
+      }
+    } catch (error) {
+      /* if play is blocked, user can use the native controls */
+    }
   };
 
   return (
@@ -94,12 +118,25 @@ export default function PresentationModal({
                 ref={videoRef}
                 className={styles.video}
                 src={alePresentation}
-                autoPlay
                 controls
-                muted
+                muted={!hasAudioConsent}
                 playsInline
                 onEnded={handleClose}
               />
+              {!hasAudioConsent && (
+                <div className={styles.audioPrompt}>
+                  <button
+                    type="button"
+                    className={styles.audioButton}
+                    onClick={handleEnableAudio}
+                  >
+                    Ativar audio
+                  </button>
+                  <span className={styles.audioHint}>
+                    Precisamos do seu clique para liberar o som.
+                  </span>
+                </div>
+              )}
               <div className={styles.videoOverlay} />
             </div>
           </div>
