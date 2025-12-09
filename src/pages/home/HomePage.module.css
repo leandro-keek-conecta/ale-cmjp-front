@@ -32,6 +32,17 @@
   gap: 12px;
 }
 
+
+
+
+
+.mediaOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.08));
+  pointer-events: none;
+}
+
 .heroTop {
   display: flex;
   align-items: center;
@@ -291,6 +302,10 @@
     width: 100%;
     max-width: 15rem;
   }
+
+  .aleSlider {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 720px) {
@@ -322,5 +337,13 @@
     width: auto;
     z-index: 20;
     box-shadow: 0 14px 40px rgba(227, 6, 19, 0.35);
+  }
+
+  .aleSlider {
+    padding: 14px;
+  }
+
+  .aleSliderMedia {
+    min-height: 180px;
   }
 }

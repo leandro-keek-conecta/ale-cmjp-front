@@ -2,6 +2,7 @@ import {
   Box,
   Button,
   Pagination,
+  Slide,
   ToggleButton,
   ToggleButtonGroup,
   Typography,
@@ -16,7 +17,10 @@ import {
   PriorityHigh,
   StarBorderRounded,
   ThermostatOutlined,
+  ArrowBackIosNew,
+  ArrowForwardIos,
 } from "@mui/icons-material";
+
 import styles from "./HomePage.module.css";
 import { useEffect, useMemo, useState } from "react";
 import CardGrid from "../../components/card-grid";
@@ -28,6 +32,7 @@ import {
   getTodayOpinions,
   getUpDistricts,
 } from "../../services/opiniao/opiniaoService";
+import SlideComponent from "../../components/slide";
 
 export type Opinion = {
   id: number | string;
@@ -59,6 +64,8 @@ const typeOfFilter = {
   options: ["Reclamação", "Sugestão", "Apoio", "Elogio"],
 };
 
+
+
 export default function HomePage() {
   const [opinions, setOpinions] = useState<Opinion[]>([]);
   const [todayOpinions, setTodayOpinions] = useState<Opinion[]>([]);
@@ -67,7 +74,6 @@ export default function HomePage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [itensPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
-  const [upDistricts, setUpDistricts] = useState();
 
   function IInicial(currentPage: number, itensPerPage: number) {
     return (currentPage - 1) * itensPerPage;
@@ -82,7 +88,6 @@ export default function HomePage() {
     try {
       const response = await getTodayOpinions();
       const responseTwo = await getUpDistricts();
-      setUpDistricts(responseTwo);
       setTodayOpinions(response);
     } catch (err) {
       setError("Erro ao carregar opinioes de hoje.");
@@ -113,6 +118,8 @@ export default function HomePage() {
       console.log("Opinions carregadas:", opinions);
     }
   }, [opinions]);
+
+
 
   const uniqueCountBy = (
     items: Opinion[],
@@ -190,6 +197,7 @@ export default function HomePage() {
   return (
     <Box className={styles.container}>
       <Box component="header" className={styles.hero}>
+        <SlideComponent />
         <Box className={styles.heroTop}>
           <CardGrid span={3}>
             <Typography
