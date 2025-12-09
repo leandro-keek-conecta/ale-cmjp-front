@@ -1,22 +1,9 @@
 import {
   Box,
-  Button,
-  Pagination,
-  ToggleButton,
-  ToggleButtonGroup,
   Typography,
 } from "@mui/material";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
-  Add,
-  ChatBubbleOutline,
-  HandshakeOutlined,
-  InsertChartOutlined,
-  LightbulbOutlined,
-  LocationOnOutlined,
-  PriorityHigh,
-  StarBorderRounded,
-  ThermostatOutlined,
   ArrowBackIosNew,
   ArrowForwardIos,
 } from "@mui/icons-material";
@@ -24,7 +11,6 @@ import styles from "./Slide.module.css";
 import aleSlide1 from "../../assets/ale/ale-1.jpg";
 import aleSlide2 from "../../assets/ale/ale-2.jpg";
 import aleSlide3 from "../../assets/ale/ale-3.jpg";
-import aleapresentacao from "../../assets/ale/ale-apresentacao.mp4";
 export default function SlideComponent() {
   const [upDistricts, setUpDistricts] = useState();
   const [currentSlide, setCurrentSlide] = useState(0);
