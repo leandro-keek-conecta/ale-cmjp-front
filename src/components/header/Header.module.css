@@ -1,0 +1,21 @@
+.header {
+  color: "white";
+  padding: 2;
+  background-color: #ffffff;
+  height: 4rem;
+  padding: 15px 10px;
+  border: none;
+  border-radius: 0;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  /* Aplica a borda apenas na parte inferior (rodapé) */
+  border-bottom: 1px solid #33333383;
+}
+
+.headerContent {
+  height: 100%;
+  display: flex;
+  align-items: center;  
+  justify-content: space-between;
+}

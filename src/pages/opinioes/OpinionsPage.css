@@ -1,15 +1,12 @@
-:root {
+.app-shell {
   --bg: #05070f;
   --card: rgba(255, 255, 255, 0.05);
   --card-strong: rgba(255, 255, 255, 0.12);
   --border: rgba(255, 255, 255, 0.12);
-  --accent: #ff9f43;
+  --accent: #ffffff;
   --accent-2: #1dd3b0;
   --text: #e8ebf5;
   --muted: #9ea6b8;
-}
-
-.app-shell {
   position: relative;
   min-height: 100vh;
   padding: 48px 24px 80px;
@@ -28,7 +25,7 @@
 .blob-a {
   width: 360px;
   height: 360px;
-  background: radial-gradient(circle at 30% 30%, #ff9f43, transparent 55%);
+  background: radial-gradient(circle at 30% 30%, #f4f4f4, transparent 55%);
   top: -80px;
   left: -60px;
 }
@@ -64,7 +61,11 @@
   gap: 8px;
   padding: 10px 14px;
   border-radius: 999px;
-  background: linear-gradient(90deg, rgba(255, 159, 67, 0.15), rgba(29, 211, 176, 0.18));
+  background: linear-gradient(
+    90deg,
+    rgba(255, 159, 67, 0.15),
+    rgba(29, 211, 176, 0.18)
+  );
   border: 1px solid var(--border);
   color: var(--text);
   text-transform: uppercase;
@@ -80,7 +81,7 @@
 }
 
 .gradient-text {
-  background: linear-gradient(120deg, #ff9f43 0%, #1dd3b0 50%, #f04e98 100%);
+  background: linear-gradient(120deg, #f4f4f4 0%, #1dd3b0 50%, #f04e98 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -147,7 +148,11 @@
   gap: 6px;
   padding: 8px 12px;
   border-radius: 999px;
-  background: linear-gradient(120deg, rgba(255, 159, 67, 0.18), rgba(29, 211, 176, 0.18));
+  background: linear-gradient(
+    120deg,
+    rgba(255, 159, 67, 0.18),
+    rgba(29, 211, 176, 0.18)
+  );
   color: var(--text);
   border: 1px solid var(--border);
   font-size: 13px;
@@ -230,7 +235,11 @@
 }
 
 .chip.active {
-  background: linear-gradient(120deg, rgba(255, 159, 67, 0.25), rgba(29, 211, 176, 0.2));
+  background: linear-gradient(
+    120deg,
+    rgba(255, 159, 67, 0.25),
+    rgba(29, 211, 176, 0.2)
+  );
   border-color: rgba(255, 159, 67, 0.7);
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
 }
@@ -297,7 +306,11 @@
 }
 
 .opinion-card {
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.06),
+    rgba(255, 255, 255, 0.03)
+  );
   border: 1px solid var(--border);
   padding: 18px 18px 16px;
   border-radius: 18px;
@@ -363,7 +376,11 @@
 .skeleton {
   height: 180px;
   border-radius: 16px;
-  background: linear-gradient(120deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
+  background: linear-gradient(
+    120deg,
+    rgba(255, 255, 255, 0.08),
+    rgba(255, 255, 255, 0.02)
+  );
   animation: pulse 1.8s ease-in-out infinite;
 }
 

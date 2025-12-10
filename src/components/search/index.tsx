@@ -13,10 +13,13 @@ export default function Search({
 }: SearchProps) {
   return (
     <Autocomplete
-      disablePortal
       freeSolo
       options={opiniao}
       fullWidth
+      disablePortal={false}
+      slotProps={{
+        popper: { sx: { zIndex: 2000 } },
+      }}
       onInputChange={(_, value) => onSearchChange?.(value)}
       renderInput={(params) => (
         <TextField

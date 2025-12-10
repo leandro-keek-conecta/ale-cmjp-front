@@ -5,6 +5,7 @@ import styles from "./Slide.module.css";
 import aleSlide1 from "../../assets/ale/ale-1.jpg";
 import aleSlide2 from "../../assets/ale/ale-2.jpg";
 import aleSlide3 from "../../assets/ale/ale-4.jpg";
+import aleSlide5 from "../../assets/ale/ale-5.png";
 import CardGrid from "../card-grid";
 import PlaceIcon from '@mui/icons-material/Place';
 
@@ -38,7 +39,7 @@ export default function SlideComponent() {
       title: "Conversas claras e objetivas",
       description:
         "Painel mostra o que a Alê está ouvindo em tempo real, sem complicação.",
-      image: aleSlide3,
+      image: aleSlide5,
     },
   ];
 

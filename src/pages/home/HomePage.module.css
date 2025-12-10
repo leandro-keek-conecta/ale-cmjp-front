@@ -1,5 +1,5 @@
 :root {
-  --bg: linear-gradient(180deg, #f5f7fa 0%, #ffffff 50%, #f5f7fa 100%);
+  --bg: linear-gradient(180deg, #f4f4f4 0%, #f4f4f4 50%, #f4f4f4 100%);
   --card: rgba(255, 255, 255, 0.95);
   --card-strong: #ffffff;
   --border: rgba(12, 130, 216, 0.16);
@@ -11,7 +11,7 @@
 
   --text: #1a1a1a;
   --muted: #667085;
-  --shadow-soft: 0 14px 40px rgba(12, 130, 216, 0.08);
+  --shadow-soft: 0 14px 40px #f4f4f4;
 }
 
 .container {

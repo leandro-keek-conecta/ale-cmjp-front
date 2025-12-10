@@ -32,6 +32,7 @@ import {
 } from "../../services/opiniao/opiniaoService";
 import SlideComponent from "../../components/slide";
 import PresentationModal from "../../components/modal";
+import Header from "../../components/header";
 
 export type Opinion = {
   id: number | string;
@@ -217,6 +218,7 @@ export default function HomePage() {
         open={showPresentationModal}
         onClose={() => setShowPresentationModal(false)}
       />
+      <Header />
       <Box className={styles.container}>
         <Box component="header" className={styles.hero}>
           <div
@@ -260,6 +262,7 @@ export default function HomePage() {
                     width: "100%",
                     fontWeight: 600,
                     cursor: "pointer",
+                    maxHeight: "44px !important",
                   }}
                 >
                   Cadastrar Opiniao
