@@ -100,10 +100,32 @@ export default function HomePage() {
   async function fetchOpinions() {
     try {
       const response = await getAllOpinions();
+      quantityPorCategory(response)
+      
       setOpinions(Array.isArray(response) ? response : []);
     } catch (err) {
       setError("Erro ao carregar opinioes.");
     }
+  }
+
+  function quantityPorCategory(opinions: any) {
+    const groupedOpinions = opinions.reduce((acc: any, opinion: any) => {
+      const category = opinion.opiniao.trim();
+
+      if (!category) {
+        return acc; // se vier vazio, ignora
+      }
+
+      if (acc[category]) {
+        acc[category].push(opinion);
+      } else {
+        acc[category] = [opinion];
+      }
+
+      return acc;
+    }, {} as Record<string, Opinion[]>);
+
+    console.log(groupedOpinions);
   }
 
   useEffect(() => {
@@ -151,24 +173,30 @@ export default function HomePage() {
     return set.size;
   };
 
+  const normalizeText = (value?: string | null) =>
+    (value || "")
+      .normalize("NFD")
+      .replace(/\p{M}/gu, "")
+      .toLowerCase()
+      .trim();
+
   const normalizeType = (item: Opinion) =>
-    (item.tipo_opiniao || item.opiniao || "").trim().toLowerCase();
+    normalizeText(item.tipo_opiniao || item.opiniao);
 
   const sourceOpinions = opinions.length ? opinions : fallbackOpinions;
 
   const filteredOpinions = useMemo(() => {
-    const term = searchTerm.toLowerCase();
+    const term = normalizeText(searchTerm);
+    const selectedType = normalizeText(filterType);
     return sourceOpinions.filter((item) => {
       const matchesType =
         filterType === "all" ||
-        normalizeType(item) === filterType.toLowerCase();
+        normalizeType(item) === selectedType;
       const matchesSearch =
         !term ||
-        (item.nome && item.nome.toLowerCase().includes(term)) ||
-        (item.bairro && item.bairro.toLowerCase().includes(term)) ||
-        (item.texto_opiniao &&
-          item.texto_opiniao.toLowerCase().includes(term)) ||
-        (item.opiniao && item.opiniao.toLowerCase().includes(term));
+        [item.nome, item.bairro, item.texto_opiniao, item.opiniao]
+          .map(normalizeText)
+          .some((value) => value.includes(term));
 
       return matchesType && matchesSearch;
     });
@@ -212,6 +240,10 @@ export default function HomePage() {
     return <ChatBubbleOutline fontSize="small" />;
   };
 
+  const handleOpenWhatsApp = () => {
+    window.open("https://wa.me/558391163871", "_blank", "noopener,noreferrer");
+  };
+
   return (
     <>
       <PresentationModal
@@ -243,19 +275,19 @@ export default function HomePage() {
                     color: "var(--accent-2)",
                     justifyContent: "center",
                     width: "100%",
-                    fontWeight: 600,
-                  }}
-                >
-                  Monitorando a voz da cidade
-                </Typography>
-              </CardGrid>
+                  fontWeight: 600,
+                }}
+              >
+                Monitorando a voz da cidade
+              </Typography>
+            </CardGrid>
 
-              <CardGrid span={2} onClick={() => setShowPresentationModal(true)}>
-                <Add />
-                <Typography
-                  sx={{
-                    fontSize: "13px",
-                    letterSpacing: "0.04em",
+            <CardGrid span={2} onClick={handleOpenWhatsApp}>
+              <Add />
+              <Typography
+                sx={{
+                  fontSize: "13px",
+                  letterSpacing: "0.04em",
                     textAlign: "center",
                     color: "var(--accent-2)",
                     justifyContent: "center",
@@ -331,32 +363,34 @@ export default function HomePage() {
               data-reveal
               style={{ ["--reveal-delay" as any]: "0.24s" }}
             >
-              <div className={styles.statHeader}>
-                <ThermostatOutlined className={styles.statIcon} />
-                <div>
-                  <div className={styles.statLabel}>Clima geral</div>
-                  <div className={styles.statHint}>
-                    Distribuicao das opinioes
-                  </div>
+              <Box className={styles.climaCard}>
+                <div className={styles.statHeader}>
+                  <ThermostatOutlined className={styles.statIcon} />
+                  <Box>
+                    <div className={styles.statLabel}>Clima geral</div>
+                    <div className={styles.statHint}>
+                      Distribuicao das opinioes
+                    </div>
+                  </Box>
                 </div>
-              </div>
-              <div className={styles.typeChips}>
-                {typeCounts.map(({ type, count }) => (
-                  <span
-                    key={type}
-                    className={styles.typeChip}
-                    data-type={type}
-                    aria-label={`${type} (${count})`}
-                  >
-                    <span className={styles.typeIcon}>
-                      {renderTypeIcon(type)}
+                <div className={styles.typeChips}>
+                  {typeCounts.map(({ type, count }) => (
+                    <span
+                      key={type}
+                      className={styles.typeChip}
+                      data-type={type}
+                      aria-label={`${type} (${count})`}
+                    >
+                      <span className={styles.typeIcon}>
+                        {renderTypeIcon(type)}
+                      </span>
+                      <span>{type}</span>
+                      <span className={styles.typeCount}>{count}</span>
                     </span>
-                    <span>{type}</span>
-                    <span className={styles.typeCount}>{count}</span>
-                  </span>
-                ))}
-              </div>
-              {error ? <div className={styles.statHint}>{error}</div> : null}
+                  ))}
+                </div>
+                {error ? <div className={styles.statHint}>{error}</div> : null}
+              </Box>
             </CardGridReflect>
           </Box>
           <CardGrid
