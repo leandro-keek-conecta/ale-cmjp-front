@@ -1,24 +1,23 @@
 import type { FormValues } from "../../../@types/user";
 import type { InputType } from "../../../components/Forms";
 
-
 export type SelectOption<T = string | number> = { label: string; value: T };
 
 const genderOptions: SelectOption<string>[] = [
   { label: "Feminino", value: "Feminino" },
   { label: "Masculino", value: "Masculino" },
-  { label: "Transgênero", value: "Transgênero" },
-  { label: "Não-Binário", value: "Não-Binário" },
+  { label: "Transg\u00eenero", value: "Transg\u00eenero" },
+  { label: "N\u00e3o-Bin\u00e1rio", value: "N\u00e3o-Bin\u00e1rio" },
   { label: "Outros", value: "Outros" },
-  { label: "Prefiro não responder", value: "Prefiro não responder" },
+  { label: "Prefiro n\u00e3o responder", value: "Prefiro n\u00e3o responder" },
 ];
 
 const campanhaOptions: SelectOption<string>[] = [
   { label: "Sim", value: "Sim" },
-  { label: "Não", value: "Não" },
+  { label: "N\u00e3o", value: "N\u00e3o" },
 ];
 
-// horario será gerado internamente, então não entra nos inputs
+// horario ser\u00e1 gerado internamente, ent\u00e3o n\u00e3o entra nos inputs
 export const getUserInputs = (): InputType<FormValues>[] => [
   {
     name: "nome",
@@ -26,7 +25,7 @@ export const getUserInputs = (): InputType<FormValues>[] => [
     placeholder: "Digite seu nome completo",
     type: "text",
     colSpan: 12,
-    rules: { required: "Nome é obrigatório" },
+    rules: { required: "Nome \u00e9 obrigat\u00f3rio" },
   },
   {
     name: "telefone",
@@ -34,7 +33,7 @@ export const getUserInputs = (): InputType<FormValues>[] => [
     placeholder: "Digite seu telefone",
     type: "text",
     colSpan: 12,
-    rules: { required: "Telefone é obrigatório" },
+    rules: { required: "Telefone \u00e9 obrigat\u00f3rio" },
   },
   {
     name: "ano_nascimento",
@@ -42,16 +41,16 @@ export const getUserInputs = (): InputType<FormValues>[] => [
     placeholder: "Digite o ano de nascimento",
     type: "text",
     colSpan: 12,
-    rules: { required: "Ano de nascimento é obrigatório" },
+    rules: { required: "Ano de nascimento \u00e9 obrigat\u00f3rio" },
   },
   {
     name: "genero",
-    title: "Gênero",
-    placeholder: "Selecione o gênero",
+    title: "G\u00eanero",
+    placeholder: "Selecione o g\u00eanero",
     type: "Select",
     colSpan: 12,
     selectOptions: genderOptions,
-    rules: { required: "Gênero é obrigatório" },
+    rules: { required: "G\u00eanero \u00e9 obrigat\u00f3rio" },
   },
   {
     name: "bairro",
@@ -59,7 +58,7 @@ export const getUserInputs = (): InputType<FormValues>[] => [
     placeholder: "Digite o bairro",
     type: "text",
     colSpan: 12,
-    rules: { required: "Bairro é obrigatório" },
+    rules: { required: "Bairro \u00e9 obrigat\u00f3rio" },
   },
   {
     name: "campanha",
@@ -68,6 +67,6 @@ export const getUserInputs = (): InputType<FormValues>[] => [
     type: "Select",
     colSpan: 12,
     selectOptions: campanhaOptions,
-    rules: { required: "Campanha é obrigatória" },
+    rules: { required: "Campanha \u00e9 obrigat\u00f3ria" },
   },
 ];

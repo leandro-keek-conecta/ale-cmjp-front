@@ -1,11 +1,13 @@
 import { Box, Button, Card } from "@mui/material";
 import styles from "./FormsPage.module.css";
 import HorizontalLinearAlternativeLabelStepper from "../../components/stepper";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Forms from "../../components/Forms";
 import { getUserInputs } from "./userImputList/user";
 import { useForm } from "react-hook-form";
-import type { FormValues } from "../../@types/user";
+import type { FormValues, UserFormValues } from "../../@types/user";
+import type { OpinionFormValues } from "../../@types/opiniao";
+import { getOpinionInputs } from "./opinionList/opinionImputList";
 
 const steps = [
   "Cadastro de usuário",
@@ -24,60 +26,46 @@ const buildDefaultValues = (): FormValues => ({
   campanha: "",
 });
 
+const buildOpinionDefaultValues = (): OpinionFormValues => ({
+  opiniao_id: "",
+  usuario_id: "",
+  horario_opiniao: "",
+  acao: "",
+  opiniao: "",
+  outra_opiniao: "",
+  tipo_opiniao: "",
+  texto_opiniao: "",
+});
+
 export default function FormsPage() {
   const [currentStep, setCurrentStep] = useState(0);
+
   const {
-    control,
-    formState: { errors },
-    reset: resetEdit,
-    handleSubmit: handleCreate,
-    getValues,
-    setValue,
-  } = useForm<FormValues>({
+    control: userControl,
+    formState: { errors: userErrors },
+    handleSubmit: handleUserSubmit,
+    reset: resetUser,
+  } = useForm<UserFormValues>({
     defaultValues: buildDefaultValues(),
   });
 
-  function onSubmit(data: FormValues) {
-    console.log("Form Data:", data);
-    const userData = {
-      ...data,
-      horario: new Date().toLocaleString("pt-BR", {
-        timeZone: "America/Sao_Paulo",
-        hour12: false,
-      }),
-    };
-    console.log("User Data with horario:", userData);
+  const {
+    control: opinionControl,
+    formState: { errors: opinionErrors },
+    handleSubmit: handleOpinionSubmit,
+    reset: resetOpinion,
+  } = useForm<OpinionFormValues>({
+    defaultValues: buildOpinionDefaultValues(),
+  });
+
+  function onSubmitUser(data: UserFormValues) {
+    console.log("User form:", data);
+    setCurrentStep(1);
   }
 
-  function handleResetForm() {
-    resetEdit(buildDefaultValues());
-    setCurrentStep(0);
-  }
-
-  function handleChangeInputList() {
-    if (currentStep === 0) {
-      return (
-        <Forms
-          inputsList={getUserInputs()}
-          onInputChange={() => {}}
-          errors={errors}
-          control={control}
-        />
-      );
-      setCurrentStep((prevStep) => prevStep + 1);
-    }
-    if (currentStep === 1) {
-      setCurrentStep((prevStep) => prevStep + 1);
-      return (
-        <Forms
-          inputsList={getOpinionInputs()}
-          onInputChange={() => {}}
-          errors={errors}
-          control={control}
-        />
-      );
-    } else {
-    }
+  function onSubmitOpinion(data: OpinionFormValues) {
+    console.log("Opinion form:", data);
+    setCurrentStep(2);
   }
 
   return (
@@ -89,21 +77,44 @@ export default function FormsPage() {
             activeNumberStep={currentStep}
           />
         </Box>
+
         <Box>
-          <Forms
-            inputsList={getUserInputs()}
-            onInputChange={() => {}}
-            errors={errors}
-            control={control}
-          />
+          {currentStep === 0 && (
+            <Forms<UserFormValues>
+              inputsList={getUserInputs()}
+              control={userControl}
+              errors={userErrors}
+              onInputChange={() => {}}
+            />
+          )}
+
+          {currentStep === 1 && (
+            <Forms<OpinionFormValues>
+              inputsList={getOpinionInputs()}
+              control={opinionControl}
+              errors={opinionErrors}
+              onInputChange={() => {}}
+            />
+          )}
 
           <Box className={styles.buttonsBox}>
-            <Button
-              className={styles.submitButton}
-              onClick={handleCreate(onSubmit)}
-            >
-              Enviar
-            </Button>
+            {currentStep === 0 && (
+              <Button
+                className={styles.submitButton}
+                onClick={handleUserSubmit(onSubmitUser)}
+              >
+                Enviar usuário
+              </Button>
+            )}
+
+            {currentStep === 1 && (
+              <Button
+                className={styles.submitButton}
+                onClick={handleOpinionSubmit(onSubmitOpinion)}
+              >
+                Enviar opinião
+              </Button>
+            )}
           </Box>
         </Box>
       </Box>

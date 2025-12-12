@@ -9,7 +9,8 @@ export type Genero =
   | "Prefiro não responder"
   | "";
 
-export type FormValues = {
+
+export type UserFormValues = {
   id: string;
   horario: string;
   nome: string;
@@ -19,3 +20,6 @@ export type FormValues = {
   bairro: string;
   campanha: Campanha;
 };
+
+
+export type FormValues = UserFormValues;
