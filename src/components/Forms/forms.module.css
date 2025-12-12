@@ -1,0 +1,61 @@
+.form-container {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 0.9rem;
+}
+
+.form-field {
+  grid-column: span 12;
+}
+
+.input {
+  height: 32px; /* reduz altura diretamente */
+}
+
+/* Reduz altura de inputs MUI */
+.smallInputs input,
+.smallInputs .MuiInputBase-root,
+.smallInputs .MuiOutlinedInput-input {
+  height: 32px !important;
+  padding: 3px 12px !important;
+  font-size: 0.95rem;
+}
+
+.smallInputs .MuiFormControl-root {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+/* Reduz altura de selects */
+.smallInputs .MuiSelect-select {
+  padding: 3px 12px !important;
+}
+
+/* Mensagem de erro */
+.messageError {
+  margin-top: 4px;
+  color: red;
+  font-size: 0.75rem;
+}
+
+/* Responsividade para tablet */
+@media (max-width: 992px) {
+  .form-container {
+    grid-template-columns: repeat(6, 1fr);
+  }
+
+  .form-field {
+    grid-column: span 6;
+  }
+}
+
+/* Responsividade para mobile */
+@media (max-width: 600px) {
+  .form-container {
+    grid-template-columns: repeat(1, 1fr);
+  }
+
+  .form-field {
+    grid-column: span 1;
+  }
+}
