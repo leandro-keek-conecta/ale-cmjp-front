@@ -44,6 +44,7 @@ export interface InputType<TFieldValues extends FieldValues = FieldValues> {
   };
   rules?: object;
   value?: SelectValue;
+  containerClassName?: string;
 }
 
 interface FormsProps<TFieldValues extends FieldValues = FieldValues> {
@@ -109,6 +110,7 @@ export default function Forms<TFieldValues extends FieldValues = FieldValues>({
                 sm: `span ${input.colSpan || 12}`,
               },
             }}
+            className={input.containerClassName}
           >
             <Controller
               name={input.name}

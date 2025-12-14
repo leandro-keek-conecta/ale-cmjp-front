@@ -1,23 +1,6 @@
-import {
-  Box,
-  Button,
-  Pagination,
-  ToggleButton,
-  ToggleButtonGroup,
-  Typography,
-} from "@mui/material";
-
-import {
-  Add,
-  ChatBubbleOutline,
-  HandshakeOutlined,
-  InsertChartOutlined,
-  LightbulbOutlined,
-  LocationOnOutlined,
-  PriorityHigh,
-  StarBorderRounded,
-  ThermostatOutlined,
-} from "@mui/icons-material";
+import {Box,Pagination,ToggleButton,ToggleButtonGroup,Typography} from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import {Add,ChatBubbleOutline,HandshakeOutlined,InsertChartOutlined,LightbulbOutlined,LocationOnOutlined,PriorityHigh,StarBorderRounded,ThermostatOutlined} from "@mui/icons-material";
 
 import styles from "./HomePage.module.css";
 import { useEffect, useMemo, useState } from "react";
@@ -25,11 +8,7 @@ import CardGrid from "../../components/card-grid";
 import CardGridReflect from "../../components/card-grid-reflect";
 import Search from "../../components/search";
 import CardDetails from "../../components/cardDetails";
-import {
-  getAllOpinions,
-  getTodayOpinions,
-  getUpDistricts,
-} from "../../services/opiniao/opiniaoService";
+import {getAllOpinions,getTodayOpinions,getUpDistricts } from "../../services/opiniao/opiniaoService";
 import SlideComponent from "../../components/slide";
 import PresentationModal from "../../components/modal";
 import Header from "../../components/header";
@@ -73,6 +52,7 @@ export default function HomePage() {
   const [itensPerPage] = useState(12);
   const [currentPage, setCurrentPage] = useState(1);
   const [showPresentationModal, setShowPresentationModal] = useState(true);
+  const navigate = useNavigate();
 
   function IInicial(currentPage: number, itensPerPage: number) {
     return (currentPage - 1) * itensPerPage;
@@ -241,7 +221,7 @@ export default function HomePage() {
   };
 
   const handleOpenWhatsApp = () => {
-    window.open("https://wa.me/558391163871", "_blank", "noopener,noreferrer");
+    navigate("/test-page");
   };
 
   return (

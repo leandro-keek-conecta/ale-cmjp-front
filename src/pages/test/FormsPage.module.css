@@ -13,11 +13,28 @@
   background-color: #ffffff;
   padding: 2rem;
   border-radius: 18px;
+  margin-top: 5rem;
+  min-width: 40em;
+  box-shadow: 10px 10px 17px 5px rgba(0, 0, 0, 0.27);
+  -webkit-box-shadow: 10px 10px 17px 5px rgba(0, 0, 0, 0.27);
+  -moz-box-shadow: 10px 10px 17px 5px rgba(0, 0, 0, 0.27);
+}
+
+.logo {
+  display: block;
+  position: fixed;
+  left: 40rem;
+  top: 20rem;
+  z-index: 1;
+  max-width: 600px;
+  height: auto;
 }
 
 .stepperBox {
   width: 100%;
+  margin-top: 1rem;
   margin-bottom: 2rem;
+  min-width: 400px;
 }
 
 .buttonsBox {
@@ -31,11 +48,11 @@
   font-size: 13px;
   letter-spacing: 0.04em;
   text-align: center;
-  color: var(--accent-2);
   justify-content: center;
-  width: 50%;
-  font-weight: 600;
+  width: 35%;
+  font-weight: 400 !important;
   cursor: pointer;
   max-height: 44px !important;
-  background-color: #f4f4f4;
+  color: #ffffff !important;
+  background-color: #1e8e9c !important;
 }

@@ -1,5 +1,5 @@
 import type { InputType } from "../../../components/Forms";
-import type { FormValues, OpiniaoCategoria, TipoOpiniao } from "../../../@types/opiniao";
+import type { OpinionFormValues, OpiniaoCategoria, TipoOpiniao } from "../../../@types/opiniao";
 
 type SelectOption<T = string | number> = { label: string; value: T };
 
@@ -19,7 +19,7 @@ const tipoOpiniaoOptions: SelectOption<TipoOpiniao>[] = [
   { label: "Elogio", value: "Elogio" },
 ];
 
-export const getOpinionInputs = (): InputType<FormValues>[] => [
+export const getOpinionInputs = (): InputType<OpinionFormValues>[] => [
   {
     name: "usuario_id",
     title: "ID do usuário",
@@ -48,7 +48,7 @@ export const getOpinionInputs = (): InputType<FormValues>[] => [
   {
     name: "outra_opiniao",
     title: "Outra opinião",
-    placeholder: "Descreva outra opinião (opcional)",
+    placeholder: "Descreva outra opinião",
     type: "text",
     colSpan: 12,
   },
@@ -67,5 +67,6 @@ export const getOpinionInputs = (): InputType<FormValues>[] => [
     placeholder: "Digite a opinião",
     type: "textarea",
     colSpan: 12,
+    rules: { required: "Descrição é obrigatória" },
   },
 ];

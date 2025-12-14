@@ -11,8 +11,8 @@ export type Genero =
 
 
 export type UserFormValues = {
-  id: string;
-  horario: string;
+  id?: string;
+  horario?: string;
   nome: string;
   telefone: string;
   ano_nascimento: string;
