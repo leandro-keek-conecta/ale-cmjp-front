@@ -1,10 +1,10 @@
-import { Avatar, Box, Button } from "@mui/material";
+import { Avatar, Box, Button, IconButton } from "@mui/material";
 import styles from "./FormsPage.module.css";
 import HorizontalLinearAlternativeLabelStepper from "../../components/stepper";
 import { useMemo, useState } from "react";
 import Forms from "../../components/Forms";
 import { getUserInputs } from "./userImputList/user";
-import { useForm } from "react-hook-form";
+import { set, useForm } from "react-hook-form";
 import type { UserFormValues } from "../../@types/user";
 import type { OpinionFormValues } from "../../@types/opiniao";
 import { getOpinionInputs } from "./opinionList/opinionImputList";
@@ -25,6 +25,8 @@ import {
   Alert,
 } from "@mui/material";
 import { createUSer } from "../../services/user/userService";
+import { useNavigate } from "react-router-dom";
+import { submitOpinion } from "../../services/opiniao/opiniaoService";
 
 const steps = ["Cadastro de usuário", "Cadastro de Opinião", "Concluido"];
 
@@ -39,11 +41,11 @@ const buildUserDefaultValues = (): UserFormValues => ({
   campanha: "",
 });
 
-type SubmitSummary = {
+export type SubmitSummary = {
   id?: string;
   tema?: string;
   tipo?: string;
-  bairro?: string;
+  texto_opiniao?: string;
 };
 
 const buildOpinionDefaultValues = (): OpinionFormValues => ({
@@ -66,6 +68,7 @@ export default function FormsPage() {
   const [optIn, setOptIn] = useState(false);
   const [savingOptIn, setSavingOptIn] = useState(false);
   const [optInSaved, setOptInSaved] = useState(false);
+  const navigate = useNavigate();
   const {
     control: userControl,
     formState: { errors: userErrors },
@@ -79,70 +82,77 @@ export default function FormsPage() {
     formState: { errors: opinionErrors },
     handleSubmit: handleOpinionSubmit,
     setValue: setOpinionValue,
+    reset: resetOpinionForm,
   } = useForm<OpinionFormValues>({
     defaultValues: buildOpinionDefaultValues(),
   });
 
   async function onSubmitUser(data: UserFormValues) {
     console.log("User form:", data);
-    const response: any = await createUSer(data);
-    console.log("Create user response:", response);
-    // ✅ Se você ainda não tem backend criando ID, pode gerar um local:
-    const id = data.id?.trim() || crypto.randomUUID();
-    setUser(response);
-    console.log("Generated user ID:", id);
-    setUserId(response.id);
+    let newUserId = data.id?.trim() || "";
 
-    // ✅ Pré-preenche campos da opinião:
-    setOpinionValue("usuario_id", id);
+    try {
+      const response: any = await createUSer(data);
+      console.log("Create user response:", response);
+
+      const idFromResponse = Array.isArray(response)
+        ? response[0]?.id
+        : (response as any)?.id;
+
+      newUserId = idFromResponse || newUserId || crypto.randomUUID();
+      setUser(Array.isArray(response) ? response[0] : response);
+    } catch (error) {
+      console.error("Erro ao criar usuário, usando ID local:", error);
+      newUserId = newUserId || crypto.randomUUID();
+    }
+
+    console.log("Generated user ID:", newUserId);
+    setUserId(newUserId);
+
+    // Pré-preenche campos da opinião:
+    setOpinionValue("usuario_id", newUserId);
     setOpinionValue("acao", "Registrar opinião");
     setOpinionValue("horario_opiniao", new Date().toISOString());
 
     setCurrentStep(1);
   }
 
-  function onSubmitOpinion(data: OpinionFormValues) {
+  async function onSubmitOpinion(data: OpinionFormValues) {
     console.log("Opinion form:", data);
+    try {
+      console.log("entrei")
+      // garante consistência do payload
+      const payload = {
+        usuario_id: userId || data.usuario_id,
+        opiniao: data.opiniao,
+        outra_opiniao: data.opiniao === "Outros" ? data.outra_opiniao : "",
+        tipo_opiniao: data.tipo_opiniao,
+        texto_opiniao: data.texto_opiniao,
+        horario_opiniao: new Date().toISOString(),
+        acao: "Registrar opinião",
+      };
+      console.log(payload)
+      await submitOpinion(payload);
 
-    setSummary({
-      id: userId, // ajuste conforme seu tipo real
-      tema: data.opiniao === "Outros" ? data.outra_opiniao : data.opiniao,
-      tipo: data.tipo_opiniao,
-      bairro: "", // se quiser puxar do user form, guarde antes em state
-    });
+      setSummary({
+        id: payload.usuario_id,
+        tema:
+          payload.opiniao === "Outros"
+            ? payload.outra_opiniao
+            : payload.opiniao,
+        tipo: payload.tipo_opiniao,
+        texto_opiniao: payload.texto_opiniao,
+      });
 
-    setCurrentStep(2);
+      setCurrentStep(2);
+    } catch (err) {
+      console.error("Erro ao enviar opinião:", err);
+      // aqui você pode mostrar um <Alert /> no step 1
+    }
   }
 
   async function saveOptInPreference() {
-    if (!optIn) return; // não salva se não optou
-
-    setSavingOptIn(true);
-    setOptInSaved(false);
-
-    try {
-      // exemplo: salvar preferência vinculada ao usuario_id
-      const payload = {
-        usuario_id: userId, // você já tem esse state no exemplo anterior
-        opt_in: true,
-        updated_at: new Date().toISOString(),
-      };
-
-      const res = await fetch("/api/campaign/opt-in", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) throw new Error("Falha ao salvar opt-in");
-
-      setOptInSaved(true);
-    } catch (e) {
-      console.error(e);
-      // aqui você pode mostrar snackbar de erro
-    } finally {
-      setSavingOptIn(false);
-    }
+    navigate("/");
   }
 
   const handleOpinionInputChange = (
@@ -171,8 +181,8 @@ export default function FormsPage() {
         // (Opcional) se seu InputType suportar "disabled", deixe travado
         return {
           ...i,
-          placeholder: userId || "ID gerado automaticamente",
-          disabled: true,
+          disabled: false,
+          readOnly: true, // ou inputProps: { readOnly: true } (depende do seu Forms)
         };
       }
 
@@ -192,6 +202,22 @@ export default function FormsPage() {
   return (
     <Box className={styles.container}>
       <Box className={styles.formBox}>
+        <Box
+          sx={{
+            width: "100%",
+            display: "flex",
+            justifyContent: "flex-start",
+          }}
+        >
+          <Button
+            variant="text"
+            startIcon={<KeyboardBackspaceIcon />}
+            onClick={() => navigate("/")}
+            sx={{ mb: 1, color: "#1e8e9c" }}
+          >
+            Ir para tela padrão do projeto
+          </Button>
+        </Box>
         <Typography
           variant="h5"
           fontWeight={700}
@@ -236,12 +262,34 @@ export default function FormsPage() {
             )}
 
             {currentStep === 1 && (
-              <Button
-                className={styles.submitButton}
-                onClick={handleOpinionSubmit(onSubmitOpinion)}
+              <Box
+                sx={{
+                  position: "relative",
+                  width: "100%",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
               >
-                Enviar opinião
-              </Button>
+                <Button
+                  className={styles.submitButton}
+                  onClick={handleOpinionSubmit(onSubmitOpinion)}
+                  sx={{ minWidth: { xs: "100%", sm: "35%" } }}
+                >
+                  Enviar opinião
+                </Button>
+                <IconButton
+                  aria-label="Voltar para cadastro do usuário"
+                  onClick={() => setCurrentStep(0)}
+                  sx={{
+                    position: "absolute",
+                    left: 0,
+                    color: "#1e8e9c",
+                  }}
+                >
+                  <KeyboardBackspaceIcon />
+                </IconButton>
+              </Box>
             )}
             {currentStep === 2 && (
               <Card
@@ -277,8 +325,10 @@ export default function FormsPage() {
                       {summary?.tipo && (
                         <Chip label={`Tipo: ${summary.tipo}`} />
                       )}
-                      {summary?.bairro && (
-                        <Chip label={`Bairro: ${summary.bairro}`} />
+                      {summary?.texto_opiniao && (
+                        <Chip
+                          label={`Texto da opinião: ${summary.texto_opiniao}`}
+                        />
                       )}
                     </Stack>
 
@@ -290,7 +340,6 @@ export default function FormsPage() {
                       spacing={1.5}
                       sx={{ pt: 1 }}
                     >
-
                       <Button
                         variant="contained"
                         disabled={savingOptIn}
@@ -312,9 +361,16 @@ export default function FormsPage() {
                       <Button
                         variant="outlined"
                         onClick={() => {
-                          // enviar outra opinião mantendo o mesmo usuário
-                          // reset do form de opinião é recomendável:
-                          // resetOpinion(buildOpinionDefaultValues()) -> se você tiver reset do RHF
+                          setSummary(null);
+                          setShowOutraOpiniao(false);
+
+                          resetOpinionForm({
+                            ...buildOpinionDefaultValues(),
+                            usuario_id: userId,
+                            acao: "Registrar opinião",
+                            horario_opiniao: new Date().toISOString(),
+                          });
+
                           setCurrentStep(1);
                         }}
                       >

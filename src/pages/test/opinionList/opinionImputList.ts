@@ -23,7 +23,7 @@ export const getOpinionInputs = (): InputType<OpinionFormValues>[] => [
 
   {
     name: "opiniao",
-    title: "Opinião",
+    title: "Tema",
     placeholder: "Selecione o tema da opinião",
     type: "Select",
     colSpan: 12,

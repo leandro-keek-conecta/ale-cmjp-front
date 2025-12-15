@@ -1,5 +1,19 @@
 import { api } from "../api/api";
 import type { Opinion } from "../../pages/home/HomePage";
+import type { OpinionFormValues } from "../../@types/opiniao";
+
+type SubmitSummary = Partial<
+  Pick<
+    OpinionFormValues,
+    | "usuario_id"
+    | "opiniao"
+    | "outra_opiniao"
+    | "tipo_opiniao"
+    | "texto_opiniao"
+    | "horario_opiniao"
+    | "acao"
+  >
+>;
 
 export async function getAllOpinions(): Promise<Opinion[]> {
   const response = await api.post("", {
@@ -29,4 +43,15 @@ export async function getUpDistricts() {
 
   const data = response?.data;
   return data;
+}
+
+export async function submitOpinion(data: SubmitSummary) {
+  console.log("fui chamado")
+  const response = await api.post("", {
+    action: "create",
+    entity: "opiniao",
+    payload: { ...data, acao: data.acao || "Registrar opinião" },
+  });
+
+  return response;
 }
