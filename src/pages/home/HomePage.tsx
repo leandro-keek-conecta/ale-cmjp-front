@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {Add,ChatBubbleOutline,HandshakeOutlined,InsertChartOutlined,LightbulbOutlined,LocationOnOutlined,PriorityHigh,StarBorderRounded,ThermostatOutlined} from "@mui/icons-material";
 
 import styles from "./HomePage.module.css";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import CardGrid from "../../components/card-grid";
 import CardGridReflect from "../../components/card-grid-reflect";
 import Search from "../../components/search";
@@ -52,6 +52,7 @@ export default function HomePage() {
   const [itensPerPage] = useState(12);
   const [currentPage, setCurrentPage] = useState(1);
   const [showPresentationModal, setShowPresentationModal] = useState(true);
+  const hasFetched = useRef(false);
   const navigate = useNavigate();
 
   function IInicial(currentPage: number, itensPerPage: number) {
@@ -109,6 +110,9 @@ export default function HomePage() {
   }
 
   useEffect(() => {
+    if (hasFetched.current) return;
+    hasFetched.current = true;
+
     console.log(filteredOpinions); //
     fetchOpinions();
     fetchTodayOpinions();

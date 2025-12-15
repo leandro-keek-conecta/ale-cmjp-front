@@ -5,7 +5,7 @@ import type { UserFormValues } from "../../@types/user";
 export async function createUSer(user: UserFormValues): Promise<Opinion[]> {
   const response = await api.post("", {
     action: "create",
-    entity: "user",
+    entity: "usuario",
     payload: user,
   });
   console.log("API response:", response);

@@ -1,4 +1,4 @@
-import { Box, Button } from "@mui/material";
+import { Avatar, Box, Button } from "@mui/material";
 import styles from "./FormsPage.module.css";
 import HorizontalLinearAlternativeLabelStepper from "../../components/stepper";
 import { useMemo, useState } from "react";
@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 import type { UserFormValues } from "../../@types/user";
 import type { OpinionFormValues } from "../../@types/opiniao";
 import { getOpinionInputs } from "./opinionList/opinionImputList";
+import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
 import {
   Card,
   CardContent,
@@ -25,7 +26,6 @@ import {
 } from "@mui/material";
 import { createUSer } from "../../services/user/userService";
 
-
 const steps = ["Cadastro de usuário", "Cadastro de Opinião", "Concluido"];
 
 const buildUserDefaultValues = (): UserFormValues => ({
@@ -40,7 +40,7 @@ const buildUserDefaultValues = (): UserFormValues => ({
 });
 
 type SubmitSummary = {
-  protocolo: string;
+  id?: string;
   tema?: string;
   tipo?: string;
   bairro?: string;
@@ -61,6 +61,7 @@ export default function FormsPage() {
   const [currentStep, setCurrentStep] = useState(0);
   const [showOutraOpiniao, setShowOutraOpiniao] = useState(false);
   const [userId, setUserId] = useState<string>("");
+  const [user, setUser] = useState<UserFormValues | null>(null);
   const [summary, setSummary] = useState<SubmitSummary | null>(null);
   const [optIn, setOptIn] = useState(false);
   const [savingOptIn, setSavingOptIn] = useState(false);
@@ -82,14 +83,15 @@ export default function FormsPage() {
     defaultValues: buildOpinionDefaultValues(),
   });
 
-  function onSubmitUser(data: UserFormValues) {
+  async function onSubmitUser(data: UserFormValues) {
     console.log("User form:", data);
-    const response = createUSer(data);
+    const response: any = await createUSer(data);
     console.log("Create user response:", response);
     // ✅ Se você ainda não tem backend criando ID, pode gerar um local:
     const id = data.id?.trim() || crypto.randomUUID();
-
-    setUserId(id);
+    setUser(response);
+    console.log("Generated user ID:", id);
+    setUserId(response.id);
 
     // ✅ Pré-preenche campos da opinião:
     setOpinionValue("usuario_id", id);
@@ -102,12 +104,8 @@ export default function FormsPage() {
   function onSubmitOpinion(data: OpinionFormValues) {
     console.log("Opinion form:", data);
 
-    const protocolo = `JP-${new Date().getFullYear()}-${String(
-      Math.floor(Math.random() * 999999)
-    ).padStart(6, "0")}`;
-
     setSummary({
-      protocolo,
+      id: userId, // ajuste conforme seu tipo real
       tema: data.opiniao === "Outros" ? data.outra_opiniao : data.opiniao,
       tipo: data.tipo_opiniao,
       bairro: "", // se quiser puxar do user form, guarde antes em state
@@ -194,6 +192,13 @@ export default function FormsPage() {
   return (
     <Box className={styles.container}>
       <Box className={styles.formBox}>
+        <Typography
+          variant="h5"
+          fontWeight={700}
+          sx={{ mb: 3, textAlign: "center" }}
+        >
+          Formulário de Opinião
+        </Typography>
         <Box className={styles.stepperBox}>
           <HorizontalLinearAlternativeLabelStepper
             step={steps}
@@ -285,6 +290,7 @@ export default function FormsPage() {
                       spacing={1.5}
                       sx={{ pt: 1 }}
                     >
+
                       <Button
                         variant="contained"
                         disabled={savingOptIn}

@@ -20,22 +20,7 @@ const tipoOpiniaoOptions: SelectOption<TipoOpiniao>[] = [
 ];
 
 export const getOpinionInputs = (): InputType<OpinionFormValues>[] => [
-  {
-    name: "usuario_id",
-    title: "ID do usuário",
-    placeholder: "Informe o ID do usuário",
-    type: "text",
-    colSpan: 12,
-    rules: { required: "ID do usuário é obrigatório" },
-  },
-  {
-    name: "acao",
-    title: "Ação",
-    placeholder: "Registrar opinião",
-    type: "text",
-    colSpan: 12,
-    rules: { required: "Ação é obrigatória" },
-  },
+
   {
     name: "opiniao",
     title: "Opinião",
