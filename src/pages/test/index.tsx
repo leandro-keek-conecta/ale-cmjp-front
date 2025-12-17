@@ -4,7 +4,7 @@ import HorizontalLinearAlternativeLabelStepper from "../../components/stepper";
 import { useMemo, useState } from "react";
 import Forms from "../../components/Forms";
 import { getUserInputs } from "./userImputList/user";
-import { set, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import type { UserFormValues } from "../../@types/user";
 import type { OpinionFormValues } from "../../@types/opiniao";
 import { getOpinionInputs } from "./opinionList/opinionImputList";
@@ -68,6 +68,14 @@ export default function FormsPage() {
   const [optIn, setOptIn] = useState(false);
   const [savingOptIn, setSavingOptIn] = useState(false);
   const [optInSaved, setOptInSaved] = useState(false);
+  const [userAlert, setUserAlert] = useState<{
+    severity: "success" | "error";
+    message: string;
+  } | null>(null);
+  const [opinionAlert, setOpinionAlert] = useState<{
+    severity: "success" | "error";
+    message: string;
+  } | null>(null);
   const navigate = useNavigate();
   const {
     control: userControl,
@@ -89,6 +97,7 @@ export default function FormsPage() {
 
   async function onSubmitUser(data: UserFormValues) {
     console.log("User form:", data);
+    setUserAlert(null);
     let newUserId = data.id?.trim() || "";
 
     try {
@@ -101,9 +110,18 @@ export default function FormsPage() {
 
       newUserId = idFromResponse || newUserId || crypto.randomUUID();
       setUser(Array.isArray(response) ? response[0] : response);
+      setUserAlert({
+        severity: "success",
+        message: "Usuário cadastrado com sucesso.",
+      });
     } catch (error) {
       console.error("Erro ao criar usuário, usando ID local:", error);
       newUserId = newUserId || crypto.randomUUID();
+      setUserAlert({
+        severity: "error",
+        message:
+          "Não foi possível cadastrar o usuário na API. Geramos um ID local para continuar.",
+      });
     }
 
     console.log("Generated user ID:", newUserId);
@@ -119,8 +137,9 @@ export default function FormsPage() {
 
   async function onSubmitOpinion(data: OpinionFormValues) {
     console.log("Opinion form:", data);
+    setOpinionAlert(null);
     try {
-      console.log("entrei")
+      console.log("entrei");
       // garante consistência do payload
       const payload = {
         usuario_id: userId || data.usuario_id,
@@ -143,11 +162,18 @@ export default function FormsPage() {
         tipo: payload.tipo_opiniao,
         texto_opiniao: payload.texto_opiniao,
       });
+      setOpinionAlert({
+        severity: "success",
+        message: "Opinião enviada com sucesso.",
+      });
 
       setCurrentStep(2);
     } catch (err) {
       console.error("Erro ao enviar opinião:", err);
-      // aqui você pode mostrar um <Alert /> no step 1
+      setOpinionAlert({
+        severity: "error",
+        message: "Não foi possível enviar a opinião. Tente novamente.",
+      });
     }
   }
 
@@ -249,6 +275,16 @@ export default function FormsPage() {
               errors={opinionErrors}
               onInputChange={handleOpinionInputChange}
             />
+          )}
+          {(currentStep === 0 || currentStep === 1) && userAlert && (
+            <Alert severity={userAlert.severity} sx={{ mt: 2 }}>
+              {userAlert.message}
+            </Alert>
+          )}
+          {currentStep === 1 && opinionAlert && (
+            <Alert severity={opinionAlert.severity} sx={{ mt: 2 }}>
+              {opinionAlert.message}
+            </Alert>
           )}
 
           <Box className={styles.buttonsBox}>
@@ -363,6 +399,7 @@ export default function FormsPage() {
                         onClick={() => {
                           setSummary(null);
                           setShowOutraOpiniao(false);
+                          setOpinionAlert(null);
 
                           resetOpinionForm({
                             ...buildOpinionDefaultValues(),

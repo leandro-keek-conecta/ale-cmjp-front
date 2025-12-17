@@ -1,6 +1,22 @@
-import {Box,Pagination,ToggleButton,ToggleButtonGroup,Typography} from "@mui/material";
+import {
+  Box,
+  Pagination,
+  ToggleButton,
+  ToggleButtonGroup,
+  Typography,
+} from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import {Add,ChatBubbleOutline,HandshakeOutlined,InsertChartOutlined,LightbulbOutlined,LocationOnOutlined,PriorityHigh,StarBorderRounded,ThermostatOutlined} from "@mui/icons-material";
+import {
+  Add,
+  ChatBubbleOutline,
+  HandshakeOutlined,
+  InsertChartOutlined,
+  LightbulbOutlined,
+  LocationOnOutlined,
+  PriorityHigh,
+  StarBorderRounded,
+  ThermostatOutlined,
+} from "@mui/icons-material";
 
 import styles from "./HomePage.module.css";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -8,7 +24,11 @@ import CardGrid from "../../components/card-grid";
 import CardGridReflect from "../../components/card-grid-reflect";
 import Search from "../../components/search";
 import CardDetails from "../../components/cardDetails";
-import {getAllOpinions,getTodayOpinions,getUpDistricts } from "../../services/opiniao/opiniaoService";
+import {
+  getAllOpinions,
+  getTodayOpinions,
+  getUpDistricts,
+} from "../../services/opiniao/opiniaoService";
 import SlideComponent from "../../components/slide";
 import PresentationModal from "../../components/modal";
 import Header from "../../components/header";
@@ -52,6 +72,9 @@ export default function HomePage() {
   const [itensPerPage] = useState(12);
   const [currentPage, setCurrentPage] = useState(1);
   const [showPresentationModal, setShowPresentationModal] = useState(true);
+  const [groupOpinions, setGroupOpinions] = useState<
+    { type: string; count: number }[]
+  >([]);
   const hasFetched = useRef(false);
   const navigate = useNavigate();
 
@@ -81,32 +104,32 @@ export default function HomePage() {
   async function fetchOpinions() {
     try {
       const response = await getAllOpinions();
-      quantityPorCategory(response)
-      
-      setOpinions(Array.isArray(response) ? response : []);
+      const opinionsList = Array.isArray(response) ? response : [];
+      quantityPorCategory(opinionsList);
+      setOpinions(opinionsList);
     } catch (err) {
       setError("Erro ao carregar opinioes.");
     }
   }
 
-  function quantityPorCategory(opinions: any) {
-    const groupedOpinions = opinions.reduce((acc: any, opinion: any) => {
-      const category = opinion.opiniao.trim();
+  function quantityPorCategory(opinions: Opinion[]) {
+    const countsMap = opinions.reduce((acc, opinion) => {
+      const label = (opinion.tipo_opiniao || opinion.opiniao || "").trim();
+      const key = normalizeText(label);
 
-      if (!category) {
-        return acc; // se vier vazio, ignora
-      }
+      if (!key) return acc; // ignora itens sem categoria
 
-      if (acc[category]) {
-        acc[category].push(opinion);
-      } else {
-        acc[category] = [opinion];
-      }
+      const current = acc.get(key);
+      acc.set(key, {
+        type: label || "Sem categoria",
+        count: (current?.count ?? 0) + 1,
+      });
 
       return acc;
-    }, {} as Record<string, Opinion[]>);
+    }, new Map<string, { type: string; count: number }>());
 
-    console.log(groupedOpinions);
+    const grouped = Array.from(countsMap.values());
+    setGroupOpinions(grouped);
   }
 
   useEffect(() => {
@@ -158,11 +181,7 @@ export default function HomePage() {
   };
 
   const normalizeText = (value?: string | null) =>
-    (value || "")
-      .normalize("NFD")
-      .replace(/\p{M}/gu, "")
-      .toLowerCase()
-      .trim();
+    (value || "").normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().trim();
 
   const normalizeType = (item: Opinion) =>
     normalizeText(item.tipo_opiniao || item.opiniao);
@@ -174,8 +193,7 @@ export default function HomePage() {
     const selectedType = normalizeText(filterType);
     return sourceOpinions.filter((item) => {
       const matchesType =
-        filterType === "all" ||
-        normalizeType(item) === selectedType;
+        filterType === "all" || normalizeType(item) === selectedType;
       const matchesSearch =
         !term ||
         [item.nome, item.bairro, item.texto_opiniao, item.opiniao]
@@ -207,6 +225,7 @@ export default function HomePage() {
   }, [currentPage, totalPages]);
 
   const typeCounts = typeOfFilter.options.map((type) => {
+    console.log(type);
     const normalized = type.toLowerCase();
     return {
       type,
@@ -259,19 +278,19 @@ export default function HomePage() {
                     color: "var(--accent-2)",
                     justifyContent: "center",
                     width: "100%",
-                  fontWeight: 600,
-                }}
-              >
-                Monitorando a voz da cidade
-              </Typography>
-            </CardGrid>
+                    fontWeight: 600,
+                  }}
+                >
+                  Monitorando a voz da cidade
+                </Typography>
+              </CardGrid>
 
-            <CardGrid span={2} onClick={handleOpenWhatsApp}>
-              <Add />
-              <Typography
-                sx={{
-                  fontSize: "13px",
-                  letterSpacing: "0.04em",
+              <CardGrid span={2} onClick={handleOpenWhatsApp}>
+                <Add />
+                <Typography
+                  sx={{
+                    fontSize: "13px",
+                    letterSpacing: "0.04em",
                     textAlign: "center",
                     color: "var(--accent-2)",
                     justifyContent: "center",
@@ -358,7 +377,7 @@ export default function HomePage() {
                   </Box>
                 </div>
                 <div className={styles.typeChips}>
-                  {typeCounts.map(({ type, count }) => (
+                  {groupOpinions.map(({ type, count }) => (
                     <span
                       key={type}
                       className={styles.typeChip}

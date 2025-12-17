@@ -1,0 +1,12 @@
+.alertContainer {
+  position: fixed;
+  right: 16px;
+  top: 16px;
+  z-index: 2000;
+}
+
+.alert {
+  border-radius: 8px !important;
+  display: flex;
+  align-items: center;
+}
