@@ -10,7 +10,6 @@ import {
 import { useEffect, useRef, useState } from "react";
 
 import styles from "./Modal.module.css";
-import alePresentation from "../../assets/ale/ale-apresentacao.mp4";
 
 type PresentationModalProps = {
   open: boolean;
@@ -117,7 +116,7 @@ export default function PresentationModal({
               <video
                 ref={videoRef}
                 className={styles.video}
-                src={alePresentation}
+                src="https://s3.keekconecta.com.br/ale-cmjp/videos/ale-apresentacao.mp4"
                 controls
                 muted={!hasAudioConsent}
                 playsInline

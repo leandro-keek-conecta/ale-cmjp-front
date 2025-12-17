@@ -2,12 +2,10 @@ import { Box, Card, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import { ArrowBackIosNew, ArrowForwardIos } from "@mui/icons-material";
 import styles from "./Slide.module.css";
-import aleSlide1 from "../../assets/ale/ale-1.jpg";
-import aleSlide2 from "../../assets/ale/ale-2.jpg";
-import aleSlide5 from "../../assets/ale/ale-5.png";
-import PlaceIcon from '@mui/icons-material/Place';
+import PlaceIcon from "@mui/icons-material/Place";
 
 export default function SlideComponent() {
+  const minioBase = "https://s3.keekconecta.com.br/ale-cmjp/fotos";
   const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
@@ -23,19 +21,19 @@ export default function SlideComponent() {
       title: "Alê pronta para responder",
       description:
         "Interface humanizada para tirar dúvidas da população a qualquer hora.",
-      image: aleSlide1,
+      image: `${minioBase}/ale-1.jpg`,
     },
     {
       title: "Assistente presente nas ruas",
       description:
         "Alê registra solicitações diretamente dos bairros e agiliza o atendimento.",
-      image: aleSlide2,
+      image: `${minioBase}/ale-2.jpg`,
     },
     {
       title: "Conversas claras e objetivas",
       description:
         "Painel mostra o que a Alê está ouvindo em tempo real, sem complicação.",
-      image: aleSlide5,
+      image: `${minioBase}/ale-5.png`,
     },
   ];
 
