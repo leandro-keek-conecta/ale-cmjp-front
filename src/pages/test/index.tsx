@@ -1,4 +1,4 @@
-import { Avatar, Box, Button, IconButton } from "@mui/material";
+import { Box, Button, IconButton } from "@mui/material";
 import styles from "./FormsPage.module.css";
 import HorizontalLinearAlternativeLabelStepper from "../../components/stepper";
 import { useMemo, useState } from "react";
@@ -16,12 +16,6 @@ import {
   Stack,
   Chip,
   Divider,
-  Switch,
-  FormControlLabel,
-  RadioGroup,
-  Radio,
-  FormControl,
-  FormLabel,
   Alert,
 } from "@mui/material";
 import { createUSer } from "../../services/user/userService";
@@ -63,11 +57,7 @@ export default function FormsPage() {
   const [currentStep, setCurrentStep] = useState(0);
   const [showOutraOpiniao, setShowOutraOpiniao] = useState(false);
   const [userId, setUserId] = useState<string>("");
-  const [user, setUser] = useState<UserFormValues | null>(null);
   const [summary, setSummary] = useState<SubmitSummary | null>(null);
-  const [optIn, setOptIn] = useState(false);
-  const [savingOptIn, setSavingOptIn] = useState(false);
-  const [optInSaved, setOptInSaved] = useState(false);
   const [userAlert, setUserAlert] = useState<{
     severity: "success" | "error";
     message: string;
@@ -109,7 +99,6 @@ export default function FormsPage() {
         : (response as any)?.id;
 
       newUserId = idFromResponse || newUserId || crypto.randomUUID();
-      setUser(Array.isArray(response) ? response[0] : response);
       setUserAlert({
         severity: "success",
         message: "Usuário cadastrado com sucesso.",
@@ -378,7 +367,6 @@ export default function FormsPage() {
                     >
                       <Button
                         variant="contained"
-                        disabled={savingOptIn}
                         onClick={async () => {
                           // salva opt-in se marcado
                           await saveOptInPreference();
@@ -391,7 +379,7 @@ export default function FormsPage() {
                           setCurrentStep(0);
                         }}
                       >
-                        {savingOptIn ? "Salvando..." : "Concluir"}
+                        Concluir
                       </Button>
 
                       <Button

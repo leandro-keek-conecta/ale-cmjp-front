@@ -96,7 +96,7 @@ export default function SelectWithSwitch({
         return (
           <li
             {...props}
-            key={option.value}
+            key={String(option.value)}
             style={{
               display: "flex",
               justifyContent: "space-between",

@@ -80,8 +80,15 @@ export default function UserMenuMinimal({
             sx={{ display: "flex", alignItems: "center", gap: 1, fontSize: "0.9rem" }}
           >
             {opt.icone && (
-              <Box component="span" sx={{ display: "flex", alignItems: "center" }}>
-                {React.cloneElement(opt.icone, { style: { fontSize: "1rem" } })}
+              <Box
+                component="span"
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  "& svg": { fontSize: "1rem" },
+                }}
+              >
+                {opt.icone}
               </Box>
             )}
             {opt.label}

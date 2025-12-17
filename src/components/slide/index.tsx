@@ -4,15 +4,11 @@ import { ArrowBackIosNew, ArrowForwardIos } from "@mui/icons-material";
 import styles from "./Slide.module.css";
 import aleSlide1 from "../../assets/ale/ale-1.jpg";
 import aleSlide2 from "../../assets/ale/ale-2.jpg";
-import aleSlide3 from "../../assets/ale/ale-4.jpg";
 import aleSlide5 from "../../assets/ale/ale-5.png";
-import CardGrid from "../card-grid";
 import PlaceIcon from '@mui/icons-material/Place';
 
 export default function SlideComponent() {
-  const [upDistricts, setUpDistricts] = useState();
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [initial, setInitial] = useState(true);
 
   useEffect(() => {
     const timer = setInterval(() => {

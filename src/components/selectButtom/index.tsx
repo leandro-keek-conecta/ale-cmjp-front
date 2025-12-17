@@ -81,7 +81,7 @@ export default function SelectButton({
           tagValue.map((option, index) => (
             <Chip
               {...getTagProps({ index })}
-              key={option.value}
+              key={String(option.value)}
               label={option.label}
               size="small"
               sx={{ height: 24 }}

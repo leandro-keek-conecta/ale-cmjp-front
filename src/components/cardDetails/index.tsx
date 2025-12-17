@@ -2,7 +2,6 @@ import {
   Box,
   Dialog,
   DialogTitle,
-  DialogContent,
   DialogContentText,
   Divider,
 } from "@mui/material";

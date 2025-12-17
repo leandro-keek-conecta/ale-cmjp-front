@@ -231,16 +231,6 @@ export default function HomePage() {
     }
   }, [currentPage, totalPages]);
 
-  const typeCounts = typeOfFilter.options.map((type) => {
-    console.log(type);
-    const normalized = type.toLowerCase();
-    return {
-      type,
-      count: sourceOpinions.filter((item) => normalizeType(item) === normalized)
-        .length,
-    };
-  });
-
   const renderTypeIcon = (type: string) => {
     const key = type.toLowerCase();
     if (key === "reclamação") return <PriorityHigh fontSize="small" />;
