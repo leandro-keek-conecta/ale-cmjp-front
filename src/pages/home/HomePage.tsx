@@ -32,6 +32,10 @@ import {
 import SlideComponent from "../../components/slide";
 import PresentationModal from "../../components/modal";
 import Header from "../../components/header";
+import {
+  readFromStorage,
+  saveToStorage,
+} from "../../utils/localStorage";
 
 export type Opinion = {
   id: number | string;
@@ -64,6 +68,7 @@ const typeOfFilter = {
 };
 
 export default function HomePage() {
+  const PRESENTATION_SEEN_KEY = "home:presentationSeen";
   const [opinions, setOpinions] = useState<Opinion[]>([]);
   const [todayOpinions, setTodayOpinions] = useState<Opinion[]>([]);
   const [error, setError] = useState("");
@@ -71,7 +76,9 @@ export default function HomePage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [itensPerPage] = useState(12);
   const [currentPage, setCurrentPage] = useState(1);
-  const [showPresentationModal, setShowPresentationModal] = useState(true);
+  const [showPresentationModal, setShowPresentationModal] = useState<boolean>(
+    () => !readFromStorage<boolean>(PRESENTATION_SEEN_KEY, false)
+  );
   const [groupOpinions, setGroupOpinions] = useState<
     { type: string; count: number }[]
   >([]);
@@ -247,11 +254,16 @@ export default function HomePage() {
     navigate("/test-page");
   };
 
+  const handleClosePresentation = () => {
+    setShowPresentationModal(false);
+    saveToStorage(PRESENTATION_SEEN_KEY, true);
+  };
+
   return (
     <>
       <PresentationModal
         open={showPresentationModal}
-        onClose={() => setShowPresentationModal(false)}
+        onClose={handleClosePresentation}
       />
       <Header />
       <Box className={styles.container}>
