@@ -1,12 +1,11 @@
 import {
   Box,
-  Button,
   Pagination,
   ToggleButton,
   ToggleButtonGroup,
   Typography,
 } from "@mui/material";
-
+import { useNavigate } from "react-router-dom";
 import {
   Add,
   ChatBubbleOutline,
@@ -20,7 +19,7 @@ import {
 } from "@mui/icons-material";
 
 import styles from "./HomePage.module.css";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import CardGrid from "../../components/card-grid";
 import CardGridReflect from "../../components/card-grid-reflect";
 import Search from "../../components/search";
@@ -33,6 +32,10 @@ import {
 import SlideComponent from "../../components/slide";
 import PresentationModal from "../../components/modal";
 import Header from "../../components/header";
+import {
+  readFromStorage,
+  saveToStorage,
+} from "../../utils/localStorage";
 
 export type Opinion = {
   id: number | string;
@@ -65,6 +68,7 @@ const typeOfFilter = {
 };
 
 export default function HomePage() {
+  const PRESENTATION_SEEN_KEY = "home:presentationSeen";
   const [opinions, setOpinions] = useState<Opinion[]>([]);
   const [todayOpinions, setTodayOpinions] = useState<Opinion[]>([]);
   const [error, setError] = useState("");
@@ -72,7 +76,14 @@ export default function HomePage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [itensPerPage] = useState(12);
   const [currentPage, setCurrentPage] = useState(1);
-  const [showPresentationModal, setShowPresentationModal] = useState(true);
+  const [showPresentationModal, setShowPresentationModal] = useState<boolean>(
+    () => !readFromStorage<boolean>(PRESENTATION_SEEN_KEY, false)
+  );
+  const [groupOpinions, setGroupOpinions] = useState<
+    { type: string; count: number }[]
+  >([]);
+  const hasFetched = useRef(false);
+  const navigate = useNavigate();
 
   function IInicial(currentPage: number, itensPerPage: number) {
     return (currentPage - 1) * itensPerPage;
@@ -100,35 +111,38 @@ export default function HomePage() {
   async function fetchOpinions() {
     try {
       const response = await getAllOpinions();
-      quantityPorCategory(response)
-      
-      setOpinions(Array.isArray(response) ? response : []);
+      const opinionsList = Array.isArray(response) ? response : [];
+      quantityPorCategory(opinionsList);
+      setOpinions(opinionsList);
     } catch (err) {
       setError("Erro ao carregar opinioes.");
     }
   }
 
-  function quantityPorCategory(opinions: any) {
-    const groupedOpinions = opinions.reduce((acc: any, opinion: any) => {
-      const category = opinion.opiniao.trim();
+  function quantityPorCategory(opinions: Opinion[]) {
+    const countsMap = opinions.reduce((acc, opinion) => {
+      const label = (opinion.tipo_opiniao || opinion.opiniao || "").trim();
+      const key = normalizeText(label);
 
-      if (!category) {
-        return acc; // se vier vazio, ignora
-      }
+      if (!key) return acc; // ignora itens sem categoria
 
-      if (acc[category]) {
-        acc[category].push(opinion);
-      } else {
-        acc[category] = [opinion];
-      }
+      const current = acc.get(key);
+      acc.set(key, {
+        type: label || "Sem categoria",
+        count: (current?.count ?? 0) + 1,
+      });
 
       return acc;
-    }, {} as Record<string, Opinion[]>);
+    }, new Map<string, { type: string; count: number }>());
 
-    console.log(groupedOpinions);
+    const grouped = Array.from(countsMap.values());
+    setGroupOpinions(grouped);
   }
 
   useEffect(() => {
+    if (hasFetched.current) return;
+    hasFetched.current = true;
+
     console.log(filteredOpinions); //
     fetchOpinions();
     fetchTodayOpinions();
@@ -174,11 +188,7 @@ export default function HomePage() {
   };
 
   const normalizeText = (value?: string | null) =>
-    (value || "")
-      .normalize("NFD")
-      .replace(/\p{M}/gu, "")
-      .toLowerCase()
-      .trim();
+    (value || "").normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().trim();
 
   const normalizeType = (item: Opinion) =>
     normalizeText(item.tipo_opiniao || item.opiniao);
@@ -190,8 +200,7 @@ export default function HomePage() {
     const selectedType = normalizeText(filterType);
     return sourceOpinions.filter((item) => {
       const matchesType =
-        filterType === "all" ||
-        normalizeType(item) === selectedType;
+        filterType === "all" || normalizeType(item) === selectedType;
       const matchesSearch =
         !term ||
         [item.nome, item.bairro, item.texto_opiniao, item.opiniao]
@@ -223,6 +232,7 @@ export default function HomePage() {
   }, [currentPage, totalPages]);
 
   const typeCounts = typeOfFilter.options.map((type) => {
+    console.log(type);
     const normalized = type.toLowerCase();
     return {
       type,
@@ -241,14 +251,19 @@ export default function HomePage() {
   };
 
   const handleOpenWhatsApp = () => {
-    window.open("https://wa.me/558391163871", "_blank", "noopener,noreferrer");
+    navigate("/test-page");
+  };
+
+  const handleClosePresentation = () => {
+    setShowPresentationModal(false);
+    saveToStorage(PRESENTATION_SEEN_KEY, true);
   };
 
   return (
     <>
       <PresentationModal
         open={showPresentationModal}
-        onClose={() => setShowPresentationModal(false)}
+        onClose={handleClosePresentation}
       />
       <Header />
       <Box className={styles.container}>
@@ -275,19 +290,19 @@ export default function HomePage() {
                     color: "var(--accent-2)",
                     justifyContent: "center",
                     width: "100%",
-                  fontWeight: 600,
-                }}
-              >
-                Monitorando a voz da cidade
-              </Typography>
-            </CardGrid>
+                    fontWeight: 600,
+                  }}
+                >
+                  Monitorando a voz da cidade
+                </Typography>
+              </CardGrid>
 
-            <CardGrid span={2} onClick={handleOpenWhatsApp}>
-              <Add />
-              <Typography
-                sx={{
-                  fontSize: "13px",
-                  letterSpacing: "0.04em",
+              <CardGrid span={2} onClick={handleOpenWhatsApp}>
+                <Add />
+                <Typography
+                  sx={{
+                    fontSize: "13px",
+                    letterSpacing: "0.04em",
                     textAlign: "center",
                     color: "var(--accent-2)",
                     justifyContent: "center",
@@ -374,7 +389,7 @@ export default function HomePage() {
                   </Box>
                 </div>
                 <div className={styles.typeChips}>
-                  {typeCounts.map(({ type, count }) => (
+                  {groupOpinions.map(({ type, count }) => (
                     <span
                       key={type}
                       className={styles.typeChip}

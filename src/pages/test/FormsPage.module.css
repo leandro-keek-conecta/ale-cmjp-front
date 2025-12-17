@@ -1,0 +1,60 @@
+.container {
+  padding: 16px;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: #f4f4f4;
+  height: 100vh;
+}
+
+.formBox {
+  gap: 5rem;
+  background-color: #ffffff;
+  padding: 2rem;
+  border-radius: 18px;
+  min-width: 40em;
+  box-shadow: 10px 10px 17px 5px rgba(0, 0, 0, 0.27);
+  -webkit-box-shadow: 10px 10px 17px 5px rgba(0, 0, 0, 0.27);
+  -moz-box-shadow: 10px 10px 17px 5px rgba(0, 0, 0, 0.27);
+}
+
+.logo {
+  display: block;
+  position: fixed;
+  left: 40rem;
+  top: 20rem;
+  z-index: 1;
+  max-width: 600px;
+  height: auto;
+}
+
+.stepperBox {
+  width: 100%;
+  margin-top: 1rem;
+  margin-bottom: 2rem;
+  min-width: 400px;
+}
+
+.buttonsBox {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.submitButton {
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-align: center;
+  justify-content: center;
+  width: 35%;
+  font-weight: 400 !important;
+  cursor: pointer;
+  max-height: 44px !important;
+  color: #ffffff !important;
+  background-color: #1e8e9c !important;
+}
