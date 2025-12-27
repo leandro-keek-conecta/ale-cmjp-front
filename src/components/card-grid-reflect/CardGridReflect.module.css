@@ -9,3 +9,11 @@
 }
 
 /* #e30613 */
+
+@media (max-width: 760px) {
+  .cardGridReflect {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex-basis: 100% !important;
+  }
+}
