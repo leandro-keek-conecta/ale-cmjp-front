@@ -52,7 +52,7 @@
   position: relative;
   border-radius: 16px;
   overflow: hidden;
-  min-height: 220px;
+  min-height: 240px;
   background: linear-gradient(180deg, rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.18));
   box-shadow: var(--shadow-soft);
 }
@@ -63,6 +63,17 @@
   object-fit: cover;
   display: block;
   transform: scale(1.02);
+}
+
+.mediaOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    120deg,
+    rgba(0, 0, 0, 0.3),
+    rgba(0, 0, 0, 0.08)
+  );
+  pointer-events: none;
 }
 
 .navButton {
@@ -106,4 +117,61 @@
   background: var(--accent-2);
   border-color: var(--accent-2);
   opacity: 1;
+}
+
+@media (max-width: 960px) {
+  .aleSlider {
+    grid-template-columns: 1fr;
+    padding: 14px;
+    gap: 14px;
+  }
+
+  .aleSliderCopy {
+    gap: 12px;
+  }
+
+  .aleSliderMedia {
+    order: 2;
+    min-height: clamp(220px, 52vw, 360px);
+  }
+}
+
+@media (max-width: 640px) {
+  .aleSlider {
+    padding: 12px;
+    border-radius: 16px;
+  }
+
+  .aleSliderCopy {
+    align-items: flex-start;
+  }
+
+  .aleBadge {
+    font-size: 12px;
+    padding: 7px 10px;
+  }
+
+  .navButton {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+  }
+
+  .aleControls {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .dots {
+    gap: 6px;
+  }
+
+  .dot {
+    width: 10px;
+    height: 10px;
+  }
+
+  .activeDot {
+    width: 20px;
+  }
 }

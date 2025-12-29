@@ -51,24 +51,24 @@ justify-content: space-between;
   font-size: 13px;
 }
 
-.pill[data-type="Reclamação"] {
+.pill[data-type="reclamacao"] {
   background: rgba(227, 6, 19, 0.12);
   color: #c10510;
   border-color: rgba(227, 6, 19, 0.28);
 }
 
-.pill[data-type="Sugestão"] {
+.pill[data-type="sugestao"] {
   background: rgba(12, 130, 216, 0.1);
   color: #0c82d8;
 }
 
-.pill[data-type="Apoio"] {
+.pill[data-type="apoio"] {
   background: rgba(18, 183, 106, 0.12);
   color: #0f8b5c;
   border-color: rgba(18, 183, 106, 0.26);
 }
 
-.pill[data-type="Elogio"] {
+.pill[data-type="elogio"] {
   background: rgba(255, 179, 71, 0.18);
   color: #c66a00;
   border-color: rgba(255, 179, 71, 0.3);
@@ -90,7 +90,8 @@ justify-content: space-between;
   background: rgba(12, 130, 216, 0.06);
   border: 1px solid var(--border);
   font-size: 15px;
-  height: 8rem;
+  min-height: 8rem;
+  word-break: break-word;
 }
 
 .cardFooter {
@@ -150,6 +151,41 @@ justify-content: space-between;
     rgba(255, 255, 255, 0.1)
   );
   animation: pulse 1.8s ease-in-out infinite;
+}
+
+@media (max-width: 720px) {
+  .opinionCard {
+    padding: 14px 14px 12px;
+    border-radius: 14px;
+    gap: 8px;
+  }
+
+  .cardHeader {
+    align-items: flex-start;
+  }
+
+  .name {
+    font-size: 15px;
+  }
+
+  .meta {
+    font-size: 12.5px;
+  }
+
+  .opinionText {
+    font-size: 14px;
+    padding: 10px 12px;
+    min-height: 0;
+  }
+
+  .cardFooter {
+    gap: 8px;
+  }
+
+  .pill {
+    padding: 7px 10px;
+    font-size: 12.5px;
+  }
 }
 
 @keyframes pulse {

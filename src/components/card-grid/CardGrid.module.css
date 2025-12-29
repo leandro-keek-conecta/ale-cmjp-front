@@ -13,3 +13,13 @@
   font-weight: 700 !important;
   box-shadow: 0 10px 30px rgba(12, 130, 216, 0.08) !important;
 }
+
+@media (max-width: 760px) {
+  .cardGrid {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex-basis: 100% !important;
+    justify-content: center !important;
+    text-align: center;
+  }
+}

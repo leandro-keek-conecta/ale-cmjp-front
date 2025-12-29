@@ -44,7 +44,7 @@ export default function SlideComponent() {
     >
       <div className={styles.aleSliderCopy}>
         <span className={styles.aleBadge}>Alê, assistente virtual</span>
-        <Card sx={{p:2, borderRadius: 4, width: "80%"}}>
+        <Card sx={{ p: 2, borderRadius: 4, width: "100%", maxWidth: 420 }}>
           <Box className={styles.cardMapHeader}>
             <PlaceIcon color="primary" />
             <Typography
