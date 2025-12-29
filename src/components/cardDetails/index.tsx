@@ -17,6 +17,8 @@ type CardDetailsProps = {
 export default function CardDetails({ opinions }: CardDetailsProps) {
   const [selectedOpinion, setSelectedOpinion] = useState<Opinion | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const normalize = (value?: string | null) =>
+    (value || "").normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().trim();
 
   if (!opinions.length) {
     return <div className={styles.emptyState}>Nenhuma opiniao encontrada.</div>;
@@ -60,12 +62,20 @@ export default function CardDetails({ opinions }: CardDetailsProps) {
           </Box>
 
           <div className={styles.cardFooter}>
-            <span className={styles.pill}>{item.tipo_opiniao || "Outro"}</span>
+            {(() => {
+              const pillType = item.tipo_opiniao || item.opiniao || "Outro";
+              const pillKey = normalize(pillType) || "outro";
+              return (
+                <span className={styles.pill} data-type={pillKey}>
+                  {pillType}
+                </span>
+              );
+            })()}
           </div>
         </article>
       ))}
       <Dialog open={modalOpen} onClose={closeModal} fullWidth maxWidth="sm">
-        <DialogTitle sx={{fontSize: "1.2rem", pl: 2, pb: 1, mb: 0}}>{selectedOpinion?.nome || "Opinião Completa"}</DialogTitle>
+        <DialogTitle sx={{fontSize: "1.2rem", pl: 2, pb: 1, mb: 0}}>{selectedOpinion?.nome || "Opiniao Completa"}</DialogTitle>
         <Divider sx={{ mt: 0, mb: 2}}/>
           <DialogContentText component="div" sx={{pl:2,pr:2, pb: 2, fontSize: "1rem"}}>
             {selectedOpinion?.texto_opiniao || "Sem texto"}

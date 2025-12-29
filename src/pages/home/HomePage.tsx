@@ -1,5 +1,6 @@
 import {
   Box,
+  Button,
   Pagination,
   ToggleButton,
   ToggleButtonGroup,
@@ -232,9 +233,9 @@ export default function HomePage() {
   }, [currentPage, totalPages]);
 
   const renderTypeIcon = (type: string) => {
-    const key = type.toLowerCase();
-    if (key === "reclamação") return <PriorityHigh fontSize="small" />;
-    if (key === "Sugestão") return <LightbulbOutlined fontSize="small" />;
+    const key = normalizeText(type);
+    if (key === "reclamacao") return <PriorityHigh fontSize="small" />;
+    if (key === "sugestao") return <LightbulbOutlined fontSize="small" />;
     if (key === "apoio") return <HandshakeOutlined fontSize="small" />;
     if (key === "elogio") return <StarBorderRounded fontSize="small" />;
     return <ChatBubbleOutline fontSize="small" />;
@@ -273,6 +274,7 @@ export default function HomePage() {
             <Box className={styles.heroTop}>
               <CardGrid span={3}>
                 <Typography
+                  className={styles.badge}
                   sx={{
                     fontSize: "13px",
                     letterSpacing: "0.04em",
@@ -287,24 +289,13 @@ export default function HomePage() {
                 </Typography>
               </CardGrid>
 
-              <CardGrid span={2} onClick={handleOpenWhatsApp}>
-                <Add />
-                <Typography
-                  sx={{
-                    fontSize: "13px",
-                    letterSpacing: "0.04em",
-                    textAlign: "center",
-                    color: "var(--accent-2)",
-                    justifyContent: "center",
-                    width: "100%",
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    maxHeight: "44px !important",
-                  }}
-                >
-                  Cadastrar Opiniao
-                </Typography>
-              </CardGrid>
+              <Button
+                className={styles.ctaButton}
+                startIcon={<Add />}
+                onClick={handleOpenWhatsApp}
+              >
+                Cadastrar opiniao
+              </Button>
             </Box>
             <Typography
               variant="h3"
@@ -379,20 +370,23 @@ export default function HomePage() {
                   </Box>
                 </div>
                 <div className={styles.typeChips}>
-                  {groupOpinions.map(({ type, count }) => (
-                    <span
-                      key={type}
-                      className={styles.typeChip}
-                      data-type={type}
-                      aria-label={`${type} (${count})`}
-                    >
-                      <span className={styles.typeIcon}>
-                        {renderTypeIcon(type)}
+                  {groupOpinions.map(({ type, count }) => {
+                    const typeKey = normalizeText(type) || "outro";
+                    return (
+                      <span
+                        key={typeKey || type}
+                        className={styles.typeChip}
+                        data-type={typeKey}
+                        aria-label={`${type} (${count})`}
+                      >
+                        <span className={styles.typeIcon}>
+                          {renderTypeIcon(type)}
+                        </span>
+                        <span>{type}</span>
+                        <span className={styles.typeCount}>{count}</span>
                       </span>
-                      <span>{type}</span>
-                      <span className={styles.typeCount}>{count}</span>
-                    </span>
-                  ))}
+                    );
+                  })}
                 </div>
                 {error ? <div className={styles.statHint}>{error}</div> : null}
               </Box>
@@ -433,6 +427,7 @@ export default function HomePage() {
                 value={filterType}
                 onChange={(_, value) => value && setFilterType(value)}
                 className={styles.filterGroup}
+                size="small"
                 aria-label="Filtrar por tipo de opiniao"
               >
                 <ToggleButton value="all">Todas</ToggleButton>
@@ -457,6 +452,9 @@ export default function HomePage() {
               page={currentPage}
               count={totalPages}
               onChange={(_, page) => setCurrentPage(page)}
+              size="small"
+              siblingCount={0}
+              boundaryCount={1}
             />
           </Box>
         </Box>
