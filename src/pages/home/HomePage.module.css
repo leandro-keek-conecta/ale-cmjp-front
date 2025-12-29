@@ -45,10 +45,6 @@
   gap: 12px;
 }
 
-
-
-
-
 .mediaOverlay {
   position: absolute;
   inset: 0;
@@ -62,6 +58,24 @@
   justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
+}
+
+.heroPill {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 44px;
+}
+
+.heroCta {
+  cursor: pointer;
+}
+
+.heroCtaInner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .badge {
@@ -354,6 +368,16 @@
   .heroTop {
     flex-direction: column;
     align-items: stretch;
+    gap: 10px;
+  }
+
+  .searchInput {
+    flex: 1 1 60px;
+  }
+  .heroPill {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex-basis: 100% !important;
   }
 
   .statsRow {

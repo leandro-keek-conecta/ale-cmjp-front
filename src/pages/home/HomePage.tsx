@@ -33,10 +33,7 @@ import {
 import SlideComponent from "../../components/slide";
 import PresentationModal from "../../components/modal";
 import Header from "../../components/header";
-import {
-  readFromStorage,
-  saveToStorage,
-} from "../../utils/localStorage";
+import { readFromStorage, saveToStorage } from "../../utils/localStorage";
 
 export type Opinion = {
   id: number | string;
@@ -272,15 +269,13 @@ export default function HomePage() {
             style={{ ["--reveal-delay" as any]: "0.08s" }}
           >
             <Box className={styles.heroTop}>
-              <CardGrid span={3}>
+              <CardGrid span={3} className={styles.heroPill}>
                 <Typography
-                  className={styles.badge}
                   sx={{
                     fontSize: "13px",
                     letterSpacing: "0.04em",
                     textAlign: "center",
                     color: "var(--accent-2)",
-                    justifyContent: "center",
                     width: "100%",
                     fontWeight: 600,
                   }}
@@ -289,14 +284,20 @@ export default function HomePage() {
                 </Typography>
               </CardGrid>
 
-              <Button
-                className={styles.ctaButton}
-                startIcon={<Add />}
+              <CardGrid
+                span={2}
+                className={`${styles.heroPill} ${styles.heroCta}`}
                 onClick={handleOpenWhatsApp}
               >
-                Cadastrar opiniao
-              </Button>
+                <Box className={styles.heroCtaInner}>
+                  <Add fontSize="small" />
+                  <Typography sx={{ fontSize: "13px", fontWeight: 700 }}>
+                    Cadastrar opinião
+                  </Typography>
+                </Box>
+              </CardGrid>
             </Box>
+
             <Typography
               variant="h3"
               sx={{ fontWeight: "bold", mt: 2, mb: 1, color: "var(--text)" }}
