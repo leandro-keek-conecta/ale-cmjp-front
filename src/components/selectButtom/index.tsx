@@ -33,7 +33,7 @@ export default function SelectButton({
   isMulti = false,
 }: SelectTexProps) {
   const isMobile = useMediaQuery("(max-width:768px)");
-  const size = isMobile ? "2.8rem" : "2.8rem";
+  const size = isMobile ? "2.4rem" : "2.4rem";
 
   const multiSelected = Array.isArray(value)
     ? options.filter((option) => value.includes(option.value))
@@ -59,7 +59,8 @@ export default function SelectButton({
         "& .MuiInputBase-input": {
           padding: "12px 14px",
           borderRadius: "8px",
-          fontSize: "16px",
+          fontWeight: 500,
+          fontSize: "0.9rem",
         },
       }}  
     />

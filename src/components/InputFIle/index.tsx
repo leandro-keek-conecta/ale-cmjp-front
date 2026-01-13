@@ -67,7 +67,8 @@ export default function InputFile({
           "& .MuiInputBase-input": {
             padding: "12px 14px",
             borderRadius: "8px",
-            fontSize: "16px",
+            fontSize: "0.9rem",
+            fontWeight: 500,
             cursor: "pointer",
           },
         }}

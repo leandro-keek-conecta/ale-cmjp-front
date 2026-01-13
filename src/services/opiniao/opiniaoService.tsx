@@ -2,6 +2,21 @@ import { api } from "../api/api";
 import type { Opinion } from "../../pages/home/HomePage";
 import type { OpinionFormValues } from "../../@types/opiniao";
 
+const getArrayPayload = (data: unknown) => {
+  if (Array.isArray(data)) return data;
+  if (data && typeof data === "object") {
+    const candidates = [
+      (data as any).data,
+      (data as any).results,
+      (data as any).result,
+      (data as any).rows,
+      (data as any).items,
+    ];
+    return candidates.find(Array.isArray) ?? [];
+  }
+  return [];
+};
+
 type SubmitSummary = Partial<
   Pick<
     OpinionFormValues,
@@ -22,7 +37,7 @@ export async function getAllOpinions(): Promise<Opinion[]> {
   });
   console.log("API response:", response);
   const data = response?.data;
-  return Array.isArray(data) ? data : []; // garante array mesmo quando a API não retornar lista
+  return getArrayPayload(data);
 }
 
 export async function getTodayOpinions(): Promise<Opinion[]> {
@@ -32,7 +47,7 @@ export async function getTodayOpinions(): Promise<Opinion[]> {
   });
   console.log("API response:", response);
   const data = response?.data;
-  return Array.isArray(data) ? data : []; // garante array mesmo quando a API não retornar lista
+  return getArrayPayload(data);
 }
 
 export async function getUpDistricts() {
@@ -55,3 +70,4 @@ export async function submitOpinion(data: SubmitSummary) {
 
   return response;
 }
+

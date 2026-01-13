@@ -1,22 +1,23 @@
 .container {
-  padding: 24px 16px 32px;
-  width: 100%;
-  max-width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background-color: #f4f4f4;
-  min-height: 100vh;
-  box-sizing: border-box;
+    padding: 24px 16px 32px;
+    width: 100%;
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #f4f4f4;
+    min-height: 100vh;
+    box-sizing: border-box;
+    justify-content: center;
 }
 
 .formBox {
   gap: 2rem;
   background-color: #ffffff;
-  padding: 2rem;
+  padding: 1.5rem;
   border-radius: 18px;
   width: 100%;
-  max-width: 900px;
+  max-width: 35rem;
   min-width: 0;
   box-shadow: 10px 10px 17px 5px rgba(0, 0, 0, 0.12);
 }

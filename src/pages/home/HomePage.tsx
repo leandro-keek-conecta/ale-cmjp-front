@@ -5,9 +5,8 @@ import {
   ToggleButtonGroup,
   Typography,
 } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+
 import {
-  Add,
   ChatBubbleOutline,
   HandshakeOutlined,
   InsertChartOutlined,
@@ -27,7 +26,6 @@ import CardDetails from "../../components/cardDetails";
 import {
   getAllOpinions,
   getTodayOpinions,
-  getUpDistricts,
 } from "../../services/opiniao/opiniaoService";
 import SlideComponent from "../../components/slide";
 import PresentationModal from "../../components/modal";
@@ -80,7 +78,7 @@ export default function HomePage() {
     { type: string; count: number }[]
   >([]);
   const hasFetched = useRef(false);
-  const navigate = useNavigate();
+/*   const navigate = useNavigate(); */
 
   function IInicial(currentPage: number, itensPerPage: number) {
     return (currentPage - 1) * itensPerPage;
@@ -94,7 +92,6 @@ export default function HomePage() {
   async function fetchTodayOpinions() {
     try {
       const response = await getTodayOpinions();
-      await getUpDistricts();
       setTodayOpinions(response);
     } catch (err) {
       setError("Erro ao carregar opinioes de hoje.");
@@ -172,25 +169,62 @@ export default function HomePage() {
     return () => observer.disconnect();
   }, []);
 
-  const uniqueCountBy = (
-    items: Opinion[],
-    selector: (item: Opinion) => string
-  ) => {
-    const set = new Set<string>();
-    items.forEach((item) => {
-      const key = selector(item);
-      if (key) set.add(key);
-    });
-    return set.size;
-  };
-
   const normalizeText = (value?: string | null) =>
     (value || "").normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().trim();
+
+  const getOpinionDistrict = (opinion: Opinion) => {
+    const raw =
+      opinion.bairro ??
+      (opinion as any)?.usuario?.bairro ??
+      (opinion as any)?.user?.bairro ??
+      "";
+    return String(raw || "").trim();
+  };
+
+  const isSameDay = (value?: string | null) => {
+    if (!value) return false;
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return false;
+    const now = new Date();
+    return (
+      parsed.getFullYear() === now.getFullYear() &&
+      parsed.getMonth() === now.getMonth() &&
+      parsed.getDate() === now.getDate()
+    );
+  };
+
+  const getTopDistricts = (items: Opinion[]) => {
+    const countsMap = items.reduce((acc, opinion) => {
+      const label = getOpinionDistrict(opinion);
+      const key = normalizeText(label);
+
+      if (!key) return acc;
+
+      const current = acc.get(key);
+      acc.set(key, {
+        key,
+        label,
+        count: (current?.count ?? 0) + 1,
+      });
+      return acc;
+    }, new Map<string, { key: string; label: string; count: number }>());
+
+    return Array.from(countsMap.values())
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+  };
 
   const normalizeType = (item: Opinion) =>
     normalizeText(item.tipo_opiniao || item.opiniao);
 
   const sourceOpinions = opinions.length ? opinions : fallbackOpinions;
+  const topDistricts = useMemo(() => {
+    const fromToday = getTopDistricts(todayOpinions);
+    if (fromToday.length) return fromToday;
+
+    const todayFromAll = opinions.filter((op) => isSameDay(op.horario));
+    return getTopDistricts(todayFromAll);
+  }, [todayOpinions, opinions]);
 
   const filteredOpinions = useMemo(() => {
     const term = normalizeText(searchTerm);
@@ -236,10 +270,10 @@ export default function HomePage() {
     if (key === "elogio") return <StarBorderRounded fontSize="small" />;
     return <ChatBubbleOutline fontSize="small" />;
   };
-
+/* 
   const handleOpenWhatsApp = () => {
-    navigate("/test-page");
-  };
+    navigate("/form-page");
+  }; */
 
   const handleClosePresentation = () => {
     setShowPresentationModal(false);
@@ -268,7 +302,7 @@ export default function HomePage() {
             style={{ ["--reveal-delay" as any]: "0.08s" }}
           >
             <Box className={styles.heroTop}>
-              <CardGrid span={3} className={styles.heroPill}>
+              <CardGrid span={12} className={styles.heroPill}>
                 <Typography
                   sx={{
                     fontSize: "13px",
@@ -283,7 +317,7 @@ export default function HomePage() {
                 </Typography>
               </CardGrid>
 
-              <CardGrid
+{/*               <CardGrid
                 span={2}
                 className={`${styles.heroPill} ${styles.heroCta}`}
                 onClick={handleOpenWhatsApp}
@@ -294,7 +328,7 @@ export default function HomePage() {
                     Cadastrar opinião
                   </Typography>
                 </Box>
-              </CardGrid>
+              </CardGrid> */}
             </Box>
 
             <Typography
@@ -348,10 +382,21 @@ export default function HomePage() {
                   </div>
                 </div>
               </div>
-              <div className={styles.statValue}>
-                {uniqueCountBy(sourceOpinions, (op) => op.bairro || "")}
-              </div>
-              <div className={styles.statHint}>Usuarios unicos por bairro</div>
+              {topDistricts.length ? (
+                <div className={styles.districtChips}>
+                  {topDistricts.map((district) => (
+                    <span
+                      key={district.key}
+                      className={styles.districtChip}
+                    >
+                      {district.label}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <div className={styles.statEmpty}>Sem dados de hoje.</div>
+              )}
+              <div className={styles.statHint}>Top 5 bairros do dia</div>
             </CardGridReflect>
             <CardGridReflect
               span={6}

@@ -21,7 +21,7 @@ export default function InputTex({
   helperText = "",
 }: InputTexProps) {
   const isMobile = useMediaQuery("(max-width:768px)");
-  const size = isMobile ? "2.7rem" : "2.7rem";
+  const size = isMobile ? "2.4rem" : "2.4rem";
   return (
     <TextField
       label={label}
@@ -43,7 +43,7 @@ export default function InputTex({
         "& .MuiInputBase-input": {
           padding: "12px 14px",
           borderRadius: "8px",
-          fontSize: "16px",
+          fontSize: "0.9rem",
         },
       }}
     />

@@ -26,6 +26,7 @@ export default function Search({
           {...params}
           label="Opinioes"
           placeholder={placeholder}
+          InputLabelProps={{ shrink: true }}
           aria-label="Buscar opinioes"
         />
       )}

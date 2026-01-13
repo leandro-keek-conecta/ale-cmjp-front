@@ -17,6 +17,9 @@ import {
   Chip,
   Divider,
   Alert,
+  Dialog,
+  DialogTitle,
+  DialogContentText,
 } from "@mui/material";
 import { createUSer } from "../../services/user/userService";
 import { useNavigate } from "react-router-dom";
@@ -53,11 +56,44 @@ const buildOpinionDefaultValues = (): OpinionFormValues => ({
   texto_opiniao: "",
 });
 
+const PHONE_FULL_REGEX = /^\d{2} 9 \d{4} - \d{4}$/;
+
+const formatPhoneInput = (value: string) => {
+  const digits = value.replace(/\D/g, "").slice(0, 11);
+  const ddd = digits.slice(0, 2);
+  const ninth = digits.slice(2, 3);
+  const part1 = digits.slice(3, 7);
+  const part2 = digits.slice(7, 11);
+
+  let formatted = "";
+  if (ddd) formatted += ddd;
+  if (ninth) formatted += ` ${ninth}`;
+  if (part1) formatted += ` ${part1}`;
+  if (part2) formatted += ` - ${part2}`;
+  return formatted;
+};
+
+const normalizePhoneForSubmit = (value: string) => {
+  const digits = value.replace(/\D/g, "");
+  if (!digits) return "";
+
+  const ddd = digits.slice(0, 2);
+  let rest = digits.slice(2);
+
+  if (rest.length === 9 && rest.startsWith("9")) {
+    rest = rest.slice(1);
+  }
+
+  if (!ddd || !rest) return digits;
+  return `55${ddd}${rest}`;
+};
+
 export default function FormsPage() {
   const [currentStep, setCurrentStep] = useState(0);
   const [showOutraOpiniao, setShowOutraOpiniao] = useState(false);
   const [userId, setUserId] = useState<string>("");
   const [summary, setSummary] = useState<SubmitSummary | null>(null);
+  const [isOpinionTextModalOpen, setIsOpinionTextModalOpen] = useState(false);
   const [userAlert, setUserAlert] = useState<{
     severity: "success" | "error";
     message: string;
@@ -71,6 +107,8 @@ export default function FormsPage() {
     control: userControl,
     formState: { errors: userErrors },
     handleSubmit: handleUserSubmit,
+    setValue: setUserValue,
+    setError: setUserError,
   } = useForm<UserFormValues>({
     defaultValues: buildUserDefaultValues(),
   });
@@ -89,9 +127,20 @@ export default function FormsPage() {
     console.log("User form:", data);
     setUserAlert(null);
     let newUserId = data.id?.trim() || "";
+    if (!PHONE_FULL_REGEX.test(data.telefone)) {
+      setUserError("telefone", {
+        type: "pattern",
+        message: "Use o formato 83 9 9999 - 9999",
+      });
+      return;
+    }
+    const payload = {
+      ...data,
+      telefone: normalizePhoneForSubmit(data.telefone),
+    };
 
     try {
-      const response: any = await createUSer(data);
+      const response: any = await createUSer(payload);
       console.log("Create user response:", response);
 
       const idFromResponse = Array.isArray(response)
@@ -184,6 +233,19 @@ export default function FormsPage() {
     }
   };
 
+  const handleUserInputChange = (name: keyof UserFormValues, value: unknown) => {
+    if (name !== "telefone") return;
+
+    const raw = String(value ?? "");
+    const formatted = formatPhoneInput(raw);
+    if (formatted !== raw) {
+      setUserValue("telefone", formatted, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+    }
+  };
+
   const opinionInputs = useMemo(() => {
     const base = getOpinionInputs();
 
@@ -213,6 +275,9 @@ export default function FormsPage() {
       return i;
     });
   }, [showOutraOpiniao, userId]);
+
+  const getOpinionPreviewText = (text: string) =>
+    text.length > 70 ? `${text.slice(0, 70)}...` : text;
 
   return (
     <Box className={styles.container}>
@@ -253,7 +318,7 @@ export default function FormsPage() {
               inputsList={getUserInputs()}
               control={userControl}
               errors={userErrors}
-              onInputChange={() => {}}
+              onInputChange={handleUserInputChange}
             />
           )}
 
@@ -352,12 +417,41 @@ export default function FormsPage() {
                       )}
                       {summary?.texto_opiniao && (
                         <Chip
-                          label={`Texto da opinião: ${summary.texto_opiniao}`}
+                          label={`Texto da opinião: ${getOpinionPreviewText(
+                            summary.texto_opiniao
+                          )}`}
+                          onClick={() => setIsOpinionTextModalOpen(true)}
+                          clickable
+                          title="Ver texto completo"
+                          sx={{
+                            maxWidth: "100%",
+                            ".MuiChip-label": {
+                              maxWidth: "100%",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                            },
+                          }}
                         />
                       )}
                     </Stack>
 
                     <Divider sx={{ width: "100%", maxWidth: 720 }} />
+
+                    <Dialog
+                      open={isOpinionTextModalOpen}
+                      onClose={() => setIsOpinionTextModalOpen(false)}
+                      fullWidth
+                      maxWidth="sm"
+                    >
+                      <DialogTitle>Texto da opiniao</DialogTitle>
+                      <DialogContentText
+                        component="div"
+                        sx={{ px: 2, pb: 2 }}
+                      >
+                        {summary?.texto_opiniao || "Sem texto"}
+                      </DialogContentText>
+                    </Dialog>
 
                     {/* CTAs */}
                     <Stack
@@ -368,6 +462,7 @@ export default function FormsPage() {
                       <Button
                         variant="contained"
                         onClick={async () => {
+                          setIsOpinionTextModalOpen(false);
                           // salva opt-in se marcado
                           await saveOptInPreference();
 
@@ -388,6 +483,7 @@ export default function FormsPage() {
                           setSummary(null);
                           setShowOutraOpiniao(false);
                           setOpinionAlert(null);
+                          setIsOpinionTextModalOpen(false);
 
                           resetOpinionForm({
                             ...buildOpinionDefaultValues(),

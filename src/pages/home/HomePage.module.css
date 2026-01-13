@@ -151,6 +151,29 @@
   line-height: 1.05;
 }
 
+.districtChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.districtChip {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(12, 130, 216, 0.08);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.statEmpty {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
 .typeChips {
   display: flex;
   flex-wrap: wrap;

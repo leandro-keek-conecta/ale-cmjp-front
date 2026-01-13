@@ -18,7 +18,7 @@ export default function SlideComponent() {
 
   const aleSlides = [
     {
-      title: "Alê pronta para responder",
+      title: "Pronta para responder",
       description:
         "Interface humanizada para tirar dúvidas da população a qualquer hora.",
       image: `${minioBase}/ale-1.jpg`,
@@ -26,13 +26,13 @@ export default function SlideComponent() {
     {
       title: "Assistente presente nas ruas",
       description:
-        "Alê registra solicitações diretamente dos bairros e agiliza o atendimento.",
+        "Registra solicitações diretamente dos bairros e agiliza o atendimento.",
       image: `${minioBase}/ale-2.jpg`,
     },
     {
       title: "Conversas claras e objetivas",
       description:
-        "Painel mostra o que a Alê está ouvindo em tempo real, sem complicação.",
+        "Painel mostra o que está acontecendo em tempo real, sem complicação.",
       image: `${minioBase}/ale-5.png`,
     },
   ];
@@ -40,10 +40,10 @@ export default function SlideComponent() {
   return (
     <Box
       className={styles.aleSlider}
-      aria-label="Galeria da assistente virtual Alê"
+      aria-label="Galeria da assistente virtual"
     >
       <div className={styles.aleSliderCopy}>
-        <span className={styles.aleBadge}>Alê, assistente virtual</span>
+        <span className={styles.aleBadge}>{/* Alê,  */}Assistente virtual</span>
         <Card sx={{ p: 2, borderRadius: 4, width: "100%", maxWidth: 420 }}>
           <Box className={styles.cardMapHeader}>
             <PlaceIcon color="primary" />
@@ -59,7 +59,7 @@ export default function SlideComponent() {
               variant="h6"
               sx={{ fontWeight: "bold", color: "#000000a2" }}
             >
-              Alé registra solicitações diretamente nas comunidades.
+              {/* Alé */} Registra solicitações diretamente nas comunidades.
             </Typography>
           </Box>
         </Card>
@@ -92,7 +92,7 @@ export default function SlideComponent() {
             <div
               className={styles.dots}
               role="tablist"
-              aria-label="Alternar imagens da Alê"
+              aria-label="Alternar imagens"
             >
               {aleSlides.map((_, idx) => (
                 <button

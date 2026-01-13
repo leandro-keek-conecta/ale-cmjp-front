@@ -39,7 +39,7 @@ export default function SelectWithSwitch({
   noOptionsText = "Nenhuma opcao disponivel",
 }: SelectTexProps) {
   const isMobile = useMediaQuery("(max-width:768px)");
-  const size = isMobile ? "2.8rem" : "2.8rem";
+  const size = isMobile ? "2.4rem" : "2.4rem";
 
   const selectedValues = Array.isArray(value) ? value : [];
 
