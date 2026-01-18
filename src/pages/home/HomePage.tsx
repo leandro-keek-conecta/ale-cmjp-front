@@ -335,8 +335,8 @@ export default function HomePage() {
               variant="h3"
               sx={{ fontWeight: "bold", mt: 2, mb: 1, color: "var(--text)" }}
             >
-              Opinião em tempo real{" "}
-              <span className={styles.gradientText}>sem login</span>
+              Opinião em{" "}
+              <span className={styles.gradientText}>tempo real</span>
             </Typography>
             <Typography variant="body1" sx={{ mb: 0, color: "var(--muted)" }}>
               Veja o que as pessoas estão falando, explore temas e acompanhe
