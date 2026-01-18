@@ -3,7 +3,7 @@ export default function NotFound() {
     <div className="page-shell">
       <div className="card">
         <h1>404</h1>
-        <p>Pagina nao encontrada.</p>
+        <p>Página não encontrada.</p>
       </div>
     </div>
   );

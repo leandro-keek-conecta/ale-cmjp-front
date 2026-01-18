@@ -27,7 +27,7 @@ const fallbackOpinions: Opinion[] = [
     horario: "2025-01-24T09:10:00Z",
     tipo_opiniao: "Apoio",
     opiniao: "Apoio total",
-    texto_opiniao: "Quero mais espacos verdes e ciclovias integradas.",
+    texto_opiniao: "Quero mais espaços verdes e ciclovias integradas.",
   },
   {
     id: "demo-2",
@@ -53,21 +53,21 @@ const fallbackOpinions: Opinion[] = [
     id: "demo-4",
     nome: "Diego Melo",
     telefone: "83999990004",
-    bairro: "Tambia",
+    bairro: "Tambiá",
     horario: "2025-01-22T08:35:00Z",
     tipo_opiniao: "Elogio",
     opiniao: "Elogio",
-    texto_opiniao: "Atendimento rapido no posto de saude da praia.",
+    texto_opiniao: "Atendimento rápido no posto de saúde da praia.",
   },
   {
     id: "demo-5",
     nome: "Elaine Freitas",
     telefone: "83999990005",
-    bairro: "Bancarios",
+    bairro: "Bancários",
     horario: "2025-01-20T16:00:00Z",
     tipo_opiniao: "Sugestão",
     opiniao: "Sugestão",
-    texto_opiniao: "Plante mais arvores nas pracas do bairro.",
+    texto_opiniao: "Plante mais árvores nas praças do bairro.",
   },
   {
     id: "demo-6",
@@ -77,7 +77,7 @@ const fallbackOpinions: Opinion[] = [
     horario: "2025-01-19T12:10:00Z",
     tipo_opiniao: "Apoio",
     opiniao: "Apoio",
-    texto_opiniao: "Excelente iniciativa de ouvir a populacao.",
+    texto_opiniao: "Excelente iniciativa de ouvir a população.",
   },
 ];
 
@@ -152,7 +152,7 @@ function OpinionsPage() {
         setOpinions(normalized.length ? normalized : fallbackOpinions);
         setError("");
       } catch (err) {
-        setError("Mostrando opinioes em modo demonstracao.");
+        setError("Mostrando opiniões em modo demonstração.");
         setOpinions(fallbackOpinions);
       } finally {
         setLoading(false);
@@ -198,17 +198,17 @@ function OpinionsPage() {
       <header className="hero">
         <div className="badge">Monitorando a voz da cidade</div>
         <h1>
-          Opiniao em tempo real <span className="gradient-text">sem login</span>
+          Opinião em tempo real <span className="gradient-text">sem login</span>
         </h1>
         <p className="lede">
-          Veja o que as pessoas estao falando, explore temas e acompanhe como as
-          opinioes evoluem. Inspirado em sites de streaming de dados com foco em
+          Veja o que as pessoas estão falando, explore temas e acompanhe como as
+          opiniões evoluem. Inspirado em sites de streaming de dados com foco em
           clareza e movimento.
         </p>
 
         <div className="hero-grid">
           <div className="stat-card">
-            <div className="stat-label">Opinioes ativas</div>
+            <div className="stat-label">Opiniões ativas</div>
             <div className="stat-value">
               {opinions.length || fallbackOpinions.length}
             </div>
@@ -217,7 +217,7 @@ function OpinionsPage() {
             </div>
           </div>
           <div className="stat-card">
-            <div className="stat-label">Usuarios unicos</div>
+            <div className="stat-label">Usuários únicos</div>
             <div className="stat-value">  
               {uniqueCountBy(
                 opinions.length ? opinions : fallbackOpinions,
@@ -225,7 +225,7 @@ function OpinionsPage() {
               )}
             </div>
             <div className="stat-helper">
-              Um usuario pode ter varias opinioes.
+              Um usuário pode ter várias opiniões.
             </div>
           </div>
           <div className="stat-card wide">
@@ -302,7 +302,7 @@ function OpinionsPage() {
                 <div>
                   <div className="name">{item.nome || "Visitante"}</div>
                   <div className="meta">
-                    {item.bairro || "Bairro nao informado"} -{" "}
+                    {item.bairro || "Bairro não informado"} -{" "}
                     {formatDate(item.horario)}
                   </div>
                 </div>
@@ -317,21 +317,21 @@ function OpinionsPage() {
                     <span className="tag">Campanha: {item.campanha}</span>
                   ) : null}
                   {item.acao ? (
-                    <span className="tag">Acao: {item.acao}</span>
+                    <span className="tag">Ação: {item.acao}</span>
                   ) : null}
                   {item.outra_opiniao ? (
                     <span className="tag">Outra: {item.outra_opiniao}</span>
                   ) : null}
                 </div>
                 <div className="pill subtle">
-                  Usuario {item.usuario_id || "novo"}
+                  Usuário {item.usuario_id || "novo"}
                 </div>
               </div>
             </article>
           ))
         ) : (
           <div className="empty-state">
-            Nenhuma opiniao encontrada com o filtro atual.
+            Nenhuma opinião encontrada com o filtro atual.
           </div>
         )}
       </section>

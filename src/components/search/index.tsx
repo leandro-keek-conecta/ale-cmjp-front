@@ -24,10 +24,10 @@ export default function Search({
       renderInput={(params) => (
         <TextField
           {...params}
-          label="Opinioes"
+          label="Opiniões"
           placeholder={placeholder}
           InputLabelProps={{ shrink: true }}
-          aria-label="Buscar opinioes"
+          aria-label="Buscar opiniões"
         />
       )}
     />

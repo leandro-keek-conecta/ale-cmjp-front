@@ -58,7 +58,7 @@ const fallbackOpinions: Opinion[] = [
 ];
 
 const typeOfFilter = {
-  title: "Tipo de Opiniao",
+  title: "Tipo de Opinião",
   options: ["Reclamação", "Sugestão", "Apoio", "Elogio"],
 };
 
@@ -94,7 +94,7 @@ export default function HomePage() {
       const response = await getTodayOpinions();
       setTodayOpinions(response);
     } catch (err) {
-      setError("Erro ao carregar opinioes de hoje.");
+      setError("Erro ao carregar opiniões de hoje.");
     }
   }
 
@@ -109,7 +109,7 @@ export default function HomePage() {
       quantityPorCategory(opinionsList);
       setOpinions(opinionsList);
     } catch (err) {
-      setError("Erro ao carregar opinioes.");
+      setError("Erro ao carregar opiniões.");
     }
   }
 
@@ -335,12 +335,12 @@ export default function HomePage() {
               variant="h3"
               sx={{ fontWeight: "bold", mt: 2, mb: 1, color: "var(--text)" }}
             >
-              Opiniao em tempo real{" "}
+              Opinião em tempo real{" "}
               <span className={styles.gradientText}>sem login</span>
             </Typography>
             <Typography variant="body1" sx={{ mb: 0, color: "var(--muted)" }}>
-              Veja o que as pessoas estao falando, explore temas e acompanhe
-              como as opinioes evoluem.
+              Veja o que as pessoas estão falando, explore temas e acompanhe
+              como as opiniões evoluem.
             </Typography>
             <Typography variant="body1" sx={{ mb: 4, color: "var(--muted)" }}>
               Inspirado em sites de streaming de dados com foco em clareza e
@@ -357,7 +357,7 @@ export default function HomePage() {
               <div className={styles.statHeader}>
                 <InsertChartOutlined className={styles.statIcon} />
                 <div>
-                  <div className={styles.statLabel}>Opinioes de hoje</div>
+                  <div className={styles.statLabel}>Opiniões de hoje</div>
                   <div className={styles.statHint}>Total registradas</div>
                 </div>
               </div>
@@ -378,7 +378,7 @@ export default function HomePage() {
                 <div>
                   <div className={styles.statLabel}>Bairros mais ativos</div>
                   <div className={styles.statHint}>
-                    Participacao distribuida
+                    Participação distribuída
                   </div>
                 </div>
               </div>
@@ -410,7 +410,7 @@ export default function HomePage() {
                   <Box>
                     <div className={styles.statLabel}>Clima geral</div>
                     <div className={styles.statHint}>
-                      Distribuicao das opinioes
+                      Distribuição das opiniões
                     </div>
                   </Box>
                 </div>
@@ -449,7 +449,7 @@ export default function HomePage() {
                   variant="subtitle1"
                   sx={{ fontWeight: 700, color: "var(--text)" }}
                 >
-                  Buscar opinioes
+                  Buscar opiniões
                 </Typography>
                 <Typography
                   variant="body2"
@@ -473,7 +473,7 @@ export default function HomePage() {
                 onChange={(_, value) => value && setFilterType(value)}
                 className={styles.filterGroup}
                 size="small"
-                aria-label="Filtrar por tipo de opiniao"
+                aria-label="Filtrar por tipo de opinião"
               >
                 <ToggleButton value="all">Todas</ToggleButton>
                 {typeOfFilter.options.map((option) => (

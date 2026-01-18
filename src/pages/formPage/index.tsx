@@ -25,7 +25,7 @@ import { createUSer } from "../../services/user/userService";
 import { useNavigate } from "react-router-dom";
 import { submitOpinion } from "../../services/opiniao/opiniaoService";
 
-const steps = ["Cadastro de usuário", "Cadastro de Opinião", "Concluido"];
+const steps = ["Cadastro de usuário", "Cadastro de Opinião", "Concluído"];
 
 const buildUserDefaultValues = (): UserFormValues => ({
   id: "",
@@ -444,7 +444,7 @@ export default function FormsPage() {
                       fullWidth
                       maxWidth="sm"
                     >
-                      <DialogTitle>Texto da opiniao</DialogTitle>
+                      <DialogTitle>Texto da opinião</DialogTitle>
                       <DialogContentText
                         component="div"
                         sx={{ px: 2, pb: 2 }}
