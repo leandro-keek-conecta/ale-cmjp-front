@@ -1,5 +1,9 @@
 import type { InputType } from "../../../components/Forms";
-import type { OpinionFormValues, OpiniaoCategoria, TipoOpiniao } from "../../../@types/opiniao";
+import type {
+  OpinionFormValues,
+  OpiniaoCategoria,
+  TipoOpiniao,
+} from "../../../@types/opiniao";
 
 type SelectOption<T = string | number> = { label: string; value: T };
 
@@ -15,12 +19,11 @@ const opiniaoOptions: SelectOption<OpiniaoCategoria>[] = [
 const tipoOpiniaoOptions: SelectOption<TipoOpiniao>[] = [
   { label: "Sugestão", value: "Sugestão" },
   { label: "Reclamação", value: "Reclamação" },
-  { label: "Apoio", value: "Apoio" },
+  { label: "Denúncia", value: "Denúncia" },
   { label: "Elogio", value: "Elogio" },
 ];
 
 export const getOpinionInputs = (): InputType<OpinionFormValues>[] => [
-
   {
     name: "opiniao",
     title: "Tema",

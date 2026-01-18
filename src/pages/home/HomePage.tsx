@@ -49,17 +49,17 @@ export type Opinion = {
 const fallbackOpinions: Opinion[] = [
   { id: 1, telefone: "99999-9999", opiniao: "Reclamação" },
   { id: 2, telefone: "88888-8888", opiniao: "Sugestão" },
-  { id: 3, telefone: "77777-7777", opiniao: "Apoio" },
+  { id: 3, telefone: "77777-7777", opiniao: "Denúncia" },
   { id: 4, telefone: "66666-6666", opiniao: "Elogio" },
   { id: 5, telefone: "55555-5555", opiniao: "Reclamação" },
   { id: 6, telefone: "44444-4444", opiniao: "Sugestão" },
-  { id: 7, telefone: "33333-3333", opiniao: "Apoio" },
+  { id: 7, telefone: "33333-3333", opiniao: "Denúncia" },
   { id: 8, telefone: "22222-2222", opiniao: "Elogio" },
 ];
 
 const typeOfFilter = {
   title: "Tipo de Opinião",
-  options: ["Reclamação", "Sugestão", "Apoio", "Elogio"],
+  options: ["Reclamação", "Sugestão", "Denúncia", "Elogio"],
 };
 
 export default function HomePage() {
@@ -285,7 +285,7 @@ export default function HomePage() {
     const key = normalizeText(type);
     if (key === "reclamacao") return <PriorityHigh fontSize="small" />;
     if (key === "sugestao") return <LightbulbOutlined fontSize="small" />;
-    if (key === "apoio") return <HandshakeOutlined fontSize="small" />;
+    if (key === "Denúncia") return <HandshakeOutlined fontSize="small" />;
     if (key === "elogio") return <StarBorderRounded fontSize="small" />;
     return <ChatBubbleOutline fontSize="small" />;
   };

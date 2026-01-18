@@ -7,7 +7,12 @@ export type OpiniaoCategoria =
   | "Outros"
   | "";
 
-export type TipoOpiniao = "Sugestão" | "Reclamação" | "Apoio" | "Elogio" | "";
+export type TipoOpiniao =
+  | "Sugestão"
+  | "Reclamação"
+  | "Denúncia"
+  | "Elogio"
+  | "";
 
 export type OpinionFormValues = {
   opiniao_id: string;

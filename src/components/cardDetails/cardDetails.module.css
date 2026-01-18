@@ -11,14 +11,16 @@
 
 .opinionCard:hover {
   transform: translateY(-2px);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
   box-shadow: 0 14px 40px rgba(12, 130, 216, 0.12);
 }
 
 .cardHeader {
   display: flex;
   align-items: center;
-justify-content: space-between;
+  justify-content: space-between;
   gap: 12px;
 }
 
@@ -62,7 +64,7 @@ justify-content: space-between;
   color: #0c82d8;
 }
 
-.pill[data-type="apoio"] {
+.pill[data-type="Denúncia"] {
   background: rgba(18, 183, 106, 0.12);
   color: #0f8b5c;
   border-color: rgba(18, 183, 106, 0.26);

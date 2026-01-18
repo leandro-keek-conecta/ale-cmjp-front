@@ -25,8 +25,8 @@ const fallbackOpinions: Opinion[] = [
     bairro: "Centro",
     campanha: "Conecta Cidade",
     horario: "2025-01-24T09:10:00Z",
-    tipo_opiniao: "Apoio",
-    opiniao: "Apoio total",
+    tipo_opiniao: "Denúncia",
+    opiniao: "Denúncia total",
     texto_opiniao: "Quero mais espaços verdes e ciclovias integradas.",
   },
   {
@@ -75,8 +75,8 @@ const fallbackOpinions: Opinion[] = [
     telefone: "83999990006",
     bairro: "Cabo Branco",
     horario: "2025-01-19T12:10:00Z",
-    tipo_opiniao: "Apoio",
-    opiniao: "Apoio",
+    tipo_opiniao: "Denúncia",
+    opiniao: "Denúncia",
     texto_opiniao: "Excelente iniciativa de ouvir a população.",
   },
 ];
@@ -121,7 +121,7 @@ const formatDate = (value?: string | null) => {
 
 const uniqueCountBy = (
   items: Opinion[],
-  selector: (item: Opinion) => string
+  selector: (item: Opinion) => string,
 ) => {
   const set = new Set<string>();
   items.forEach((item) => {
@@ -145,7 +145,7 @@ function OpinionsPage() {
         const response = await api.get("/opiniao");
         const payload = Array.isArray(response.data)
           ? response.data
-          : response.data?.data ?? [];
+          : (response.data?.data ?? []);
         const normalized = payload
           .map((item: any, index: number) => normalizeOpinion(item, index))
           .filter((item: Opinion) => item && item.id);
@@ -218,10 +218,10 @@ function OpinionsPage() {
           </div>
           <div className="stat-card">
             <div className="stat-label">Usuários únicos</div>
-            <div className="stat-value">  
+            <div className="stat-value">
               {uniqueCountBy(
                 opinions.length ? opinions : fallbackOpinions,
-                (op) => (op.telefone || "").replace(/\D/g, "")
+                (op) => (op.telefone || "").replace(/\D/g, ""),
               )}
             </div>
             <div className="stat-helper">
@@ -231,7 +231,7 @@ function OpinionsPage() {
           <div className="stat-card wide">
             <div className="stat-label">Clima geral</div>
             <div className="stat-pills">
-              {["Apoio", "Sugestão", "Reclamação", "Elogio"].map((pill) => (
+              {["Denúncia", "Sugestão", "Reclamação", "Elogio"].map((pill) => (
                 <span key={pill} className="pill">
                   {pill}
                 </span>

@@ -11,7 +11,8 @@ const demoOpinions: Opinion[] = [
     bairro: "Centro",
     opiniao: "Transporte",
     tipo_opiniao: "Sugestão",
-    texto_opiniao: "Mais linhas de ônibus nos horários de pico ajudariam demais.",
+    texto_opiniao:
+      "Mais linhas de ônibus nos horários de pico ajudariam demais.",
     horario: "2025-01-01T10:00:00",
   },
   {
@@ -46,7 +47,7 @@ const demoOpinions: Opinion[] = [
     nome: "Elaine",
     bairro: "Jaguaribe",
     opiniao: "Saúde",
-    tipo_opiniao: "Apoio",
+    tipo_opiniao: "Denúncia",
     texto_opiniao: "Campanhas de vacinação estão funcionando bem.",
     horario: "2025-01-03T11:10:00",
   },
@@ -61,13 +62,11 @@ const SearchCardsPage = () => {
         new Set(
           demoOpinions
             .map((item) => item.opiniao)
-            .filter((value): value is string => Boolean(value))
-        )
+            .filter((value): value is string => Boolean(value)),
+        ),
       ),
-    []
+    [],
   );
-
-
 
   const filteredOpinions = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
@@ -82,7 +81,7 @@ const SearchCardsPage = () => {
         item.texto_opiniao,
       ]
         .filter((value): value is string => Boolean(value))
-        .some((value) => value.toLowerCase().includes(term))
+        .some((value) => value.toLowerCase().includes(term)),
     );
   }, [searchTerm]);
 
@@ -113,7 +112,10 @@ const SearchCardsPage = () => {
         </Typography>
 
         <Paper elevation={3} sx={{ p: 2, borderRadius: 2 }}>
-          <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 700, color: "text.primary" }}>
+          <Typography
+            variant="subtitle2"
+            sx={{ mb: 1, fontWeight: 700, color: "text.primary" }}
+          >
             Buscar
           </Typography>
           <Search
@@ -125,7 +127,10 @@ const SearchCardsPage = () => {
 
         <Divider />
 
-        <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "text.primary" }}>
+        <Typography
+          variant="subtitle1"
+          sx={{ fontWeight: 700, color: "text.primary" }}
+        >
           Resultados ({filteredOpinions.length})
         </Typography>
         <CardDetails opinions={filteredOpinions} />
