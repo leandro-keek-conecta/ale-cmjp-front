@@ -72,7 +72,7 @@ export default function HomePage() {
   const [itensPerPage] = useState(12);
   const [currentPage, setCurrentPage] = useState(1);
   const [showPresentationModal, setShowPresentationModal] = useState<boolean>(
-    () => !readFromStorage<boolean>(PRESENTATION_SEEN_KEY, false)
+    () => !readFromStorage<boolean>(PRESENTATION_SEEN_KEY, false),
   );
   const [groupOpinions, setGroupOpinions] = useState<
     { type: string; count: number }[]
@@ -80,7 +80,7 @@ export default function HomePage() {
   const hasFetched = useRef(false);
   const heroTitleRef = useRef<HTMLSpanElement | null>(null);
   const [heroCopyWidth, setHeroCopyWidth] = useState<number | null>(null);
-/*   const navigate = useNavigate(); */
+  /*   const navigate = useNavigate(); */
 
   function IInicial(currentPage: number, itensPerPage: number) {
     return (currentPage - 1) * itensPerPage;
@@ -163,7 +163,7 @@ export default function HomePage() {
           }
         });
       },
-      { threshold: 0.18 }
+      { threshold: 0.18 },
     );
 
     elements.forEach((element) => observer.observe(element));
@@ -263,16 +263,16 @@ export default function HomePage() {
 
   const totalPages = Math.max(
     1,
-    Math.ceil(filteredOpinions.length / itensPerPage)
+    Math.ceil(filteredOpinions.length / itensPerPage),
   );
 
   const paginatedOpinions = useMemo(
     () =>
       filteredOpinions.slice(
         IInicial(currentPage, itensPerPage),
-        IFinal(currentPage, itensPerPage)
+        IFinal(currentPage, itensPerPage),
       ),
-    [filteredOpinions, currentPage, itensPerPage]
+    [filteredOpinions, currentPage, itensPerPage],
   );
 
   useEffect(() => {
@@ -289,7 +289,7 @@ export default function HomePage() {
     if (key === "elogio") return <StarBorderRounded fontSize="small" />;
     return <ChatBubbleOutline fontSize="small" />;
   };
-/* 
+  /* 
   const handleOpenWhatsApp = () => {
     navigate("/form-page");
   }; */
@@ -336,7 +336,7 @@ export default function HomePage() {
                 </Typography>
               </CardGrid>
 
-{/*               <CardGrid
+              {/*               <CardGrid
                 span={2}
                 className={`${styles.heroPill} ${styles.heroCta}`}
                 onClick={handleOpenWhatsApp}
@@ -390,9 +390,22 @@ export default function HomePage() {
               </div>
               {/* _________________________________________ */}
               <div className={styles.statValue}>{todayOpinions.length}</div>
-              <div className={styles.statHint}>
-                Atualiza assim que a API responder.
+            </CardGridReflect>
+            <CardGridReflect
+              span={4}
+              className={`${styles.statCard} ${styles.reveal}`}
+              data-reveal
+              style={{ ["--reveal-delay" as any]: "0.12s" }}
+            >
+              <div className={styles.statHeader}>
+                <InsertChartOutlined className={styles.statIcon} />
+                <div>
+                  <div className={styles.statLabel}>Opiniões de hoje</div>
+                  <div className={styles.statHint}>Total registradas</div>
+                </div>
               </div>
+              {/* _________________________________________ */}
+              <div className={styles.statValue}>{todayOpinions.length}</div>
             </CardGridReflect>
             <CardGridReflect
               span={4}
@@ -412,10 +425,7 @@ export default function HomePage() {
               {topDistricts.length ? (
                 <div className={styles.districtChips}>
                   {topDistricts.map((district) => (
-                    <span
-                      key={district.key}
-                      className={styles.districtChip}
-                    >
+                    <span key={district.key} className={styles.districtChip}>
                       {district.label}
                     </span>
                   ))}
