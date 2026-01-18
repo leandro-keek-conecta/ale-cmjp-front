@@ -78,6 +78,8 @@ export default function HomePage() {
     { type: string; count: number }[]
   >([]);
   const hasFetched = useRef(false);
+  const heroTitleRef = useRef<HTMLSpanElement | null>(null);
+  const [heroCopyWidth, setHeroCopyWidth] = useState<number | null>(null);
 /*   const navigate = useNavigate(); */
 
   function IInicial(currentPage: number, itensPerPage: number) {
@@ -165,6 +167,23 @@ export default function HomePage() {
     );
 
     elements.forEach((element) => observer.observe(element));
+
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const element = heroTitleRef.current;
+    if (!element) return;
+
+    const updateWidth = () => {
+      const width = element.getBoundingClientRect().width;
+      setHeroCopyWidth(width ? Math.ceil(width) : null);
+    };
+
+    updateWidth();
+
+    const observer = new ResizeObserver(updateWidth);
+    observer.observe(element);
 
     return () => observer.disconnect();
   }, []);
@@ -335,16 +354,24 @@ export default function HomePage() {
               variant="h3"
               sx={{ fontWeight: "bold", mt: 2, mb: 1, color: "var(--text)" }}
             >
-              Opinião em{" "}
-              <span className={styles.gradientText}>tempo real</span>
+              <span
+                ref={heroTitleRef}
+                style={{ display: "inline-block", maxWidth: "100%" }}
+              >
+                Opinião em{" "}
+                <span className={styles.gradientText}>tempo real</span>
+              </span>
             </Typography>
-            <Typography variant="body1" sx={{ mb: 0, color: "var(--muted)" }}>
+            <Typography
+              variant="body1"
+              sx={{
+                mb: 4,
+                color: "var(--muted)",
+                maxWidth: heroCopyWidth ? `${heroCopyWidth}px` : "100%",
+              }}
+            >
               Veja o que as pessoas estão falando, explore temas e acompanhe
               como as opiniões evoluem.
-            </Typography>
-            <Typography variant="body1" sx={{ mb: 4, color: "var(--muted)" }}>
-              Inspirado em sites de streaming de dados com foco em clareza e
-              movimento.
             </Typography>
           </div>
           <Box className={styles.statsRow}>
