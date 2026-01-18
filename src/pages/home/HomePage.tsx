@@ -391,6 +391,7 @@ export default function HomePage() {
               {/* _________________________________________ */}
               <div className={styles.statValue}>{todayOpinions.length}</div>
             </CardGridReflect>
+            {/* Card 2 */}
             <CardGridReflect
               span={4}
               className={`${styles.statCard} ${styles.reveal}`}
@@ -398,15 +399,28 @@ export default function HomePage() {
               style={{ ["--reveal-delay" as any]: "0.12s" }}
             >
               <div className={styles.statHeader}>
-                <InsertChartOutlined className={styles.statIcon} />
+                <LocationOnOutlined className={styles.statIcon} />
                 <div>
-                  <div className={styles.statLabel}>Opiniões de hoje</div>
-                  <div className={styles.statHint}>Total registradas</div>
+                  <div className={styles.statLabel}>Temas mais falados</div>
+                  <div className={styles.statHint}>
+                    Participação distribuída
+                  </div>
                 </div>
               </div>
-              {/* _________________________________________ */}
-              <div className={styles.statValue}>{todayOpinions.length}</div>
+              {topDistricts.length ? (
+                <div className={styles.districtChips}>
+                  {topDistricts.map((district) => (
+                    <span key={district.key} className={styles.districtChip}>
+                      {district.label}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <div className={styles.statEmpty}>Sem dados de hoje.</div>
+              )}
+              <div className={styles.statHint}>Top 5 temas do dia</div>
             </CardGridReflect>
+            {/* Card 3 */}
             <CardGridReflect
               span={4}
               className={`${styles.statCard} ${styles.reveal}`}
@@ -435,8 +449,10 @@ export default function HomePage() {
               )}
               <div className={styles.statHint}>Top 5 bairros do dia</div>
             </CardGridReflect>
+
+            {/* Clima Geral */}
             <CardGridReflect
-              span={6}
+              span={12}
               className={`${styles.statCard} ${styles.wideCard} ${styles.reveal}`}
               data-reveal
               style={{ ["--reveal-delay" as any]: "0.24s" }}

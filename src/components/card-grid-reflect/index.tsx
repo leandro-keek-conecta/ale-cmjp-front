@@ -6,8 +6,8 @@ type CardGridReflectProps = Omit<
   "children"
 > & {
   children: React.ReactNode;
-  /** Quantos 12 avos da linha o card ocupa (4, 6 ou 12). */
-  span?: 4 | 6 | 12;
+  /** Quantos 12 avos da linha o card ocupa (3, 4, 6 ou 12). */
+  span?: 3 | 4 | 6 | 12;
 };
 
 export default function CardGridReflect({
@@ -17,8 +17,8 @@ export default function CardGridReflect({
   style,
   ...rest
 }: CardGridReflectProps) {
-  const allowed = span === 4 || span === 6 || span === 12 ? span : 12;
-  const widthPercent = `${(allowed / 12) * 100}%`;
+  const allowed = span === 3 || span === 4 || span === 6 || span === 12 ? span : 12;
+  const widthPercent = `calc(((100% - (11 * var(--card-gap, 16px))) / 12) * ${allowed} + (${allowed - 1} * var(--card-gap, 16px)))`;
 
   const combinedClassName = className
     ? `${styles.cardGridReflect} ${className}`

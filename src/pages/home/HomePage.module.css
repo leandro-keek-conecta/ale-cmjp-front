@@ -101,7 +101,7 @@
 .statsRow {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: var(--card-gap);
   align-items: stretch;
   margin-top: 4px;
 }
@@ -332,7 +332,7 @@
   z-index: 1;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 16px;
+  gap: var(--card-gap);
   width: 100%;
   max-width: 1180px;
   margin: 18px auto 0;
@@ -405,7 +405,7 @@
 
   .statsRow {
     display: flex;
-    gap: 12px;
+    gap: var(--card-gap);
     overflow-x: auto;
     padding-bottom: 8px;
     scroll-snap-type: x mandatory;
@@ -479,7 +479,7 @@
 
   .opinionsContainer {
     grid-template-columns: 1fr;
-    gap: 12px;
+    gap: var(--card-gap);
   }
 
   .hero :global(h3.MuiTypography-root) {
@@ -516,7 +516,7 @@
 @media (max-width: 560px) {
   .opinionsContainer {
     grid-template-columns: 1fr;
-    gap: 12px;
+    gap: var(--card-gap);
   }
 }
 
