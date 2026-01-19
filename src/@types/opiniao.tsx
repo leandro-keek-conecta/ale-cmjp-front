@@ -10,7 +10,6 @@ export type OpiniaoCategoria =
 export type TipoOpiniao =
   | "Sugestão"
   | "Reclamação"
-  | "Denúncia"
   | "Elogio"
   | "";
 

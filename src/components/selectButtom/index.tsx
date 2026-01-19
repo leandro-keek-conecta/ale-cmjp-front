@@ -33,12 +33,13 @@ export default function SelectButton({
   isMulti = false,
 }: SelectTexProps) {
   const isMobile = useMediaQuery("(max-width:768px)");
-  const size = isMobile ? "2.4rem" : "2.4rem";
+  const size = isMobile ? "2.6rem" : "2.6rem";
 
   const multiSelected = Array.isArray(value)
     ? options.filter((option) => value.includes(option.value))
     : [];
-  const singleSelected = options.find((option) => option.value === value) ?? null;
+  const singleSelected =
+    options.find((option) => option.value === value) ?? null;
 
   const renderInput = (params: AutocompleteRenderInputParams) => (
     <TextField
@@ -52,7 +53,7 @@ export default function SelectButton({
       InputLabelProps={{
         shrink: true,
       }}
-        sx={{
+      sx={{
         "& .MuiOutlinedInput-root": {
           height: size, // Altura do input
         },
@@ -62,7 +63,7 @@ export default function SelectButton({
           fontWeight: 500,
           fontSize: "0.9rem",
         },
-      }}  
+      }}
     />
   );
 
@@ -89,7 +90,9 @@ export default function SelectButton({
             />
           ))
         }
-        isOptionEqualToValue={(option, selected) => option.value === selected.value}
+        isOptionEqualToValue={(option, selected) =>
+          option.value === selected.value
+        }
         renderInput={renderInput}
         sx={{
           "& .MuiOutlinedInput-root": {
@@ -108,7 +111,9 @@ export default function SelectButton({
       onChange={(_, newValue) => {
         onChange(newValue?.value ?? null);
       }}
-      isOptionEqualToValue={(option, selected) => option.value === selected.value}
+      isOptionEqualToValue={(option, selected) =>
+        option.value === selected.value
+      }
       renderInput={renderInput}
       sx={{
         "& .MuiOutlinedInput-root": {

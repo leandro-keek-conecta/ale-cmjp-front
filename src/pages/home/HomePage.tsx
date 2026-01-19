@@ -1,14 +1,7 @@
-import {
-  Box,
-  Pagination,
-  ToggleButton,
-  ToggleButtonGroup,
-  Typography,
-} from "@mui/material";
+import { Box, Button, Pagination, Typography } from "@mui/material";
 
 import {
   ChatBubbleOutline,
-  HandshakeOutlined,
   InsertChartOutlined,
   LightbulbOutlined,
   LocationOnOutlined,
@@ -21,7 +14,6 @@ import styles from "./HomePage.module.css";
 import { useEffect, useMemo, useRef, useState } from "react";
 import CardGrid from "../../components/card-grid";
 import CardGridReflect from "../../components/card-grid-reflect";
-import Search from "../../components/search";
 import CardDetails from "../../components/cardDetails";
 import {
   getAllOpinions,
@@ -31,6 +23,12 @@ import SlideComponent from "../../components/slide";
 import PresentationModal from "../../components/modal";
 import Header from "../../components/header";
 import { readFromStorage, saveToStorage } from "../../utils/localStorage";
+import { ClimaIcon } from "../../icons/Filter";
+import { ArrowDown } from "../../icons/arrowDonw";
+import Forms from "../../components/Forms";
+import { getFilterInputs } from "./inputs/inputListFilter";
+import { useForm } from "react-hook-form";
+import type { FilterFormValues } from "../../@types/filter";
 
 export type Opinion = {
   id: number | string;
@@ -49,26 +47,31 @@ export type Opinion = {
 const fallbackOpinions: Opinion[] = [
   { id: 1, telefone: "99999-9999", opiniao: "Reclamação" },
   { id: 2, telefone: "88888-8888", opiniao: "Sugestão" },
-  { id: 3, telefone: "77777-7777", opiniao: "Denúncia" },
   { id: 4, telefone: "66666-6666", opiniao: "Elogio" },
   { id: 5, telefone: "55555-5555", opiniao: "Reclamação" },
   { id: 6, telefone: "44444-4444", opiniao: "Sugestão" },
-  { id: 7, telefone: "33333-3333", opiniao: "Denúncia" },
   { id: 8, telefone: "22222-2222", opiniao: "Elogio" },
 ];
 
-const typeOfFilter = {
-  title: "Tipo de Opinião",
-  options: ["Reclamação", "Sugestão", "Denúncia", "Elogio"],
-};
+const buildFilternDefaultValues = (): FilterFormValues => ({
+  dataInicio: new Date(),
+  dataFim: new Date(),
+  tipo: "",
+  tema: "",
+  bairro: "",
+  genero: "",
+  faixaEtaria: "",
+  texto_opiniao: "",
+});
 
 export default function HomePage() {
   const PRESENTATION_SEEN_KEY = "home:presentationSeen";
   const [opinions, setOpinions] = useState<Opinion[]>([]);
   const [todayOpinions, setTodayOpinions] = useState<Opinion[]>([]);
   const [error, setError] = useState("");
-  const [filterType, setFilterType] = useState<string>("all");
-  const [searchTerm, setSearchTerm] = useState("");
+  const [filterType] = useState<string>("all");
+  const [filterExpanded, setFilterExpanded] = useState(false);
+  const [searchTerm] = useState("");
   const [itensPerPage] = useState(12);
   const [currentPage, setCurrentPage] = useState(1);
   const [showPresentationModal, setShowPresentationModal] = useState<boolean>(
@@ -91,6 +94,15 @@ export default function HomePage() {
     return currentPage * itensPerPage;
   }
 
+  const {
+    control: filterControl,
+    formState: { errors: filterErrors },
+    handleSubmit: handleFilterSubmit,
+    reset: resetFilterForm,
+  } = useForm<FilterFormValues>({
+    defaultValues: buildFilternDefaultValues(),
+  });
+
   async function fetchTodayOpinions() {
     try {
       const response = await getTodayOpinions();
@@ -99,10 +111,6 @@ export default function HomePage() {
       setError("Erro ao carregar opiniões de hoje.");
     }
   }
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [filterType, searchTerm]);
 
   async function fetchOpinions() {
     try {
@@ -244,7 +252,6 @@ export default function HomePage() {
     const todayFromAll = opinions.filter((op) => isSameDay(op.horario));
     return getTopDistricts(todayFromAll);
   }, [todayOpinions, opinions]);
-
   const filteredOpinions = useMemo(() => {
     const term = normalizeText(searchTerm);
     const selectedType = normalizeText(filterType);
@@ -285,14 +292,12 @@ export default function HomePage() {
     const key = normalizeText(type);
     if (key === "reclamacao") return <PriorityHigh fontSize="small" />;
     if (key === "sugestao") return <LightbulbOutlined fontSize="small" />;
-    if (key === "Denúncia") return <HandshakeOutlined fontSize="small" />;
     if (key === "elogio") return <StarBorderRounded fontSize="small" />;
     return <ChatBubbleOutline fontSize="small" />;
   };
-  /* 
-  const handleOpenWhatsApp = () => {
-    navigate("/form-page");
-  }; */
+  async function onSubmitUser(data: FilterFormValues) {
+    console.log("Filter form:", data);
+  }
 
   const handleClosePresentation = () => {
     setShowPresentationModal(false);
@@ -335,19 +340,6 @@ export default function HomePage() {
                   Monitorando a voz da cidade
                 </Typography>
               </CardGrid>
-
-              {/*               <CardGrid
-                span={2}
-                className={`${styles.heroPill} ${styles.heroCta}`}
-                onClick={handleOpenWhatsApp}
-              >
-                <Box className={styles.heroCtaInner}>
-                  <Add fontSize="small" />
-                  <Typography sx={{ fontSize: "13px", fontWeight: 700 }}>
-                    Cadastrar opinião
-                  </Typography>
-                </Box>
-              </CardGrid> */}
             </Box>
 
             <Typography
@@ -496,46 +488,46 @@ export default function HomePage() {
             data-reveal
             style={{ ["--reveal-delay" as any]: "0.28s" }}
           >
-            <div className={styles.searchHeader}>
-              <div className={styles.searchIntro}>
-                <Typography
-                  variant="subtitle1"
-                  sx={{ fontWeight: 700, color: "var(--text)" }}
+            <Box className={styles.searchContainer}>
+              <Box className={styles.headerSearch}>
+                <Box className={styles.statHeader}>
+                  <ClimaIcon />
+                  <Box>
+                    <Box className={styles.statLabel}>Filtros</Box>
+                  </Box>
+                </Box>
+              </Box>
+              <Box onClick={() => setFilterExpanded(!filterExpanded)}>
+                <ArrowDown />
+              </Box>
+            </Box>
+            <Box
+              className={`${styles.filterContainerBody} ${
+                filterExpanded ? styles.expanded : ""
+              }`}
+            >
+              <Forms<FilterFormValues>
+                errors={filterErrors}
+                inputsList={getFilterInputs()}
+                control={filterControl}
+              />{" "}
+              <Box className={styles.filterActions}>
+                <Button
+                  className={styles.filterButton}
+                  type="button"
+                  onClick={() => resetFilterForm(buildFilternDefaultValues())}
                 >
-                  Buscar opiniões
-                </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{ color: "var(--muted)", marginTop: "4px" }}
+                  Limpar
+                </Button>
+                <Button
+                  className={`${styles.filterButton} ${styles.filterButtonPrimary}`}
+                  type="button"
+                  onClick={handleFilterSubmit(onSubmitUser)}
                 >
-                  Filtre por tema e encontre rapidamente o que importa.
-                </Typography>
-              </div>
-            </div>
-            <div className={styles.controls}>
-              <div className={styles.searchInput}>
-                <Search
-                  opiniao={[...new Set(opinions.map((op) => op.opiniao))]}
-                  onSearchChange={setSearchTerm}
-                  placeholder="Buscar por nome, bairro ou tema"
-                />
-              </div>
-              <ToggleButtonGroup
-                exclusive
-                value={filterType}
-                onChange={(_, value) => value && setFilterType(value)}
-                className={styles.filterGroup}
-                size="small"
-                aria-label="Filtrar por tipo de opinião"
-              >
-                <ToggleButton value="all">Todas</ToggleButton>
-                {typeOfFilter.options.map((option) => (
-                  <ToggleButton key={option} value={option}>
-                    {option}
-                  </ToggleButton>
-                ))}
-              </ToggleButtonGroup>
-            </div>
+                  Aplicar Filtros
+                </Button>
+              </Box>
+            </Box>
           </CardGrid>
 
           <Box
