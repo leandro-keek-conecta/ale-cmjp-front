@@ -69,9 +69,9 @@ export default function HomePage() {
   const [opinions, setOpinions] = useState<Opinion[]>([]);
   const [todayOpinions, setTodayOpinions] = useState<Opinion[]>([]);
   const [error, setError] = useState("");
-  const [filterType, setFilterType] = useState<string>("all");
+  const [filterType] = useState<string>("all");
   const [filterExpanded, setFilterExpanded] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm] = useState("");
   const [itensPerPage] = useState(12);
   const [currentPage, setCurrentPage] = useState(1);
   const [showPresentationModal, setShowPresentationModal] = useState<boolean>(
@@ -98,8 +98,7 @@ export default function HomePage() {
     control: filterControl,
     formState: { errors: filterErrors },
     handleSubmit: handleFilterSubmit,
-    setValue: setFilternValue,
-    reset: resetFilternForm,
+    reset: resetFilterForm,
   } = useForm<FilterFormValues>({
     defaultValues: buildFilternDefaultValues(),
   });
@@ -253,18 +252,6 @@ export default function HomePage() {
     const todayFromAll = opinions.filter((op) => isSameDay(op.horario));
     return getTopDistricts(todayFromAll);
   }, [todayOpinions, opinions]);
-  const opinionOptions = useMemo(
-    () =>
-      Array.from(
-        new Set(
-          sourceOpinions
-            .map((item) => item.opiniao)
-            .filter((value): value is string => Boolean(value)),
-        ),
-      ),
-    [sourceOpinions],
-  );
-
   const filteredOpinions = useMemo(() => {
     const term = normalizeText(searchTerm);
     const selectedType = normalizeText(filterType);
@@ -525,7 +512,11 @@ export default function HomePage() {
                 control={filterControl}
               />{" "}
               <Box className={styles.filterActions}>
-                <Button className={styles.filterButton} type="button">
+                <Button
+                  className={styles.filterButton}
+                  type="button"
+                  onClick={() => resetFilterForm(buildFilternDefaultValues())}
+                >
                   Limpar
                 </Button>
                 <Button
