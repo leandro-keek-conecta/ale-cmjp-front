@@ -129,7 +129,7 @@ export default function PresentationModal({
                     className={styles.audioButton}
                     onClick={handleEnableAudio}
                   >
-                    Ativar audio
+                    Ativar áudio
                   </button>
                   <span className={styles.audioHint}>
                     Precisamos do seu clique para liberar o som.

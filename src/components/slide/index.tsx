@@ -11,7 +11,7 @@ export default function SlideComponent() {
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % aleSlides.length);
-    }, 5200);
+    }, 12000);
 
     return () => clearInterval(timer);
   }, []);
@@ -43,7 +43,7 @@ export default function SlideComponent() {
       aria-label="Galeria da assistente virtual"
     >
       <div className={styles.aleSliderCopy}>
-        <span className={styles.aleBadge}>{/* Alê,  */}Assistente virtual</span>
+        <span className={styles.aleBadge}>Assistente virtual</span>
         <Card sx={{ p: 2, borderRadius: 4, width: "100%", maxWidth: 420 }}>
           <Box className={styles.cardMapHeader}>
             <PlaceIcon color="primary" />
@@ -59,7 +59,7 @@ export default function SlideComponent() {
               variant="h6"
               sx={{ fontWeight: "bold", color: "#000000a2" }}
             >
-              {/* Alé */} Registra solicitações diretamente nas comunidades.
+              Participação cidadã descomplicada e eficiente
             </Typography>
           </Box>
         </Card>
@@ -82,7 +82,7 @@ export default function SlideComponent() {
               className={styles.navButton}
               onClick={() =>
                 setCurrentSlide(
-                  (prev) => (prev - 1 + aleSlides.length) % aleSlides.length
+                  (prev) => (prev - 1 + aleSlides.length) % aleSlides.length,
                 )
               }
               aria-label="Slide anterior"

@@ -14,7 +14,7 @@
 .formBox {
   gap: 2rem;
   background-color: #ffffff;
-  padding: 1.5rem;
+  padding: 2rem;
   border-radius: 18px;
   width: 100%;
   max-width: 35rem;
@@ -52,12 +52,12 @@
 }
 
 .submitButton {
-  font-size: 13px;
+  font-size: 1rem;
   letter-spacing: 0.04em;
   text-align: center;
   justify-content: center;
   width: 35%;
-  font-weight: 600 !important;
+  font-weight: 500 !important;
   cursor: pointer;
   max-height: 44px !important;
   color: #ffffff !important;

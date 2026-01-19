@@ -34,7 +34,7 @@ const validateDashboardUrl = (rawUrl?: string | null): ValidationResult => {
     return {
       ok: false,
       message:
-        "Informe uma URL publica do dashboard ou utilize um id cadastrado (ex.: /dashboards/embed/powerbi-sample).",
+        "Informe uma URL pública do dashboard ou utilize um id cadastrado (ex.: /dashboards/embed/powerbi-sample).",
     };
   }
 
@@ -46,14 +46,14 @@ const validateDashboardUrl = (rawUrl?: string | null): ValidationResult => {
     if (!["http:", "https:"].includes(parsed.protocol)) {
       return {
         ok: false,
-        message: "Apenas protocolos http e https sao permitidos.",
+        message: "Apenas protocolos http e https são permitidos.",
       };
     }
 
     if (!isAllowedHost(parsed.hostname)) {
       return {
         ok: false,
-        message: `Dominio nao permitido: ${parsed.hostname}`,
+        message: `Domínio não permitido: ${parsed.hostname}`,
       };
     }
 
@@ -62,7 +62,7 @@ const validateDashboardUrl = (rawUrl?: string | null): ValidationResult => {
     return {
       ok: false,
       message:
-        "URL invalida. Use o formato completo, incluindo https:// e sem javascript:/data:.",
+        "URL inválida. Use o formato completo, incluindo https:// e sem javascript:/data:.",
     };
   }
 };
@@ -91,7 +91,7 @@ const EmbedDashboardPage = () => {
 
     if (id && !dashboardFromId) {
       setError(
-        `O id "${id}" nao esta cadastrado. Use um id permitido ou passe ?url= com um dominio na allowlist.`
+        `O id "${id}" não está cadastrado. Use um id permitido ou passe ?url= com um domínio na allowlist.`
       );
       setCurrentUrl(null);
       setSourceLabel(null);
@@ -125,7 +125,7 @@ const EmbedDashboardPage = () => {
 
   const handleError = () => {
     setError(
-      "Nao foi possivel carregar o dashboard. Verifique se o dominio permite embed ou se a URL continua publica."
+      "Não foi possível carregar o dashboard. Verifique se o domínio permite embed ou se a URL continua pública."
     );
     setIsLoading(false);
     setCurrentUrl(null);
@@ -145,7 +145,7 @@ const EmbedDashboardPage = () => {
         <Box className={styles.meta}>
           <span className={styles.metaBadge}>
             <InfoOutlined fontSize="small" />
-            <span>Embed de dashboard publico</span>
+            <span>Embed de dashboard público</span>
           </span>
           <Typography component="h1" className={styles.title}>
             {sourceLabel || "Dashboard embed"}
@@ -153,7 +153,7 @@ const EmbedDashboardPage = () => {
           <Typography component="p" className={styles.subtitle}>
             {provider
               ? `Fonte: ${provider}${id ? ` · id: ${id}` : ""}`
-              : "Informe um id cadastrado (ex.: /dashboards/embed/powerbi-sample) ou passe ?url= com um dominio permitido."}
+              : "Informe um id cadastrado (ex.: /dashboards/embed/powerbi-sample) ou passe ?url= com um domínio permitido."}
           </Typography>
         </Box>
         <Box className={styles.actions}>
@@ -188,7 +188,7 @@ const EmbedDashboardPage = () => {
               <ErrorOutlineRounded fontSize="large" />
             </div>
             <Typography component="h2" className={styles.feedbackTitle}>
-              Nao foi possivel exibir o dashboard
+              Não foi possível exibir o dashboard
             </Typography>
             <Typography component="p" className={styles.feedbackMessage}>
               {error}
@@ -202,7 +202,7 @@ const EmbedDashboardPage = () => {
                 color="inherit"
                 onClick={() => navigate("/")}
               >
-                Ir para inicio
+                Ir para início
               </Button>
             </div>
           </Box>

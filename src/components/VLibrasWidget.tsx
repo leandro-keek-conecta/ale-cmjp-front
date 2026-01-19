@@ -58,7 +58,7 @@ const VLibrasWidget = () => {
       script.async = true;
       script.addEventListener("load", handleLoad);
       script.addEventListener("error", () =>
-        console.error("Nao foi possivel carregar o VLibras.")
+        console.error("Não foi possível carregar o VLibras.")
       );
       document.body.appendChild(script);
     }

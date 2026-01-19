@@ -21,7 +21,7 @@ export default function CardDetails({ opinions }: CardDetailsProps) {
     (value || "").normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().trim();
 
   if (!opinions.length) {
-    return <div className={styles.emptyState}>Nenhuma opiniao encontrada.</div>;
+    return <div className={styles.emptyState}>Nenhuma opinião encontrada.</div>;
   }
 
   const openModal = (opinion: Opinion) => {
@@ -44,7 +44,8 @@ export default function CardDetails({ opinions }: CardDetailsProps) {
             </div>
           </div>
           <div className={styles.meta}>
-            {item.bairro || "Bairro nao informado"} - {formatDate(item.horario)}
+            <span>{item.bairro || "Bairro não informado"}</span>
+            <span> {formatDate(item.horario)}</span>
           </div>
           <Box
             className={styles.opnionTextClick}
@@ -61,25 +62,43 @@ export default function CardDetails({ opinions }: CardDetailsProps) {
             )}
           </Box>
 
-          <div className={styles.cardFooter}>
-            {(() => {
-              const pillType = item.tipo_opiniao || item.opiniao || "Outro";
-              const pillKey = normalize(pillType) || "outro";
-              return (
-                <span className={styles.pill} data-type={pillKey}>
-                  {pillType}
-                </span>
-              );
-            })()}
-          </div>
+          <Box className={styles.cardFooterContainer}>
+            <div className={styles.cardFooter}>
+              {(() => {
+                const pillType = item.opiniao || item.opiniao || "Outro";
+                const pillKey = normalize(pillType) || "outro";
+                return (
+                  <span className={styles.pill} data-type={pillKey}>
+                    {pillType}
+                  </span>
+                );
+              })()}
+            </div>
+            <div className={styles.cardFooter}>
+              {(() => {
+                const pillType = item.tipo_opiniao || item.opiniao || "Outro";
+                const pillKey = normalize(pillType) || "outro";
+                return (
+                  <span className={styles.pill} data-type={pillKey}>
+                    {pillType}
+                  </span>
+                );
+              })()}
+            </div>
+          </Box>
         </article>
       ))}
       <Dialog open={modalOpen} onClose={closeModal} fullWidth maxWidth="sm">
-        <DialogTitle sx={{fontSize: "1.2rem", pl: 2, pb: 1, mb: 0}}>{selectedOpinion?.nome || "Opiniao Completa"}</DialogTitle>
-        <Divider sx={{ mt: 0, mb: 2}}/>
-          <DialogContentText component="div" sx={{pl:2,pr:2, pb: 2, fontSize: "1rem"}}>
-            {selectedOpinion?.texto_opiniao || "Sem texto"}
-          </DialogContentText>
+        <DialogTitle sx={{ fontSize: "1.2rem", pl: 2, pb: 1, mb: 0 }}>
+          {selectedOpinion?.nome || "Opinião completa"}
+        </DialogTitle>
+        <Divider sx={{ mt: 0, mb: 2 }} />
+        <DialogContentText
+          component="div"
+          sx={{ pl: 2, pr: 2, pb: 2, fontSize: "1rem" }}
+        >
+          {selectedOpinion?.texto_opiniao || "Sem texto"}
+        </DialogContentText>
       </Dialog>
     </>
   );

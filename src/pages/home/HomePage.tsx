@@ -49,17 +49,17 @@ export type Opinion = {
 const fallbackOpinions: Opinion[] = [
   { id: 1, telefone: "99999-9999", opiniao: "Reclamação" },
   { id: 2, telefone: "88888-8888", opiniao: "Sugestão" },
-  { id: 3, telefone: "77777-7777", opiniao: "Apoio" },
+  { id: 3, telefone: "77777-7777", opiniao: "Denúncia" },
   { id: 4, telefone: "66666-6666", opiniao: "Elogio" },
   { id: 5, telefone: "55555-5555", opiniao: "Reclamação" },
   { id: 6, telefone: "44444-4444", opiniao: "Sugestão" },
-  { id: 7, telefone: "33333-3333", opiniao: "Apoio" },
+  { id: 7, telefone: "33333-3333", opiniao: "Denúncia" },
   { id: 8, telefone: "22222-2222", opiniao: "Elogio" },
 ];
 
 const typeOfFilter = {
-  title: "Tipo de Opiniao",
-  options: ["Reclamação", "Sugestão", "Apoio", "Elogio"],
+  title: "Tipo de Opinião",
+  options: ["Reclamação", "Sugestão", "Denúncia", "Elogio"],
 };
 
 export default function HomePage() {
@@ -72,13 +72,15 @@ export default function HomePage() {
   const [itensPerPage] = useState(12);
   const [currentPage, setCurrentPage] = useState(1);
   const [showPresentationModal, setShowPresentationModal] = useState<boolean>(
-    () => !readFromStorage<boolean>(PRESENTATION_SEEN_KEY, false)
+    () => !readFromStorage<boolean>(PRESENTATION_SEEN_KEY, false),
   );
   const [groupOpinions, setGroupOpinions] = useState<
     { type: string; count: number }[]
   >([]);
   const hasFetched = useRef(false);
-/*   const navigate = useNavigate(); */
+  const heroTitleRef = useRef<HTMLSpanElement | null>(null);
+  const [heroCopyWidth, setHeroCopyWidth] = useState<number | null>(null);
+  /*   const navigate = useNavigate(); */
 
   function IInicial(currentPage: number, itensPerPage: number) {
     return (currentPage - 1) * itensPerPage;
@@ -94,7 +96,7 @@ export default function HomePage() {
       const response = await getTodayOpinions();
       setTodayOpinions(response);
     } catch (err) {
-      setError("Erro ao carregar opinioes de hoje.");
+      setError("Erro ao carregar opiniões de hoje.");
     }
   }
 
@@ -109,7 +111,7 @@ export default function HomePage() {
       quantityPorCategory(opinionsList);
       setOpinions(opinionsList);
     } catch (err) {
-      setError("Erro ao carregar opinioes.");
+      setError("Erro ao carregar opiniões.");
     }
   }
 
@@ -161,10 +163,27 @@ export default function HomePage() {
           }
         });
       },
-      { threshold: 0.18 }
+      { threshold: 0.18 },
     );
 
     elements.forEach((element) => observer.observe(element));
+
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const element = heroTitleRef.current;
+    if (!element) return;
+
+    const updateWidth = () => {
+      const width = element.getBoundingClientRect().width;
+      setHeroCopyWidth(width ? Math.ceil(width) : null);
+    };
+
+    updateWidth();
+
+    const observer = new ResizeObserver(updateWidth);
+    observer.observe(element);
 
     return () => observer.disconnect();
   }, []);
@@ -244,16 +263,16 @@ export default function HomePage() {
 
   const totalPages = Math.max(
     1,
-    Math.ceil(filteredOpinions.length / itensPerPage)
+    Math.ceil(filteredOpinions.length / itensPerPage),
   );
 
   const paginatedOpinions = useMemo(
     () =>
       filteredOpinions.slice(
         IInicial(currentPage, itensPerPage),
-        IFinal(currentPage, itensPerPage)
+        IFinal(currentPage, itensPerPage),
       ),
-    [filteredOpinions, currentPage, itensPerPage]
+    [filteredOpinions, currentPage, itensPerPage],
   );
 
   useEffect(() => {
@@ -266,11 +285,11 @@ export default function HomePage() {
     const key = normalizeText(type);
     if (key === "reclamacao") return <PriorityHigh fontSize="small" />;
     if (key === "sugestao") return <LightbulbOutlined fontSize="small" />;
-    if (key === "apoio") return <HandshakeOutlined fontSize="small" />;
+    if (key === "Denúncia") return <HandshakeOutlined fontSize="small" />;
     if (key === "elogio") return <StarBorderRounded fontSize="small" />;
     return <ChatBubbleOutline fontSize="small" />;
   };
-/* 
+  /* 
   const handleOpenWhatsApp = () => {
     navigate("/form-page");
   }; */
@@ -317,7 +336,7 @@ export default function HomePage() {
                 </Typography>
               </CardGrid>
 
-{/*               <CardGrid
+              {/*               <CardGrid
                 span={2}
                 className={`${styles.heroPill} ${styles.heroCta}`}
                 onClick={handleOpenWhatsApp}
@@ -335,16 +354,24 @@ export default function HomePage() {
               variant="h3"
               sx={{ fontWeight: "bold", mt: 2, mb: 1, color: "var(--text)" }}
             >
-              Opiniao em tempo real{" "}
-              <span className={styles.gradientText}>sem login</span>
+              <span
+                ref={heroTitleRef}
+                style={{ display: "inline-block", maxWidth: "100%" }}
+              >
+                Opinião em{" "}
+                <span className={styles.gradientText}>tempo real</span>
+              </span>
             </Typography>
-            <Typography variant="body1" sx={{ mb: 0, color: "var(--muted)" }}>
-              Veja o que as pessoas estao falando, explore temas e acompanhe
-              como as opinioes evoluem.
-            </Typography>
-            <Typography variant="body1" sx={{ mb: 4, color: "var(--muted)" }}>
-              Inspirado em sites de streaming de dados com foco em clareza e
-              movimento.
+            <Typography
+              variant="body1"
+              sx={{
+                mb: 4,
+                color: "var(--muted)",
+                maxWidth: heroCopyWidth ? `${heroCopyWidth}px` : "100%",
+              }}
+            >
+              Veja o que as pessoas estão falando, explore temas e acompanhe
+              como as opiniões evoluem.
             </Typography>
           </div>
           <Box className={styles.statsRow}>
@@ -357,16 +384,43 @@ export default function HomePage() {
               <div className={styles.statHeader}>
                 <InsertChartOutlined className={styles.statIcon} />
                 <div>
-                  <div className={styles.statLabel}>Opinioes de hoje</div>
+                  <div className={styles.statLabel}>Opiniões de hoje</div>
                   <div className={styles.statHint}>Total registradas</div>
                 </div>
               </div>
               {/* _________________________________________ */}
               <div className={styles.statValue}>{todayOpinions.length}</div>
-              <div className={styles.statHint}>
-                Atualiza assim que a API responder.
-              </div>
             </CardGridReflect>
+            {/* Card 2 */}
+            <CardGridReflect
+              span={4}
+              className={`${styles.statCard} ${styles.reveal}`}
+              data-reveal
+              style={{ ["--reveal-delay" as any]: "0.12s" }}
+            >
+              <div className={styles.statHeader}>
+                <LocationOnOutlined className={styles.statIcon} />
+                <div>
+                  <div className={styles.statLabel}>Temas mais falados</div>
+                  <div className={styles.statHint}>
+                    Participação distribuída
+                  </div>
+                </div>
+              </div>
+              {topDistricts.length ? (
+                <div className={styles.districtChips}>
+                  {topDistricts.map((district) => (
+                    <span key={district.key} className={styles.districtChip}>
+                      {district.label}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <div className={styles.statEmpty}>Sem dados de hoje.</div>
+              )}
+              <div className={styles.statHint}>Top 5 temas do dia</div>
+            </CardGridReflect>
+            {/* Card 3 */}
             <CardGridReflect
               span={4}
               className={`${styles.statCard} ${styles.reveal}`}
@@ -378,17 +432,14 @@ export default function HomePage() {
                 <div>
                   <div className={styles.statLabel}>Bairros mais ativos</div>
                   <div className={styles.statHint}>
-                    Participacao distribuida
+                    Participação distribuída
                   </div>
                 </div>
               </div>
               {topDistricts.length ? (
                 <div className={styles.districtChips}>
                   {topDistricts.map((district) => (
-                    <span
-                      key={district.key}
-                      className={styles.districtChip}
-                    >
+                    <span key={district.key} className={styles.districtChip}>
                       {district.label}
                     </span>
                   ))}
@@ -398,8 +449,10 @@ export default function HomePage() {
               )}
               <div className={styles.statHint}>Top 5 bairros do dia</div>
             </CardGridReflect>
+
+            {/* Clima Geral */}
             <CardGridReflect
-              span={6}
+              span={12}
               className={`${styles.statCard} ${styles.wideCard} ${styles.reveal}`}
               data-reveal
               style={{ ["--reveal-delay" as any]: "0.24s" }}
@@ -410,7 +463,7 @@ export default function HomePage() {
                   <Box>
                     <div className={styles.statLabel}>Clima geral</div>
                     <div className={styles.statHint}>
-                      Distribuicao das opinioes
+                      Distribuição das opiniões
                     </div>
                   </Box>
                 </div>
@@ -449,7 +502,7 @@ export default function HomePage() {
                   variant="subtitle1"
                   sx={{ fontWeight: 700, color: "var(--text)" }}
                 >
-                  Buscar opinioes
+                  Buscar opiniões
                 </Typography>
                 <Typography
                   variant="body2"
@@ -473,7 +526,7 @@ export default function HomePage() {
                 onChange={(_, value) => value && setFilterType(value)}
                 className={styles.filterGroup}
                 size="small"
-                aria-label="Filtrar por tipo de opiniao"
+                aria-label="Filtrar por tipo de opinião"
               >
                 <ToggleButton value="all">Todas</ToggleButton>
                 {typeOfFilter.options.map((option) => (

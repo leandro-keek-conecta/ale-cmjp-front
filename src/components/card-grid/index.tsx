@@ -18,7 +18,7 @@ export default function CardGrid({
     span === 2 || span === 3 || span === 4 || span === 6 || span === 12
       ? span
       : 12;
-  const widthPercent = `${(allowed / 12) * 100}%`;
+  const widthPercent = `calc(((100% - (11 * var(--card-gap, 16px))) / 12) * ${allowed} + (${allowed - 1} * var(--card-gap, 16px)))`;
 
   const combinedClassName = className
     ? `${styles.cardGrid} ${className}`

@@ -5,15 +5,15 @@ export type DashboardEntry = {
   url: string;
 };
 
-// Ajuste esta allowlist conforme os dominios que podem ser embedados pela aplicacao.
+// Ajuste esta allowlist conforme os domínios que podem ser embedados pela aplicação.
 export const DASHBOARD_ALLOWLIST = [
   "app.powerbi.com",
   "demo.metabase.com",
   "lookerstudio.google.com",
 ];
 
-// Mapeamento seguro de dashboards publicos por ID.
-// Preferir usar esta abordagem em producao para evitar URLs arbitrarias.
+// Mapeamento seguro de dashboards públicos por ID.
+// Preferir usar esta abordagem em produção para evitar URLs arbitrárias.
 export const DASHBOARD_MAP: Record<string, DashboardEntry> = {
   "powerbi-sample": {
     id: "powerbi-sample",

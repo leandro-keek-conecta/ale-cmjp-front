@@ -25,7 +25,9 @@
 .reveal {
   opacity: 0;
   transform: translateY(24px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
+  transition:
+    opacity 0.6s ease,
+    transform 0.6s ease;
   transition-delay: var(--reveal-delay, 0s);
   will-change: opacity, transform;
 }
@@ -101,7 +103,7 @@
 .statsRow {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: var(--card-gap);
   align-items: stretch;
   margin-top: 4px;
 }
@@ -201,7 +203,7 @@
   background: rgba(12, 130, 216, 0.08);
 }
 
-.typeChip[data-type="apoio"] {
+.typeChip[data-type="Denúncia"] {
   background: rgba(18, 183, 106, 0.08);
   border-color: rgba(18, 183, 106, 0.2);
 }
@@ -308,7 +310,9 @@
   border-radius: 10px !important;
   border: 5px solid #1a1a1a;
   box-shadow: var(--shadow-soft) !important;
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
 }
 
 .ctaButton:hover {
@@ -332,7 +336,7 @@
   z-index: 1;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 16px;
+  gap: var(--card-gap);
   width: 100%;
   max-width: 1180px;
   margin: 18px auto 0;
@@ -405,7 +409,7 @@
 
   .statsRow {
     display: flex;
-    gap: 12px;
+    gap: var(--card-gap);
     overflow-x: auto;
     padding-bottom: 8px;
     scroll-snap-type: x mandatory;
@@ -479,7 +483,7 @@
 
   .opinionsContainer {
     grid-template-columns: 1fr;
-    gap: 12px;
+    gap: var(--card-gap);
   }
 
   .hero :global(h3.MuiTypography-root) {
@@ -516,7 +520,7 @@
 @media (max-width: 560px) {
   .opinionsContainer {
     grid-template-columns: 1fr;
-    gap: 12px;
+    gap: var(--card-gap);
   }
 }
 
