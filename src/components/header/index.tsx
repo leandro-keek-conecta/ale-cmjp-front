@@ -5,7 +5,6 @@ export default function Header() {
     <Box component="header" className={styles.header}>
       <Box className={styles.headerContent}>
         <img src="https://s3.keekconecta.com.br/ale-cmjp/fotos/logo-horizontal.png" alt="Logo Alê" height="40" />
-        <img src="https://s3.keekconecta.com.br/ale-cmjp/fotos/ale-6.png" alt="Logo Alê" height="40" />
       </Box>
     </Box>
   );
