@@ -25,7 +25,7 @@ import { createUSer } from "../../services/user/userService";
 import { useNavigate } from "react-router-dom";
 import { submitOpinion } from "../../services/opiniao/opiniaoService";
 
-const steps = ["Cadastro de usuário", "Cadastro de Opinião", "Concluído"];
+const steps = ["Dados do Usuário", "Dados da Opinião", "Concluído"];
 
 const buildUserDefaultValues = (): UserFormValues => ({
   id: "",
@@ -282,28 +282,13 @@ export default function FormsPage() {
   return (
     <Box className={styles.container}>
       <Box className={styles.formBox}>
-        <Box
-          sx={{
-            width: "100%",
-            display: "flex",
-            justifyContent: "flex-start",
-          }}
-        >
-          <Button
-            variant="text"
-            startIcon={<KeyboardBackspaceIcon />}
-            onClick={() => navigate("/")}
-            sx={{ mb: 1, color: "#1e8e9c" }}
-          >
-            Ir para tela padrão do projeto
-          </Button>
-        </Box>
+
         <Typography
           variant="h5"
           fontWeight={700}
           sx={{ mb: 3, textAlign: "center" }}
         >
-          Formulário de Opinião
+          Registre Sua Opinião
         </Typography>
         <Box className={styles.stepperBox}>
           <HorizontalLinearAlternativeLabelStepper
