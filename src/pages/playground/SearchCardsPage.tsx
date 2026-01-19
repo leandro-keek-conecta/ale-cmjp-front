@@ -42,15 +42,6 @@ const demoOpinions: Opinion[] = [
     texto_opiniao: "Seria bom trocar as lâmpadas da avenida principal.",
     horario: "2025-01-03T08:45:00",
   },
-  {
-    id: 5,
-    nome: "Elaine",
-    bairro: "Jaguaribe",
-    opiniao: "Saúde",
-    tipo_opiniao: "Denúncia",
-    texto_opiniao: "Campanhas de vacinação estão funcionando bem.",
-    horario: "2025-01-03T11:10:00",
-  },
 ];
 
 const SearchCardsPage = () => {

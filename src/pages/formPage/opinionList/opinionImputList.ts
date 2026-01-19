@@ -19,7 +19,6 @@ const opiniaoOptions: SelectOption<OpiniaoCategoria>[] = [
 const tipoOpiniaoOptions: SelectOption<TipoOpiniao>[] = [
   { label: "Sugestão", value: "Sugestão" },
   { label: "Reclamação", value: "Reclamação" },
-  { label: "Denúncia", value: "Denúncia" },
   { label: "Elogio", value: "Elogio" },
 ];
 

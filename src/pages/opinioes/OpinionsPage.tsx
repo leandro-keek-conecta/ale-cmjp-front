@@ -25,7 +25,6 @@ const fallbackOpinions: Opinion[] = [
     bairro: "Centro",
     campanha: "Conecta Cidade",
     horario: "2025-01-24T09:10:00Z",
-    tipo_opiniao: "Denúncia",
     opiniao: "Denúncia total",
     texto_opiniao: "Quero mais espaços verdes e ciclovias integradas.",
   },
@@ -231,7 +230,7 @@ function OpinionsPage() {
           <div className="stat-card wide">
             <div className="stat-label">Clima geral</div>
             <div className="stat-pills">
-              {["Denúncia", "Sugestão", "Reclamação", "Elogio"].map((pill) => (
+              {["Sugestão", "Reclamação", "Elogio"].map((pill) => (
                 <span key={pill} className="pill">
                   {pill}
                 </span>
