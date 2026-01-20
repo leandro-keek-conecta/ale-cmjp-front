@@ -27,8 +27,9 @@ import { ClimaIcon } from "../../icons/Filter";
 import { ArrowDown } from "../../icons/arrowDonw";
 import Forms from "../../components/Forms";
 import { getFilterInputs } from "./inputs/inputListFilter";
+import { applyFilters, mapFilterFormToState } from "../../utils/createDynamicFilter";
 import { useForm } from "react-hook-form";
-import type { FilterFormValues } from "../../@types/filter";
+import type { FilterFormValues, FiltersState } from "../../@types/filter";
 
 export type Opinion = {
   id: number | string;
@@ -54,8 +55,8 @@ const fallbackOpinions: Opinion[] = [
 ];
 
 const buildFilternDefaultValues = (): FilterFormValues => ({
-  dataInicio: new Date(),
-  dataFim: new Date(),
+  dataInicio: null,
+  dataFim: null,
   tipo: "",
   tema: "",
   bairro: "",
@@ -67,6 +68,9 @@ const buildFilternDefaultValues = (): FilterFormValues => ({
 export default function HomePage() {
   const PRESENTATION_SEEN_KEY = "home:presentationSeen";
   const [opinions, setOpinions] = useState<Opinion[]>([]);
+  const [filters, setFilters] = useState<FiltersState>(() =>
+    mapFilterFormToState(buildFilternDefaultValues()),
+  );
   const [todayOpinions, setTodayOpinions] = useState<Opinion[]>([]);
   const [error, setError] = useState("");
   const [filterType] = useState<string>("all");
@@ -252,10 +256,16 @@ export default function HomePage() {
     const todayFromAll = opinions.filter((op) => isSameDay(op.horario));
     return getTopDistricts(todayFromAll);
   }, [todayOpinions, opinions]);
+
+  const filteredByForm = useMemo(
+    () => applyFilters<Opinion>(sourceOpinions, filters),
+    [sourceOpinions, filters],
+  );
+  
   const filteredOpinions = useMemo(() => {
     const term = normalizeText(searchTerm);
     const selectedType = normalizeText(filterType);
-    return sourceOpinions.filter((item) => {
+    return filteredByForm.filter((item) => {
       const matchesType =
         filterType === "all" || normalizeType(item) === selectedType;
       const matchesSearch =
@@ -266,7 +276,7 @@ export default function HomePage() {
 
       return matchesType && matchesSearch;
     });
-  }, [filterType, searchTerm, sourceOpinions]);
+  }, [filterType, searchTerm, filteredByForm]);
 
   const totalPages = Math.max(
     1,
@@ -282,6 +292,7 @@ export default function HomePage() {
     [filteredOpinions, currentPage, itensPerPage],
   );
 
+
   useEffect(() => {
     if (currentPage > totalPages) {
       setCurrentPage(totalPages);
@@ -296,8 +307,14 @@ export default function HomePage() {
     return <ChatBubbleOutline fontSize="small" />;
   };
   async function onSubmitUser(data: FilterFormValues) {
-    console.log("Filter form:", data);
+    setFilters(mapFilterFormToState(data));
   }
+
+  const handleClearFilters = () => {
+    const defaults = buildFilternDefaultValues();
+    resetFilterForm(defaults);
+    setFilters(mapFilterFormToState(defaults));
+  };
 
   const handleClosePresentation = () => {
     setShowPresentationModal(false);
@@ -515,7 +532,7 @@ export default function HomePage() {
                 <Button
                   className={styles.filterButton}
                   type="button"
-                  onClick={() => resetFilterForm(buildFilternDefaultValues())}
+                  onClick={handleClearFilters}
                 >
                   Limpar
                 </Button>

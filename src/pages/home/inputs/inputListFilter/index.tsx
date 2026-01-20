@@ -4,17 +4,17 @@ import type { InputType } from "../../../../components/Forms";
 export type SelectOption<T = string | number> = { label: string; value: T };
 
 const tipoOptions: SelectOption<string>[] = [
-  { label: "Sugest\u00e3o", value: "Sugest\u00e3o" },
-  { label: "Reclama\u00e7\u00e3o", value: "Reclama\u00e7\u00e3o" },
-  { label: "Den\u00fancia", value: "Den\u00fancia" },
+  { label: "Sugestão", value: "Sugestão" },
+  { label: "Reclamação", value: "Reclamação" },
+  { label: "Denúncia", value: "Denúncia" },
   { label: "Elogio", value: "Elogio" },
 ];
 
 const temaOptions: SelectOption<string>[] = [
-  { label: "Educa\u00e7\u00e3o", value: "Educa\u00e7\u00e3o" },
-  { label: "Sa\u00fade", value: "Sa\u00fade" },
+  { label: "Educação", value: "Educação" },
+  { label: "Saúde", value: "Saúde" },
   { label: "Infraestrutura", value: "Infraestrutura" },
-  { label: "Seguran\u00e7a", value: "Seguran\u00e7a" },
+  { label: "Segurança", value: "Segurança" },
   { label: "Mobilidade", value: "Mobilidade" },
   { label: "Outros", value: "Outros" },
 ];
@@ -22,14 +22,14 @@ const temaOptions: SelectOption<string>[] = [
 const generoOptions: SelectOption<string>[] = [
   { label: "Feminino", value: "Feminino" },
   { label: "Masculino", value: "Masculino" },
-  { label: "Transg\u00eanero", value: "Transg\u00eanero" },
-  { label: "N\u00e3o-Bin\u00e1rio", value: "N\u00e3o-Bin\u00e1rio" },
+  { label: "Transgênero", value: "Transgênero" },
+  { label: "Não-Binário", value: "Não-Binário" },
   { label: "Outros", value: "Outros" },
-  { label: "Prefiro n\u00e3o responder", value: "Prefiro n\u00e3o responder" },
+  { label: "Prefiro não responder", value: "Prefiro não responder" },
 ];
 
 const faixaEtariaOptions: SelectOption<string>[] = [
-  { label: "At\u00e9 17", value: "At\u00e9 17" },
+  { label: "Até 17", value: "Até 17" },
   { label: "18-24", value: "18-24" },
   { label: "25-34", value: "25-34" },
   { label: "35-44", value: "35-44" },
@@ -71,8 +71,8 @@ export const getFilterInputs = (): InputType<FormValues>[] => [
   },
   {
     name: "genero",
-    title: "G\u00eanero",
-    placeholder: "Selecione o g\u00eanero",
+    title: "Gênero",
+    placeholder: "Selecione o gênero",
     type: "Select",
     colSpan: 4,
     selectOptions: generoOptions,
@@ -86,7 +86,7 @@ export const getFilterInputs = (): InputType<FormValues>[] => [
   },
   {
     name: "faixaEtaria",
-    title: "Faixa et\u00e1ria",
+    title: "Faixa etária",
     placeholder: "Selecione a faixa",
     type: "Select",
     colSpan: 6,
@@ -94,7 +94,7 @@ export const getFilterInputs = (): InputType<FormValues>[] => [
   },
   {
     name: "texto_opiniao",
-    title: "Texto da opini\u00e3o",
+    title: "Texto da opinião",
     placeholder: "Busque por palavra-chave",
     type: "text",
     colSpan: 12,
