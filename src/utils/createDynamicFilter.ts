@@ -34,6 +34,13 @@ const toDate = (value: unknown) => {
   return null;
 };
 
+const normalizeText = (value: unknown) =>
+  String(value ?? "")
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .toLowerCase()
+    .trim();
+
 export const mapFilterFormToState = (
   form: FilterFormValues,
 ): FiltersState => ({
@@ -75,16 +82,32 @@ export const filterMappers: Record<string, FilterFn<any>> = {
   },
 
   genero: (items, genero) =>
-    genero ? items.filter((i) => i.genero === genero) : items,
+    genero
+      ? items.filter(
+          (i) => normalizeText(i.genero) === normalizeText(genero),
+        )
+      : items,
 
   bairro: (items, bairro) =>
-    bairro ? items.filter((i) => i.bairro === bairro) : items,
+    bairro
+      ? items.filter(
+          (i) => normalizeText(i.bairro) === normalizeText(bairro),
+        )
+      : items,
 
   tipo: (items, tipo) =>
-    tipo ? items.filter((i) => i.tipo_opiniao === tipo) : items,
+    tipo
+      ? items.filter(
+          (i) => normalizeText(i.tipo_opiniao) === normalizeText(tipo),
+        )
+      : items,
 
   tema: (items, tema) =>
-    tema ? items.filter((i) => i.opiniao === tema) : items,
+    tema
+      ? items.filter(
+          (i) => normalizeText(i.opiniao) === normalizeText(tema),
+        )
+      : items,
 
   faixaEtaria: (items, faixaEtaria) => {
     if (!faixaEtaria) return items;
@@ -100,7 +123,7 @@ export const filterMappers: Record<string, FilterFn<any>> = {
   texto: (items, texto) =>
     texto
       ? items.filter((i) =>
-          i.texto_opiniao?.toLowerCase().includes(texto.toLowerCase()),
+          normalizeText(i.texto_opiniao).includes(normalizeText(texto)),
         )
       : items,
 };
