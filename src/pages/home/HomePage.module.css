@@ -381,7 +381,7 @@
 .filterButton {
   background: rgba(12, 130, 216, 0.08) !important;
   color: var(--accent-2) !important;
-  padding: 10px 10px !important;
+  padding: 5px 10px !important;
   border-radius: 10px !important;
   border: 1px solid var(--border) !important;
   text-transform: none !important;

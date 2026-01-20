@@ -19,6 +19,12 @@ export default function CardDetails({ opinions }: CardDetailsProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const normalize = (value?: string | null) =>
     (value || "").normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().trim();
+  const getOpinionKey = (item: Opinion, index: number) => {
+    const idPart = item.id ?? "opinion";
+    const userPart = item.usuario_id ?? "user";
+    const timePart = item.horario ?? "time";
+    return `${idPart}-${userPart}-${timePart}-${index}`;
+  };
 
   if (!opinions.length) {
     return <div className={styles.emptyState}>Nenhuma opinião encontrada.</div>;
@@ -36,8 +42,8 @@ export default function CardDetails({ opinions }: CardDetailsProps) {
 
   return (
     <>
-      {opinions.map((item) => (
-        <article key={item.id} className={styles.opinionCard}>
+      {opinions.map((item, index) => (
+        <article key={getOpinionKey(item, index)} className={styles.opinionCard}>
           <div className={styles.cardHeader}>
             <div className={styles.cardMeta}>
               <div className={styles.name}>{item.nome || "Visitante"}</div>

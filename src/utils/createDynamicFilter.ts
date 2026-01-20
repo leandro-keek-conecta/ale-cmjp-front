@@ -41,6 +41,18 @@ const normalizeText = (value: unknown) =>
     .toLowerCase()
     .trim();
 
+const getDistrict = (item: any) => {
+  const raw =
+    item?.bairro ??
+    item?.usuario?.bairro ??
+    item?.user?.bairro ??
+    item?.usuario?.endereco?.bairro ??
+    item?.user?.endereco?.bairro ??
+    item?.endereco?.bairro ??
+    "";
+  return String(raw ?? "");
+};
+
 export const mapFilterFormToState = (
   form: FilterFormValues,
 ): FiltersState => ({
@@ -88,12 +100,13 @@ export const filterMappers: Record<string, FilterFn<any>> = {
         )
       : items,
 
-  bairro: (items, bairro) =>
-    bairro
-      ? items.filter(
-          (i) => normalizeText(i.bairro) === normalizeText(bairro),
-        )
-      : items,
+  bairro: (items, bairro) => {
+    const query = normalizeText(bairro);
+    if (!query) return items;
+    return items.filter((i) =>
+      normalizeText(getDistrict(i)).includes(query),
+    );
+  },
 
   tipo: (items, tipo) =>
     tipo
