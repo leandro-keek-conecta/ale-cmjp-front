@@ -326,7 +326,7 @@ export default function HomePage() {
 
   return (
     <>
-      <Layout>
+      <Layout titulo="Visão Geral">
         <PresentationModal
           open={showPresentationModal}
           onClose={handleClosePresentation}
