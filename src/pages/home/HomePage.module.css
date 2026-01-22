@@ -40,7 +40,7 @@
 .hero {
   position: relative;
   z-index: 1;
-  max-width: 1180px;
+  max-width: 1400;
   margin: 0 auto 28px;
   display: flex;
   flex-direction: column;
@@ -361,7 +361,6 @@
 .filterContainerBody.expanded {
   max-height: 400px;
   opacity: 1;
-  margin: 1rem;
   width: 100%;
   transform: translateY(0);
 }
@@ -416,7 +415,7 @@
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: var(--card-gap);
   width: 100%;
-  max-width: 1180px;
+  max-width: 1400;
   margin: 18px auto 0;
   align-items: stretch;
 }

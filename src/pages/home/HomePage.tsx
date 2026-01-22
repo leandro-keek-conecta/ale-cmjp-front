@@ -27,9 +27,13 @@ import { ClimaIcon } from "../../icons/Filter";
 import { ArrowDown } from "../../icons/arrowDonw";
 import Forms from "../../components/Forms";
 import { getFilterInputs } from "./inputs/inputListFilter";
-import { applyFilters, mapFilterFormToState } from "../../utils/createDynamicFilter";
+import {
+  applyFilters,
+  mapFilterFormToState,
+} from "../../utils/createDynamicFilter";
 import { useForm } from "react-hook-form";
-import type { FilterFormValues, FiltersState } from "../../@types/filter";
+import type { FilterFormValues, FiltersState } from "../../types/filter";
+import { Layout } from "../../components/layout/Layout";
 
 export type Opinion = {
   id: number | string;
@@ -261,7 +265,7 @@ export default function HomePage() {
     () => applyFilters<Opinion>(sourceOpinions, filters),
     [sourceOpinions, filters],
   );
-  
+
   const filteredOpinions = useMemo(() => {
     const term = normalizeText(searchTerm);
     const selectedType = normalizeText(filterType);
@@ -291,7 +295,6 @@ export default function HomePage() {
       ),
     [filteredOpinions, currentPage, itensPerPage],
   );
-
 
   useEffect(() => {
     if (currentPage > totalPages) {
@@ -323,249 +326,252 @@ export default function HomePage() {
 
   return (
     <>
-      <PresentationModal
-        open={showPresentationModal}
-        onClose={handleClosePresentation}
-      />
-      <Header />
-      <Box className={styles.container}>
-        <Box component="header" className={styles.hero}>
-          <div
-            className={styles.reveal}
-            data-reveal
-            style={{ ["--reveal-delay" as any]: "0s" }}
-          >
-            <SlideComponent />
-          </div>
-          <div
-            className={styles.reveal}
-            data-reveal
-            style={{ ["--reveal-delay" as any]: "0.08s" }}
-          >
-            <Box className={styles.heroTop}>
-              <CardGrid span={12} className={styles.heroPill}>
-                <Typography
-                  sx={{
-                    fontSize: "13px",
-                    letterSpacing: "0.04em",
-                    textAlign: "center",
-                    color: "var(--accent-2)",
-                    width: "100%",
-                    fontWeight: 600,
-                  }}
-                >
-                  Monitorando a voz da cidade
-                </Typography>
-              </CardGrid>
-            </Box>
-
-            <Typography
-              variant="h3"
-              sx={{ fontWeight: "bold", mt: 2, mb: 1, color: "var(--text)" }}
-            >
-              <span
-                ref={heroTitleRef}
-                style={{ display: "inline-block", maxWidth: "100%" }}
-              >
-                Opinião em{" "}
-                <span className={styles.gradientText}>tempo real</span>
-              </span>
-            </Typography>
-            <Typography
-              variant="body1"
-              sx={{
-                mb: 4,
-                color: "var(--muted)",
-                maxWidth: heroCopyWidth ? `${heroCopyWidth}px` : "100%",
-              }}
-            >
-              Veja o que as pessoas estão falando, explore temas e acompanhe
-              como as opiniões evoluem.
-            </Typography>
-          </div>
-          <Box className={styles.statsRow}>
-            <CardGridReflect
-              span={4}
-              className={`${styles.statCard} ${styles.reveal}`}
+      <Layout>
+        <PresentationModal
+          open={showPresentationModal}
+          onClose={handleClosePresentation}
+        />
+        <Box className={styles.container}>
+          <Box component="header" className={styles.hero}>
+            <div
+              className={styles.reveal}
               data-reveal
-              style={{ ["--reveal-delay" as any]: "0.12s" }}
+              style={{ ["--reveal-delay" as any]: "0s" }}
             >
-              <div className={styles.statHeader}>
-                <InsertChartOutlined className={styles.statIcon} />
-                <div>
-                  <div className={styles.statLabel}>Opiniões de hoje</div>
-                  <div className={styles.statHint}>Total registradas</div>
-                </div>
-              </div>
-              {/* _________________________________________ */}
-              <div className={styles.statValue}>{todayOpinions.length}</div>
-            </CardGridReflect>
-            {/* Card 2 */}
-            <CardGridReflect
-              span={4}
-              className={`${styles.statCard} ${styles.reveal}`}
+              <SlideComponent />
+            </div>
+            <div
+              className={styles.reveal}
               data-reveal
-              style={{ ["--reveal-delay" as any]: "0.12s" }}
+              style={{ ["--reveal-delay" as any]: "0.08s" }}
             >
-              <div className={styles.statHeader}>
-                <LocationOnOutlined className={styles.statIcon} />
-                <div>
-                  <div className={styles.statLabel}>Temas mais falados</div>
-                  <div className={styles.statHint}>
-                    Participação distribuída
-                  </div>
-                </div>
-              </div>
-              {topDistricts.length ? (
-                <div className={styles.districtChips}>
-                  {topDistricts.map((district) => (
-                    <span key={district.key} className={styles.districtChip}>
-                      {district.label}
-                    </span>
-                  ))}
-                </div>
-              ) : (
-                <div className={styles.statEmpty}>Sem dados de hoje.</div>
-              )}
-              <div className={styles.statHint}>Top 5 temas do dia</div>
-            </CardGridReflect>
-            {/* Card 3 */}
-            <CardGridReflect
-              span={4}
-              className={`${styles.statCard} ${styles.reveal}`}
-              data-reveal
-              style={{ ["--reveal-delay" as any]: "0.18s" }}
-            >
-              <div className={styles.statHeader}>
-                <LocationOnOutlined className={styles.statIcon} />
-                <div>
-                  <div className={styles.statLabel}>Bairros mais ativos</div>
-                  <div className={styles.statHint}>
-                    Participação distribuída
-                  </div>
-                </div>
-              </div>
-              {topDistricts.length ? (
-                <div className={styles.districtChips}>
-                  {topDistricts.map((district) => (
-                    <span key={district.key} className={styles.districtChip}>
-                      {district.label}
-                    </span>
-                  ))}
-                </div>
-              ) : (
-                <div className={styles.statEmpty}>Sem dados de hoje.</div>
-              )}
-              <div className={styles.statHint}>Top 5 bairros do dia</div>
-            </CardGridReflect>
-
-            {/* Clima Geral */}
-            <CardGridReflect
-              span={12}
-              className={`${styles.statCard} ${styles.wideCard} ${styles.reveal}`}
-              data-reveal
-              style={{ ["--reveal-delay" as any]: "0.24s" }}
-            >
-              <Box className={styles.climaCard}>
-                <div className={styles.statHeader}>
-                  <ThermostatOutlined className={styles.statIcon} />
-                  <Box>
-                    <div className={styles.statLabel}>Clima geral</div>
-                    <div className={styles.statHint}>
-                      Distribuição das opiniões
-                    </div>
-                  </Box>
-                </div>
-                <div className={styles.typeChips}>
-                  {groupOpinions.map(({ type, count }) => {
-                    const typeKey = normalizeText(type) || "outro";
-                    return (
-                      <span
-                        key={typeKey || type}
-                        className={styles.typeChip}
-                        data-type={typeKey}
-                        aria-label={`${type} (${count})`}
-                      >
-                        <span className={styles.typeIcon}>
-                          {renderTypeIcon(type)}
-                        </span>
-                        <span>{type}</span>
-                        <span className={styles.typeCount}>{count}</span>
-                      </span>
-                    );
-                  })}
-                </div>
-                {error ? <div className={styles.statHint}>{error}</div> : null}
+              <Box className={styles.heroTop}>
+                <CardGrid span={12} className={styles.heroPill}>
+                  <Typography
+                    sx={{
+                      fontSize: "13px",
+                      letterSpacing: "0.04em",
+                      textAlign: "center",
+                      color: "var(--accent-2)",
+                      width: "100%",
+                      fontWeight: 600,
+                    }}
+                  >
+                    Monitorando a voz da cidade
+                  </Typography>
+                </CardGrid>
               </Box>
-            </CardGridReflect>
-          </Box>
-          <CardGrid
-            className={`${styles.searchCard} ${styles.reveal}`}
-            span={12}
-            data-reveal
-            style={{ ["--reveal-delay" as any]: "0.28s" }}
-          >
-            <Box className={styles.searchContainer}>
-              <Box className={styles.headerSearch}>
-                <Box className={styles.statHeader}>
-                  <ClimaIcon />
-                  <Box>
-                    <Box className={styles.statLabel}>Filtros</Box>
+
+              <Typography
+                variant="h3"
+                sx={{ fontWeight: "bold", mt: 2, mb: 1, color: "var(--text)" }}
+              >
+                <span
+                  ref={heroTitleRef}
+                  style={{ display: "inline-block", maxWidth: "100%" }}
+                >
+                  Opinião em{" "}
+                  <span className={styles.gradientText}>tempo real</span>
+                </span>
+              </Typography>
+              <Typography
+                variant="body1"
+                sx={{
+                  mb: 1,
+                  color: "var(--muted)",
+                  maxWidth: heroCopyWidth ? `${heroCopyWidth}px` : "100%",
+                }}
+              >
+                Veja o que as pessoas estão falando, explore temas e acompanhe
+                como as opiniões evoluem.
+              </Typography>
+            </div>
+            <Box className={styles.statsRow}>
+              <CardGridReflect
+                span={4}
+                className={`${styles.statCard} ${styles.reveal}`}
+                data-reveal
+                style={{ ["--reveal-delay" as any]: "0.12s" }}
+              >
+                <div className={styles.statHeader}>
+                  <InsertChartOutlined className={styles.statIcon} />
+                  <div>
+                    <div className={styles.statLabel}>Opiniões de hoje</div>
+                    <div className={styles.statHint}>Total registradas</div>
+                  </div>
+                </div>
+                {/* _________________________________________ */}
+                <div className={styles.statValue}>{todayOpinions.length}</div>
+              </CardGridReflect>
+              {/* Card 2 */}
+              <CardGridReflect
+                span={4}
+                className={`${styles.statCard} ${styles.reveal}`}
+                data-reveal
+                style={{ ["--reveal-delay" as any]: "0.12s" }}
+              >
+                <div className={styles.statHeader}>
+                  <LocationOnOutlined className={styles.statIcon} />
+                  <div>
+                    <div className={styles.statLabel}>Temas mais falados</div>
+                    <div className={styles.statHint}>
+                      Participação distribuída
+                    </div>
+                  </div>
+                </div>
+                {topDistricts.length ? (
+                  <div className={styles.districtChips}>
+                    {topDistricts.map((district) => (
+                      <span key={district.key} className={styles.districtChip}>
+                        {district.label}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <div className={styles.statEmpty}>Sem dados de hoje.</div>
+                )}
+                <div className={styles.statHint}>Top 5 temas do dia</div>
+              </CardGridReflect>
+              {/* Card 3 */}
+              <CardGridReflect
+                span={4}
+                className={`${styles.statCard} ${styles.reveal}`}
+                data-reveal
+                style={{ ["--reveal-delay" as any]: "0.18s" }}
+              >
+                <div className={styles.statHeader}>
+                  <LocationOnOutlined className={styles.statIcon} />
+                  <div>
+                    <div className={styles.statLabel}>Bairros mais ativos</div>
+                    <div className={styles.statHint}>
+                      Participação distribuída
+                    </div>
+                  </div>
+                </div>
+                {topDistricts.length ? (
+                  <div className={styles.districtChips}>
+                    {topDistricts.map((district) => (
+                      <span key={district.key} className={styles.districtChip}>
+                        {district.label}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <div className={styles.statEmpty}>Sem dados de hoje.</div>
+                )}
+                <div className={styles.statHint}>Top 5 bairros do dia</div>
+              </CardGridReflect>
+
+              {/* Clima Geral */}
+              <CardGridReflect
+                span={12}
+                className={`${styles.statCard} ${styles.wideCard} ${styles.reveal}`}
+                data-reveal
+                style={{ ["--reveal-delay" as any]: "0.24s" }}
+              >
+                <Box className={styles.climaCard}>
+                  <div className={styles.statHeader}>
+                    <ThermostatOutlined className={styles.statIcon} />
+                    <Box>
+                      <div className={styles.statLabel}>Clima geral</div>
+                      <div className={styles.statHint}>
+                        Distribuição das opiniões
+                      </div>
+                    </Box>
+                  </div>
+                  <div className={styles.typeChips}>
+                    {groupOpinions.map(({ type, count }) => {
+                      const typeKey = normalizeText(type) || "outro";
+                      return (
+                        <span
+                          key={typeKey || type}
+                          className={styles.typeChip}
+                          data-type={typeKey}
+                          aria-label={`${type} (${count})`}
+                        >
+                          <span className={styles.typeIcon}>
+                            {renderTypeIcon(type)}
+                          </span>
+                          <span>{type}</span>
+                          <span className={styles.typeCount}>{count}</span>
+                        </span>
+                      );
+                    })}
+                  </div>
+                  {error ? (
+                    <div className={styles.statHint}>{error}</div>
+                  ) : null}
+                </Box>
+              </CardGridReflect>
+            </Box>
+            <CardGrid
+              className={`${styles.searchCard} ${styles.reveal}`}
+              span={12}
+              data-reveal
+              style={{ ["--reveal-delay" as any]: "0.28s" }}
+            >
+              <Box className={styles.searchContainer}>
+                <Box className={styles.headerSearch}>
+                  <Box className={styles.statHeader}>
+                    <ClimaIcon />
+                    <Box>
+                      <Box className={styles.statLabel}>Filtros</Box>
+                    </Box>
                   </Box>
                 </Box>
+                <Box onClick={() => setFilterExpanded(!filterExpanded)}>
+                  <ArrowDown />
+                </Box>
               </Box>
-              <Box onClick={() => setFilterExpanded(!filterExpanded)}>
-                <ArrowDown />
+              <Box
+                className={`${styles.filterContainerBody} ${
+                  filterExpanded ? styles.expanded : ""
+                }`}
+              >
+                <Forms<FilterFormValues>
+                  errors={filterErrors}
+                  inputsList={getFilterInputs()}
+                  control={filterControl}
+                />{" "}
+                <Box className={styles.filterActions}>
+                  <Button
+                    className={styles.filterButton}
+                    type="button"
+                    onClick={handleClearFilters}
+                  >
+                    Limpar
+                  </Button>
+                  <Button
+                    className={`${styles.filterButton} ${styles.filterButtonPrimary}`}
+                    type="button"
+                    onClick={handleFilterSubmit(onSubmitUser)}
+                  >
+                    Aplicar Filtros
+                  </Button>
+                </Box>
               </Box>
-            </Box>
-            <Box
-              className={`${styles.filterContainerBody} ${
-                filterExpanded ? styles.expanded : ""
-              }`}
-            >
-              <Forms<FilterFormValues>
-                errors={filterErrors}
-                inputsList={getFilterInputs()}
-                control={filterControl}
-              />{" "}
-              <Box className={styles.filterActions}>
-                <Button
-                  className={styles.filterButton}
-                  type="button"
-                  onClick={handleClearFilters}
-                >
-                  Limpar
-                </Button>
-                <Button
-                  className={`${styles.filterButton} ${styles.filterButtonPrimary}`}
-                  type="button"
-                  onClick={handleFilterSubmit(onSubmitUser)}
-                >
-                  Aplicar Filtros
-                </Button>
-              </Box>
-            </Box>
-          </CardGrid>
+            </CardGrid>
 
-          <Box
-            className={`${styles.opinionsContainer} ${styles.reveal}`}
-            data-reveal
-            style={{ ["--reveal-delay" as any]: "0.32s" }}
-          >
-            <CardDetails opinions={paginatedOpinions} />
-          </Box>
-          <Box sx={{ width: "100%" }}>
-            <Pagination
-              page={currentPage}
-              count={totalPages}
-              onChange={(_, page) => setCurrentPage(page)}
-              size="small"
-              siblingCount={0}
-              boundaryCount={1}
-            />
+            <Box
+              className={`${styles.opinionsContainer} ${styles.reveal}`}
+              data-reveal
+              style={{ ["--reveal-delay" as any]: "0.32s" }}
+            >
+              <CardDetails opinions={paginatedOpinions} />
+            </Box>
+            <Box sx={{ width: "100%" }}>
+              <Pagination
+                page={currentPage}
+                count={totalPages}
+                onChange={(_, page) => setCurrentPage(page)}
+                size="small"
+                siblingCount={0}
+                boundaryCount={1}
+              />
+            </Box>
           </Box>
         </Box>
-      </Box>
+      </Layout>
     </>
   );
 }

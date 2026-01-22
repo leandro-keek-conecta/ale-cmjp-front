@@ -3,7 +3,7 @@ import type {
   OpinionFormValues,
   OpiniaoCategoria,
   TipoOpiniao,
-} from "../../../@types/opiniao";
+} from "../../../types/opiniao";
 
 type SelectOption<T = string | number> = { label: string; value: T };
 

@@ -1,4 +1,4 @@
-import type { FormValues } from "../../../../@types/filter";
+import type { FormValues } from "../../../../types/filter";
 import type { InputType } from "../../../../components/Forms";
 
 export type SelectOption<T = string | number> = { label: string; value: T };

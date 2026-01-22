@@ -1,0 +1,73 @@
+.sidebarNav {
+  padding: 8px;
+  background-color: white;
+  border-radius: 4px;
+}
+
+.ulStyle {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  color: #111827;
+  font-family: "Inter", sans-serif;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 6px;
+  color: #374151;
+  text-decoration: none;
+  transition: all 0.2s;
+  margin-bottom: 4px;
+}
+
+.menuItem:hover {
+  background-color: #f9fafb;
+}
+
+.ativo {
+  background-color: #e8f5e9;
+  color: #22c55e;
+  font-weight: 600;
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  margin-right: 10px;
+  color: inherit;
+}
+
+.label {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 12px 0 6px 12px;
+}
+
+.divider {
+  margin: 16px 8px;
+  height: 1px;
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.noAccessMessage {
+  margin: 16px 8px;
+  padding: 12px;
+  border-radius: 6px;
+  background-color: #fff4e5;
+  color: #92400e;
+  font-size: 0.875rem;
+  text-align: center;
+}

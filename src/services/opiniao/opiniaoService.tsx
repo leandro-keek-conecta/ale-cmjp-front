@@ -1,6 +1,6 @@
 import { api } from "../api/api";
 import type { Opinion } from "../../pages/home/HomePage";
-import type { OpinionFormValues } from "../../@types/opiniao";
+import type { OpinionFormValues } from "../../types/opiniao";
 
 const getArrayPayload = (data: unknown) => {
   if (Array.isArray(data)) return data;
@@ -61,7 +61,7 @@ export async function getUpDistricts() {
 }
 
 export async function submitOpinion(data: SubmitSummary) {
-  console.log("fui chamado")
+  console.log("fui chamado");
   const response = await api.post("", {
     action: "create",
     entity: "opiniao",
@@ -70,4 +70,3 @@ export async function submitOpinion(data: SubmitSummary) {
 
   return response;
 }
-

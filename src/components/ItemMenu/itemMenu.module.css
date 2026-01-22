@@ -1,0 +1,44 @@
+.menuItem {
+  display: flex;
+  align-items: center;
+  padding: 3px 12px;
+  border-radius: 6px;
+  color: #374151;
+  text-decoration: none;
+  font-weight: 400;
+  transition: all 0.2s ease;
+  margin-bottom: 4px;
+}
+
+.menuItem:hover {
+  background-color: #f3f4f6;
+}
+
+.ativo {
+  font-weight: 600;
+  background-color: #e8f5e9; /* cor de fundo quando ativo */
+  color: #166534; /* verde escuro de contraste */
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  margin-right: 10px;
+  color: inherit;
+}
+
+.label {
+  font-size: 0.875rem;
+  font-weight: 400;
+}
+
+.title {
+  font-size: 0.9rem;
+  font-weight: 700 !important;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 12px 0 6px 12px;
+}

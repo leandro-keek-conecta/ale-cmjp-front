@@ -5,8 +5,8 @@ import { useMemo, useState } from "react";
 import Forms from "../../components/Forms";
 import { getUserInputs } from "./userImputList/user";
 import { useForm } from "react-hook-form";
-import type { UserFormValues } from "../../@types/user";
-import type { OpinionFormValues } from "../../@types/opiniao";
+import type { UserFormValues } from "../../types/user";
+import type { OpinionFormValues } from "../../types/opiniao";
 import { getOpinionInputs } from "./opinionList/opinionImputList";
 import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
 import {
@@ -188,7 +188,7 @@ export default function FormsPage() {
         horario_opiniao: new Date().toISOString(),
         acao: "Registrar opinião",
       };
-      console.log(payload)
+      console.log(payload);
       await submitOpinion(payload);
 
       setSummary({
@@ -221,7 +221,7 @@ export default function FormsPage() {
 
   const handleOpinionInputChange = (
     name: keyof OpinionFormValues,
-    value: unknown
+    value: unknown,
   ) => {
     if (name === "opiniao") {
       const isOutros = value === "Outros";
@@ -233,7 +233,10 @@ export default function FormsPage() {
     }
   };
 
-  const handleUserInputChange = (name: keyof UserFormValues, value: unknown) => {
+  const handleUserInputChange = (
+    name: keyof UserFormValues,
+    value: unknown,
+  ) => {
     if (name !== "telefone") return;
 
     const raw = String(value ?? "");
@@ -250,7 +253,7 @@ export default function FormsPage() {
     const base = getOpinionInputs();
 
     const filtered = base.filter((i) =>
-      showOutraOpiniao ? true : i.name !== "outra_opiniao"
+      showOutraOpiniao ? true : i.name !== "outra_opiniao",
     );
 
     return filtered.map((i) => {
@@ -282,7 +285,6 @@ export default function FormsPage() {
   return (
     <Box className={styles.container}>
       <Box className={styles.formBox}>
-
         <Typography
           variant="h5"
           fontWeight={700}
@@ -403,7 +405,7 @@ export default function FormsPage() {
                       {summary?.texto_opiniao && (
                         <Chip
                           label={`Texto da opinião: ${getOpinionPreviewText(
-                            summary.texto_opiniao
+                            summary.texto_opiniao,
                           )}`}
                           onClick={() => setIsOpinionTextModalOpen(true)}
                           clickable
@@ -430,10 +432,7 @@ export default function FormsPage() {
                       maxWidth="sm"
                     >
                       <DialogTitle>Texto da opinião</DialogTitle>
-                      <DialogContentText
-                        component="div"
-                        sx={{ px: 2, pb: 2 }}
-                      >
+                      <DialogContentText component="div" sx={{ px: 2, pb: 2 }}>
                         {summary?.texto_opiniao || "Sem texto"}
                       </DialogContentText>
                     </Dialog>
