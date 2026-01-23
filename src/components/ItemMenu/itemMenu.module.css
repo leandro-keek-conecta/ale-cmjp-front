@@ -11,13 +11,19 @@
 }
 
 .menuItem:hover {
-  background-color: #f3f4f6;
+  background-color: #dfe7ff;
+  color: #1f2937;
 }
 
 .ativo {
   font-weight: 600;
-  background-color: #e8f5e9; /* cor de fundo quando ativo */
-  color: #166534; /* verde escuro de contraste */
+  background-color: #5070dd; /* cor de fundo quando ativo */
+  color: #ffffff; /* texto branco quando ativo */
+}
+
+.ativo:hover {
+  background-color: #5070dd;
+  color: #ffffff;
 }
 
 .icon {

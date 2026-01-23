@@ -26,6 +26,9 @@ export function ItemMenu({
   const color = "#ff7a01";
 
   const isPlaceholder = !para || para === "#";
+  const menuItemClassName = `${styles.menuItem} ${
+    isActive ? styles.ativo : ""
+  }`;
 
   const content = (
     <>
@@ -93,7 +96,7 @@ export function ItemMenu({
   // 🔹 Links normais (mantém compatibilidade)
   return (
     <li>
-      <Link to={para as string} className={styles.menuItem} onClick={onClick}>
+      <Link to={para as string} className={menuItemClassName} onClick={onClick}>
         {content}
       </Link>
     </li>
