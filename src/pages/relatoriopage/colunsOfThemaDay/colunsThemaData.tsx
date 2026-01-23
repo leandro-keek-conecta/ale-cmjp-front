@@ -1,18 +1,23 @@
-import type { GridColDef } from "@mui/x-data-grid";
+import type { GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 
 export const temasColumns: GridColDef[] = [
   {
     field: "tema",
     headerName: "Tema",
-    
-    colSpan: 1,
+    flex: 6,
+    minWidth: 160,
   },
   {
     field: "total",
     headerName: "Opiniões",
-    width: 120,
-    align: "right",
-    headerAlign: "right",
-    colSpan: 2,
+    flex: 4,
+    minWidth: 140,
+    align: "center",
+    headerAlign: "center",
+    renderCell: (params: GridRenderCellParams) => (
+      <span style={{ display: "block", width: "100%", textAlign: "center" }}>
+        {params.value}
+      </span>
+    ),
   },
 ];

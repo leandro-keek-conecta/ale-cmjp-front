@@ -35,7 +35,7 @@ export function Sidebar({
     <nav className={styles.sidebarNav}>
         <ul className={styles.ulStyle}>
           <Fragment>
-            <ItemMenu rotulo="Telas" isTitle estaAberta={estaAberta} />
+            <ItemMenu rotulo="Menu" isTitle estaAberta={estaAberta} />
             <ItemMenu
               icone={<ChatIcon />}
               rotulo="Visão geral"
