@@ -30,7 +30,7 @@ export function Sidebar({
             <ItemMenu
               icone={<ChatIcon />}
               rotulo="Visão geral"
-              para="Visão geral"
+              para="relatorio"
               estaAberta={estaAberta}
             />
             <ItemMenu

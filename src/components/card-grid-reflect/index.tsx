@@ -8,11 +8,14 @@ type CardGridReflectProps = Omit<
   children: React.ReactNode;
   /** Quantos 12 avos da linha o card ocupa (3, 4, 6 ou 12). */
   span?: 3 | 4 | 6 | 12;
+  /** Remove o padding interno do card mantendo o restante do estilo. */
+  disablePadding?: boolean;
 };
 
 export default function CardGridReflect({
   children,
   span = 12,
+  disablePadding = false,
   className,
   style,
   ...rest
@@ -20,9 +23,13 @@ export default function CardGridReflect({
   const allowed = span === 3 || span === 4 || span === 6 || span === 12 ? span : 12;
   const widthPercent = `calc(((100% - (11 * var(--card-gap, 16px))) / 12) * ${allowed} + (${allowed - 1} * var(--card-gap, 16px)))`;
 
-  const combinedClassName = className
-    ? `${styles.cardGridReflect} ${className}`
-    : styles.cardGridReflect;
+  const combinedClassName = [
+    styles.cardGridReflect,
+    disablePadding ? styles.noPadding : "",
+    className ?? "",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <Card
