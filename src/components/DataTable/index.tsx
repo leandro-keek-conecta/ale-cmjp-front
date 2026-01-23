@@ -27,6 +27,8 @@ export function GenericDataTable({
   sx = {},
 }: Props) {
   const isAutoHeight = height === "auto";
+  const isFullHeight = height === "100%";
+  const resolvedHeight = isAutoHeight || isFullHeight ? undefined : height;
 
   const enhancedColumns = React.useMemo<GridColDef[]>(() => {
     if (hideActions) return columns;
@@ -60,6 +62,10 @@ export function GenericDataTable({
         overflow: "hidden", // evita push lateral
         backgroundColor: "white",
         boxSizing: "border-box",
+        height: resolvedHeight,
+        display: isAutoHeight ? "block" : "flex",
+        flexDirection: "column",
+        flex: isAutoHeight ? undefined : 1,
         ...sx,
       }}
     >
@@ -88,6 +94,9 @@ export function GenericDataTable({
           "& .MuiDataGrid-virtualScroller": {
             overflowX: "hidden !important",
           },
+          height: isAutoHeight ? undefined : "100%",
+          flex: isAutoHeight ? undefined : 1,
+          minHeight: 0,
         }}
       />
     </Paper>

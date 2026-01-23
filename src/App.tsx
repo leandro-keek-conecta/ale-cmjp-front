@@ -4,7 +4,7 @@ import VLibrasWidget from "./components/VLibrasWidget";
 
 const App = () => (
   <BrowserRouter>
-    <VLibrasWidget />
+    <VLibrasWidget disabledOnPaths={["/relatorio"]} />
     <RoutesConfig />
   </BrowserRouter>
 );

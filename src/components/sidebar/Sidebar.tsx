@@ -30,13 +30,13 @@ export function Sidebar({
             <ItemMenu
               icone={<ChatIcon />}
               rotulo="Visão geral"
-              para="relatorio"
+              para=""
               estaAberta={estaAberta}
             />
             <ItemMenu
               icone={<ChatIcon />}
               rotulo="⁠Relatórios"
-              para="⁠Relatórios"
+              para="relatorio"
               estaAberta={estaAberta}
             />
           </Fragment>

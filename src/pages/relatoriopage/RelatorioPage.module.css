@@ -15,4 +15,9 @@
   gap: 1rem;
   flex: 1;
   margin-left: 0;
+  align-items: stretch;
+}
+
+.gridContainerOndeLine > * {
+  align-self: stretch;
 }

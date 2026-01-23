@@ -200,14 +200,18 @@ export default function RelatorioPage() {
             <h5 style={{ margin: "1rem" }}>Top 10 bairros com mais opiniões</h5>
             <BarRaceChart data={topBairros} height={360} />
           </CardGridReflect>
-
-          <CardGridReflect span={6} disablePadding>
-            <h5 style={{ margin: "1rem" }}>Top temas mais falados</h5>
+          
+          <CardGridReflect
+            span={6}
+            disablePadding
+            style={{ display: "flex", flexDirection: "column"}}
+          >
+            <h5 style={{ margin: "1rem", marginBottom: "2rem" }}>Top temas mais falados</h5>
             <GenericDataTable
               rows={topTemas}
               columns={temasColumns}
               hideActions
-              height="auto"
+              height="100%"
             />
           </CardGridReflect>
         </Box>
