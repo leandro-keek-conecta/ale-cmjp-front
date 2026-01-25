@@ -35,23 +35,38 @@ export function buildPieChartOption({
     series: [
       {
         type: "pie",
-        radius: ["40%", "70%"], // donut
+        radius: ["40%", "70%"],
         center: ["50%", "45%"],
         data: seriesData,
         itemStyle: {
           borderColor: "#fff",
-          borderWidth: 2,
+          borderWidth: 1,
         },
         label: {
           show: true,
+          position: "outside",
+          formatter: ({ value, percent }) => `${value} (${percent}%)`,
+          fontSize: 11,
+          fontWeight: 600,
+          color: "#334155",
+        },
+        labelLine: {
+          show: true,
+          length: 12,
+          length2: 8,
+          smooth: true,
+          lineStyle: {
+            color: "#94a3b8",
+            width: 1,
+          },
         },
         emphasis: {
           scale: true,
           label: {
             show: true,
+            formatter: "{b}",
             fontSize: 12,
             fontWeight: 600,
-            formatter: "{b}\n{d}%",
           },
         },
       },

@@ -9,6 +9,7 @@ import { bairrosColumns } from "./colunsOfDistricts/colunsDistrictsData";
 import { LineChart } from "../../components/charts/line/LineChart";
 import { PieChart } from "../../components/charts/pie/PieChart";
 import { BarRaceChart } from "../../components/charts/barRace/BarRaceChart";
+import AnimatedNumber from "../../components/animated-number";
 
 const topBairros = [
   { label: "Mangabeira", value: 182 },
@@ -126,7 +127,7 @@ export const ondeLineCardData = [
   },
   {
     id: 3,
-    title: "Aceitou vs Não aceitou campanha",
+    title: "Autorização de comunicação",
     content: "Conteúdo do Onde Line Card 3",
   },
 ];
@@ -155,7 +156,9 @@ export default function RelatorioPage() {
               children={
                 <Box sx={{ display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
                   <h5>{card.title}</h5>
-                  <h4>{card.subtitle}</h4>
+                  <h4>
+                    <AnimatedNumber value={card.subtitle} />
+                  </h4>
                 </Box>
               }
               span={4}
@@ -187,7 +190,7 @@ export default function RelatorioPage() {
           </CardGridReflect>
 
           <CardGridReflect span={4}>
-            <h5>Aceitou vs Não aceitou campanha</h5>
+            <h5>Autorização de comunicação</h5>
             <Box sx={{ marginTop: "1rem" }}><PieChart data={campaignAcceptance} height={220} /></Box>
           </CardGridReflect>
         </Box>

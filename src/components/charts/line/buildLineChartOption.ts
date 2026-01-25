@@ -38,7 +38,7 @@ export function buildLineChartOption({
       {
         type: "line",
         data: seriesData,
-        smooth: true,
+        smooth: false,
         symbol: "circle",
         symbolSize: 6,
         lineStyle: {
