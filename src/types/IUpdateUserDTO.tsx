@@ -1,4 +1,4 @@
-import { ProjetoAccessLevel } from "./IUserType";
+import type { ProjetoAccessLevel } from "./IUserType";
 
 export interface UpdateUserDTO {
   id?: number;

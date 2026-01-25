@@ -4,7 +4,7 @@ import styles from "./itemMenu.module.css";
 import { useTheme } from "@mui/material/styles";
 
 interface ItemMenuProps {
-  icone?: React.ReactElement;
+  icone?: React.ReactElement<{ style?: React.CSSProperties }>;
   rotulo: string;
   para?: string;
   estaAberta: boolean;

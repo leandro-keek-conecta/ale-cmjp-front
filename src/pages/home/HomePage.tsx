@@ -21,7 +21,6 @@ import {
 } from "../../services/opiniao/opiniaoService";
 import SlideComponent from "../../components/slide";
 import PresentationModal from "../../components/modal";
-import Header from "../../components/header";
 import { readFromStorage, saveToStorage } from "../../utils/localStorage";
 import { ClimaIcon } from "../../icons/Filter";
 import { ArrowDown } from "../../icons/arrowDonw";

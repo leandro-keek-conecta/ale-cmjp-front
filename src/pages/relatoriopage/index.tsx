@@ -5,7 +5,6 @@ import CardGridReflect from "../../components/card-grid-reflect";
 import { BarChart } from "../../components/charts/bar/BarChart";
 import { GenericDataTable } from "../../components/DataTable";
 import { temasColumns } from "./colunsOfThemaDay/colunsThemaData";
-import { bairrosColumns } from "./colunsOfDistricts/colunsDistrictsData";
 import { LineChart } from "../../components/charts/line/LineChart";
 import { PieChart } from "../../components/charts/pie/PieChart";
 import { BarRaceChart } from "../../components/charts/barRace/BarRaceChart";

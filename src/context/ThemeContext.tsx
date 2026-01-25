@@ -1,7 +1,8 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
+import type { ReactNode } from "react";
 import { ThemeProvider } from "@mui/material/styles";
-import { createDynamicTheme, defaultTheme } from "@/theme";
-import { ensureThemeColor, getActiveProject } from "@/utils/project";
+import { createDynamicTheme, defaultTheme } from "../theme";
+import { ensureThemeColor, getActiveProject } from "../utils/project";
 
 interface ThemeContextProps {
   updateThemeColor: (color: string) => void;
@@ -11,7 +12,11 @@ const ThemeContext = createContext({} as ThemeContextProps);
 
 export const useDynamicTheme = () => useContext(ThemeContext);
 
-export function DynamicThemeProvider({ children }) {
+type DynamicThemeProviderProps = {
+  children: ReactNode;
+};
+
+export function DynamicThemeProvider({ children }: DynamicThemeProviderProps) {
   const [theme, setTheme] = useState(defaultTheme);
 
   useEffect(() => {
