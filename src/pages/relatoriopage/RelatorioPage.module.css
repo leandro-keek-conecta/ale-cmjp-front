@@ -1,0 +1,45 @@
+.container {
+  margin: 2rem;
+  width: calc(100% - 4rem);
+}
+
+.gridContainer {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+}
+
+.gridContainerOndeLine {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  flex: 1;
+  margin-left: 0;
+  align-items: stretch;
+}
+
+.gridContainerOndeLine > * {
+  align-self: stretch;
+}
+
+@keyframes topTemasReveal {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.topTemasCard {
+  animation: topTemasReveal 600ms ease-out 120ms both;
+  will-change: opacity, transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .topTemasCard {
+    animation: none;
+  }
+}

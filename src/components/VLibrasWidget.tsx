@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 
 declare global {
   interface Window {
@@ -9,9 +10,34 @@ declare global {
   }
 }
 
-const VLibrasWidget = () => {
+type VLibrasWidgetProps = {
+  disabled?: boolean;
+  disabledOnPaths?: string[];
+};
+
+const VLibrasWidget = ({
+  disabled = false,
+  disabledOnPaths = [],
+}: VLibrasWidgetProps) => {
+  const location = useLocation();
+  const isDisabled =
+    disabled ||
+    disabledOnPaths.some(
+      (path) =>
+        location.pathname === path ||
+        location.pathname.startsWith(`${path}/`)
+    );
+
   useEffect(() => {
     const containerId = "vlibras-plugin-container";
+
+    if (isDisabled) {
+      document.getElementById(containerId)?.remove();
+      if (window.__vlibrasWidget) {
+        window.__vlibrasWidget = undefined;
+      }
+      return;
+    }
 
     const ensureMarkup = () => {
       const existing = document.getElementById(containerId);
@@ -66,7 +92,7 @@ const VLibrasWidget = () => {
     return () => {
       script?.removeEventListener("load", handleLoad);
     };
-  }, []);
+  }, [isDisabled]);
 
   return null;
 };

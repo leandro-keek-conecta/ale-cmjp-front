@@ -1,4 +1,4 @@
-import type { FilterFormValues, FiltersState } from "../@types/filter";
+import type { FilterFormValues, FiltersState } from "../types/filter";
 
 type FilterFn<T> = (items: T[], value: any) => T[];
 
@@ -13,7 +13,7 @@ const faixaEtariaMap: Record<string, { min: number; max: number }> = {
 };
 
 const getFaixaEtariaRange = (value?: string | null) =>
-  value ? faixaEtariaMap[value] ?? null : null;
+  value ? (faixaEtariaMap[value] ?? null) : null;
 
 const getBirthYear = (item: any) => {
   const raw =
@@ -53,9 +53,7 @@ const getDistrict = (item: any) => {
   return String(raw ?? "");
 };
 
-export const mapFilterFormToState = (
-  form: FilterFormValues,
-): FiltersState => ({
+export const mapFilterFormToState = (form: FilterFormValues): FiltersState => ({
   data: (() => {
     const inicio = toDate(form.dataInicio);
     const fim = toDate(form.dataFim);
@@ -95,17 +93,13 @@ export const filterMappers: Record<string, FilterFn<any>> = {
 
   genero: (items, genero) =>
     genero
-      ? items.filter(
-          (i) => normalizeText(i.genero) === normalizeText(genero),
-        )
+      ? items.filter((i) => normalizeText(i.genero) === normalizeText(genero))
       : items,
 
   bairro: (items, bairro) => {
     const query = normalizeText(bairro);
     if (!query) return items;
-    return items.filter((i) =>
-      normalizeText(getDistrict(i)).includes(query),
-    );
+    return items.filter((i) => normalizeText(getDistrict(i)).includes(query));
   },
 
   tipo: (items, tipo) =>
@@ -117,9 +111,7 @@ export const filterMappers: Record<string, FilterFn<any>> = {
 
   tema: (items, tema) =>
     tema
-      ? items.filter(
-          (i) => normalizeText(i.opiniao) === normalizeText(tema),
-        )
+      ? items.filter((i) => normalizeText(i.opiniao) === normalizeText(tema))
       : items,
 
   faixaEtaria: (items, faixaEtaria) => {

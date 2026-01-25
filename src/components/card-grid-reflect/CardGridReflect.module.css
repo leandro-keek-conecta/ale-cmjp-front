@@ -8,6 +8,10 @@
   flex: 1 1 auto !important;
 }
 
+.noPadding {
+  padding: 0 !important;
+}
+
 /* #e30613 */
 
 @media (max-width: 760px) {
