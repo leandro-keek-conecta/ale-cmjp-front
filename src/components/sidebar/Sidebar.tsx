@@ -18,7 +18,7 @@ export function Sidebar({
   estaAberta,
 }: PropriedadesSidebar) {
   const location = useLocation();
-
+        
   // se não houver reportInstance e também não vieram páginas após um tempo, ativa fallbac
 
   const isActive = (path: string) => {

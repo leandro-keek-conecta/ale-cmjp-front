@@ -36,12 +36,12 @@
 }
 
 .label {
-  font-size: 0.875rem;
+  font-size: 1rem;
   font-weight: 400;
 }
 
 .title {
-  font-size: 0.9rem;
+  font-size: 1rem;
   font-weight: 700 !important;
   color: #6b7280;
   text-transform: uppercase;

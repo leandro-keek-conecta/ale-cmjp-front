@@ -204,6 +204,7 @@ export default function RelatorioPage() {
           <CardGridReflect
             span={6}
             disablePadding
+            className={styles.topTemasCard}
             style={{ display: "flex", flexDirection: "column"}}
           >
             <h5 style={{ margin: "1rem", marginBottom: "2rem" }}>Top temas mais falados</h5>
