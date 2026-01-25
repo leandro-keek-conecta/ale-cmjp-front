@@ -1,5 +1,4 @@
 import { createTheme } from "@mui/material/styles";
-import "@fontsource/lato";
 
 // Tema padrão para keekInteligencia (será usado se não houver cor de projeto definida)
 export const defaultTheme = createTheme({

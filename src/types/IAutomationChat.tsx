@@ -1,4 +1,4 @@
-import Projeto from "./IProjetoType";
+import type Projeto from "./IProjetoType";
 
 export interface AutomationChatProjectPivot {
   id?: number;

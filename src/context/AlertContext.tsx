@@ -1,7 +1,8 @@
 // context/AlertContext.tsx
-import React, { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
+import type { ReactNode } from "react";
 import CustomAlert from "../components/Alert";
-import { registerAlert } from "@/services/alert/alertService";
+import { registerAlert } from "../services/alert/alertService";
 
 type AlertOptions = {
   category?: "error" | "info" | "warning" | "success";
@@ -14,9 +15,11 @@ type AlertContextType = {
 
 const AlertContext = createContext<AlertContextType | undefined>(undefined);
 
-export const AlertProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+type AlertProviderProps = {
+  children: ReactNode;
+};
+
+export const AlertProvider = ({ children }: AlertProviderProps) => {
   const [alert, setAlert] = useState<AlertOptions | null>(null);
 
   const showAlert = (options: AlertOptions) => {

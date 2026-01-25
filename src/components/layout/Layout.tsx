@@ -6,14 +6,13 @@ import icone from "../../assets/Keek-Icone.png";
 import ChatIcon from "@mui/icons-material/Chat";
 import {
   AppBar,
-  Avatar,
   Box,
   Drawer,
   IconButton,
   Toolbar,
   Typography,
 } from "@mui/material";
-import { ChevronLeft, ChevronRight, Menu } from "@mui/icons-material";
+import { ChevronLeft } from "@mui/icons-material";
 import { Sidebar } from "../sidebar/Sidebar";
 import SplitButton from "../SplitButton";
 import { useNavigate } from "react-router-dom";
@@ -40,7 +39,7 @@ const CabecalhoEstilizado = styled(AppBar)(({ theme }) => ({
 }));
 
 // Estilo para a barra lateral
-const BarraLateralEstilizada = styled(Box)(({ theme }) => ({
+const BarraLateralEstilizada = styled(Box)(() => ({
   backgroundColor: "#ffffff", // Verde similar ao sinGroup
   color: "white",
   height: "100%",

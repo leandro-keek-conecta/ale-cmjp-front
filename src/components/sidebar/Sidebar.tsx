@@ -1,7 +1,6 @@
 import { Fragment } from "react";
 import styles from "./sidebar.module.css";
 import ChatIcon from "@mui/icons-material/Chat";
-import { Skeleton, Box } from "@mui/material";
 import { useLocation } from "react-router-dom";
 import { ItemMenu } from "../ItemMenu";
 
@@ -53,37 +52,5 @@ export function Sidebar({
           </Fragment>
         </ul>
     </nav>
-  );
-}
-
-/* ---------- Skeleton do menu ---------- */
-function SkeletonMenu({ estaAberta }: { estaAberta: boolean }) {
-  const itemH = 36;
-  return (
-    <>
-      <li>
-        <Box className={styles.menuItem} sx={{ py: 0.5 }}>
-          <Skeleton variant="text" width={estaAberta ? 140 : 24} height={20} />
-        </Box>
-      </li>
-      {Array.from({ length: 6 }).map((_, i) => (
-        <li key={`sk-${i}`}>
-          <Box
-            className={styles.menuItem}
-            sx={{
-              height: itemH,
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
-            }}
-          >
-            <Skeleton variant="circular" width={16} height={16} />
-            {estaAberta && (
-              <Skeleton variant="text" width={120 + (i % 3) * 50} height={18} />
-            )}
-          </Box>
-        </li>
-      ))}
-    </>
   );
 }

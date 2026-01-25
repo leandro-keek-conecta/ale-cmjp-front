@@ -1,6 +1,6 @@
 
 import type Projeto from "./IProjetoType";
-import { Role } from "./IRoleType";
+import type { Role } from "./IRoleType";
 
 export type ProjetoAccessLevel =
   | "FULL_ACCESS"
