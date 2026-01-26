@@ -405,7 +405,7 @@ export function Layout({
               borderRadius: "10px",
               zIndex: 5,
               position: "absolute",
-              left: "4rem",
+              left: "5rem",
               top: "3rem",
               border: "1px solid #e0e0e0",
               backgroundColor: "#ffffff",
