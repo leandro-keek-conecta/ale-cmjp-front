@@ -90,7 +90,7 @@ export default function LoginPage() {
         title: "Login realizado com sucesso!",
       });
       setLoading(false);
-      navigate("/");
+      navigate("/projetos");
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Erro ao fazer login.";
