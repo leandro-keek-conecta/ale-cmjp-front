@@ -1,12 +1,10 @@
 import type UserLogin from "../../types/userLogin";
 import { api } from "../api/api";
-import { defaultTheme } from "../../theme";
-import { ensureThemeColor, getActiveProject } from "../../utils/project";
+import {  getActiveProject } from "../../utils/project";
 import { CLEAR_PROJECT_SELECTION_EVENT } from "../../constants/events";
 
 export async function login(
   data: UserLogin,
-  updateThemeColor: (c: string) => void,
 ) {
   try {
     const response = await api.post(
@@ -29,12 +27,7 @@ export async function login(
       localStorage.setItem("user", JSON.stringify(userToPersist));
     }
 
-    const themeColor = ensureThemeColor(
-      activeProject?.corHex,
-      defaultTheme.palette.primary.main,
-    );
-    updateThemeColor(themeColor);
-
+    
     return response;
   } catch (error: any) {
     const message =

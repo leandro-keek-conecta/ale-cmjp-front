@@ -1,5 +1,5 @@
 import { api } from "../api/api";
-import type { Opinion } from "../../pages/home/HomePage";
+import type { Opinion } from "../../pages/home/Panorama";
 import type { OpinionFormValues } from "../../types/opiniao";
 
 const getArrayPayload = (data: unknown) => {

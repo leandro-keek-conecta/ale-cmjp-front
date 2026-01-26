@@ -1,45 +1,120 @@
-import type { InputType } from "../../components/Forms";
-import Forms from "../../components/Forms";
+import { useEffect, useRef, useState } from "react";
 import styles from "./login.module.css";
-import { Box } from "@mui/material";
-import { useForm } from "react-hook-form";
+import {
+  Visibility,
+  VisibilityOff,
+  PersonOutline,
+  LockOutlined,
+} from "@mui/icons-material";
+import {
+  Box,
+  Button,
+  Checkbox,
+  FormControlLabel,
+  TextField,
+  Link,
+  InputAdornment,
+  IconButton,
+  CircularProgress,
+  Tooltip,
+} from "@mui/material";
+import { login, logout } from "../../services/auth/authService";
+import { useAuth } from "../../context/AuthContext";
+import type UserLogin from "../../types/userLogin";
+import { useNavigate } from "react-router-dom";
+import CustomAlert from "../../components/Alert";
+
+type AlertState = {
+  show: boolean;
+  category?: "success" | "error" | "info" | "warning";
+  title?: string;
+};
 
 export default function LoginPage() {
-  type LoginFormValues = {
-    email: string;
-    password: string;
+  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [mostraSenha, setMostraSenha] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [alert, setAlert] = useState<AlertState>({ show: false });
+  const isMountedRef = useRef(true);
+  const { setUser } = useAuth();
+  const navigate = useNavigate();
+
+  const toggleMostraSenha = () => setMostraSenha((prev) => !prev);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const {
-    control,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<LoginFormValues>({
-    defaultValues: {
-      email: "",
-      password: "",
-    },
-  });
+  useEffect(() => {
+    logout(); // limpa com seguran?a, sem hooks fora de componente
+    setFormData({ email: "", password: "" });
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
-  const inputsList: InputType<LoginFormValues>[] = [
-    {
-      name: "email",
-      title: "E-mail corporativo",
-      type: "email",
-      containerClassName: styles.formGroup,
-    },
-    {
-      name: "password",
-      title: "Senha",
-      type: "password",
-      containerClassName: styles.formGroup,
-    },
-  ];
+  async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (loading) return;
 
-  function onSubmit() {}
+    setAlert({ show: false });
+
+    if (!formData.email || !formData.password) {
+      setAlert({
+        show: true,
+        category: "error",
+        title: "Preencha e-mail e senha antes de acessar.",
+      });
+      return;
+    }
+
+    setLoading(true);
+
+    const data: UserLogin = {
+      email: formData.email,
+      password: formData.password,
+    };
+
+    let didSucceed = false;
+    try {
+      const response = await login(data);
+      const user = response.data?.response?.user;
+      if (user) {
+        setUser(user);
+      }
+      didSucceed = true;
+      setAlert({
+        show: true,
+        category: "success",
+        title: "Login realizado com sucesso!",
+      });
+      setLoading(false);
+      navigate("/");
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Erro ao fazer login.";
+      setAlert({
+        show: true,
+        category: "error",
+        title: message,
+      });
+    } finally {
+      if (!didSucceed && isMountedRef.current) {
+        setLoading(false);
+      }
+    }
+  }
 
   return (
     <Box className={styles.container}>
+      {alert.show && (
+        <CustomAlert
+          category={alert.category}
+          title={alert.title ?? ""}
+          onClose={() => setAlert({ show: false })}
+        />
+      )}
       <Box className={styles.leftSide}>
         <Box className={styles.heroImage}></Box>
         <Box className={styles.brandContent}>
@@ -72,25 +147,150 @@ export default function LoginPage() {
             </p>
           </Box>
 
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <Forms inputsList={inputsList} control={control} errors={errors} />
+          <form className={styles.form} onSubmit={onSubmit}>
+            <TextField
+              fullWidth
+              label="Seu e-mail"
+              type="email"
+              margin="normal"
+              name="email"
+              variant="outlined"
+              size="medium"
+              value={formData.email}
+              onChange={handleChange}
+              onFocus={(e) => e.target.setAttribute("autocomplete", "email")}
+              autoComplete="off"
+              sx={{ backgroundColor: "white", borderRadius: "4px" }}
+              InputProps={{
+                style: { color: "#333" },
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Tooltip
+                      title="Preencha com seu e-mail"
+                      placement="top"
+                      arrow
+                      enterTouchDelay={0}
+                    >
+                      <PersonOutline
+                        sx={{ fontSize: "1rem", color: "text.secondary" }}
+                      />
+                    </Tooltip>
+                  </InputAdornment>
+                ),
+              }}
+              InputLabelProps={{
+                shrink: true,
+                style: {
+                  color: "#333",
+                  fontSize: "1rem",
+                  fontWeight: 500,
+                  borderRadius: "8px",
+                },
+              }}
+            />
 
-            <div className={styles.formFooter}>
-              <label className={styles.rememberMe}>
-                <p>Lembrar de mim</p>
-              </label>
-              <a href="#" className={styles.forgotLink}>
+            <TextField
+              fullWidth
+              label="Sua senha"
+              type={mostraSenha ? "text" : "password"}
+              name="password"
+              margin="normal"
+              variant="outlined"
+              size="medium"
+              value={formData.password}
+              onChange={handleChange}
+              sx={{ backgroundColor: "white", borderRadius: "4px" }}
+              InputProps={{
+                style: { color: "#333" },
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Tooltip
+                      title="Digite sua senha"
+                      placement="top"
+                      arrow
+                      enterTouchDelay={0}
+                    >
+                      <LockOutlined
+                        sx={{ fontSize: "1rem", color: "text.secondary" }}
+                      />
+                    </Tooltip>
+                  </InputAdornment>
+                ),
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <Tooltip
+                      title={mostraSenha ? "Ocultar senha" : "Mostrar senha"}
+                      placement="top"
+                      arrow
+                      enterTouchDelay={0}
+                    >
+                      <IconButton
+                        onClick={toggleMostraSenha}
+                        edge="end"
+                        aria-label={
+                          mostraSenha ? "Ocultar senha" : "Mostrar senha"
+                        }
+                      >
+                        {mostraSenha ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </Tooltip>
+                  </InputAdornment>
+                ),
+              }}
+              InputLabelProps={{
+                shrink: true,
+                style: {
+                  color: "#333",
+                  fontSize: "1rem",
+                  fontWeight: 500,
+                  borderRadius: "8px",
+                },
+              }}
+            />
+
+            <Box
+              display="flex"
+              justifyContent="space-between"
+              alignItems="center"
+              mt={1}
+              mb={2}
+            >
+              <FormControlLabel
+                control={<Checkbox size="small" />}
+                sx={{ fontSize: "0.7rem" }}
+                label="lembre de mim"
+              />
+              <Link
+                href="forgot-password"
+                fontSize="0.7rem"
+                color="#FFFFF"
+                sx={{
+                  textDecoration: "none",
+                  fontSize: "0.9rem",
+                }}
+              >
                 Esqueceu a senha?
-              </a>
-            </div>
+              </Link>
+            </Box>
 
-            <button type="submit" className={styles.btnPrimary}>
-              Acessar Painel
-            </button>
+            <Button
+              variant="contained"
+              fullWidth
+              style={{ backgroundColor: "#F57C00" }}
+              sx={{ py: 1.2 }}
+              type="submit"
+              disabled={loading}
+            >
+              {loading ? (
+                <CircularProgress size={24} sx={{ color: "white" }} />
+              ) : (
+                <p style={{ color: "#FFFFFF", fontSize: "1rem" }}>Acessar</p>
+              )}
+            </Button>
           </form>
 
           <div className={styles.footerCopy}>
-            &copy; 2026 Keek Inteligência de Dados. Todos os direitos
+            &copy; 2026 Keek Intelig?ncia de Dados. Todos os direitos
             reservados.
           </div>
         </Box>
