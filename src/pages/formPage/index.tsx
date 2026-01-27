@@ -1,7 +1,7 @@
 import { Box, Button, IconButton } from "@mui/material";
 import styles from "./FormsPage.module.css";
 import HorizontalLinearAlternativeLabelStepper from "../../components/stepper";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Forms from "../../components/Forms";
 import { getUserInputs } from "./userImputList/user";
 import { useForm } from "react-hook-form";
@@ -24,6 +24,7 @@ import {
 import { createUSer } from "../../services/user/userService";
 import { useNavigate } from "react-router-dom";
 import { submitOpinion } from "../../services/opiniao/opiniaoService";
+import { getMetrics } from "../../services/relatorioPage/relatorioService";
 
 const steps = ["Dados do Usuário", "Dados da Opinião", "Concluído"];
 
@@ -103,6 +104,8 @@ export default function FormsPage() {
     message: string;
   } | null>(null);
   const navigate = useNavigate();
+
+
   const {
     control: userControl,
     formState: { errors: userErrors },

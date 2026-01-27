@@ -38,7 +38,7 @@ export function Sidebar({
             <ItemMenu
               icone={<ChatIcon />}
               rotulo="Visão geral"
-              para="/"
+              para="/panorama"
               estaAberta={estaAberta}
               isActive={isActive("/")}
             />

@@ -5,6 +5,7 @@ import EmbedDashboardPage from "../pages/dashboards/EmbedDashboardPage";
 import RelatorioPage from "../pages/relatoriopage";
 import LoginPage from "../pages/login";
 import { AuthProvider } from "../context/AuthContext";
+import NotFound from "../pages/notFound/NotFoundPage";
 
 const RoutesConfig = () => (
   <AuthProvider>
@@ -17,6 +18,7 @@ const RoutesConfig = () => (
       <Route path="/" element={<LoginPage />} />
 
       {/* <Route path="*" element={<NotFound />} /> */}
+      <Route path="*" element={<NotFound />} />
     </Routes>
   </AuthProvider>
 );
