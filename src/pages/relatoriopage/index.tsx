@@ -9,6 +9,8 @@ import { LineChart } from "../../components/charts/line/LineChart";
 import { PieChart } from "../../components/charts/pie/PieChart";
 import { BarRaceChart } from "../../components/charts/barRace/BarRaceChart";
 import AnimatedNumber from "../../components/animated-number";
+import { useEffect, useState } from "react";
+import { getMetrics } from "../../services/relatorioPage/relatorioService";
 
 const topBairros = [
   { label: "Mangabeira", value: 182 },
@@ -145,15 +147,60 @@ export const tableCardData = [
 ];
 
 export default function RelatorioPage() {
+  const [tableCardData, setTableCardData] = useState([]);
+  const [ondeLineCardData, setOndeLineCardData] = useState([]);
+  const [lineaCardData, setLineaCardData] = useState([]);
+  const [cardsData, setCardsData] = useState([]);
+  const [opinionsByDay, setOpinionsByDay] = useState([]);
+  const [opinionsByMonth, setOpinionsByMonth] = useState([]);
+  const [opinionsByGender, setOpinionsByGender] = useState([]);
+  const [campaignAcceptance, setCampaignAcceptance] = useState([]);
+  const [opinionsByAge, setOpinionsByAge] = useState([]);
+  const [topTemas, setTopTemas] = useState([]);
+  const [topBairros, setTopBairros] = useState([]);
+
+  useEffect(() => {
+    let active = true;
+
+    const fetchMetrics = async () => {
+      try {
+        const response = await getMetrics();
+
+        if (!active) return;
+        setOpinionsByDay(response.opinionsByDay);
+        setOpinionsByMonth(response.opinionsByMonth);
+        setOpinionsByGender(response.opinionsByGender);
+        setCampaignAcceptance(response.campaignAcceptance);
+        setTopTemas(response.topTemas);
+        setTopBairros(response.topBairros);
+      } catch (error) {
+        console.error("Erro ao carregar métricas:", error);
+      }
+    };
+
+    void fetchMetrics();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
   return (
     <Layout titulo="Tela de Relatório">
       <Box className={styles.container}>
         <Box className={styles.gridContainer}>
-          {cardsData.map((card, index) => (
+       {/*    {cardsData.map((card, index) => (
             <CardGridReflect
               key={index}
               children={
-                <Box sx={{ display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
                   <h5>{card.title}</h5>
                   <h4>
                     <AnimatedNumber value={card.subtitle} />
@@ -162,7 +209,7 @@ export default function RelatorioPage() {
               }
               span={4}
             />
-          ))}
+          ))} */}
         </Box>
         <Box className={styles.gridContainer} sx={{ marginTop: "1rem" }}>
           <CardGridReflect span={6}>
@@ -178,19 +225,23 @@ export default function RelatorioPage() {
         <Box className={styles.gridContainer} sx={{ marginTop: "1rem" }}>
           <CardGridReflect span={4}>
             <h5>Quantidade de Opiniões por Faixa Etária</h5>
-              <Box sx={{ marginTop: "1rem" }}>
-                <BarChart data={opinionsByAge} height={220} />
-              </Box>
+            <Box sx={{ marginTop: "1rem" }}>
+              <BarChart data={opinionsByAge} height={220} />
+            </Box>
           </CardGridReflect>
 
           <CardGridReflect span={4}>
             <h5>Quantidade de Opiniões por Gênero</h5>
-            <Box sx={{ marginTop: "1rem" }}><PieChart data={opinionsByGender} height={220} /></Box>
+            <Box sx={{ marginTop: "1rem" }}>
+              <PieChart data={opinionsByGender} height={220} />
+            </Box>
           </CardGridReflect>
 
           <CardGridReflect span={4}>
             <h5>Autorização de comunicação</h5>
-            <Box sx={{ marginTop: "1rem" }}><PieChart data={campaignAcceptance} height={220} /></Box>
+            <Box sx={{ marginTop: "1rem" }}>
+              <PieChart data={campaignAcceptance} height={220} />
+            </Box>
           </CardGridReflect>
         </Box>
 
@@ -202,14 +253,16 @@ export default function RelatorioPage() {
             <h5 style={{ margin: "1rem" }}>Top 10 bairros com mais opiniões</h5>
             <BarRaceChart data={topBairros} height={360} />
           </CardGridReflect>
-          
+
           <CardGridReflect
             span={6}
             disablePadding
             className={styles.topTemasCard}
-            style={{ display: "flex", flexDirection: "column"}}
+            style={{ display: "flex", flexDirection: "column" }}
           >
-            <h5 style={{ margin: "1rem", marginBottom: "2rem" }}>Top temas mais falados</h5>
+            <h5 style={{ margin: "1rem", marginBottom: "2rem" }}>
+              Top temas mais falados
+            </h5>
             <GenericDataTable
               rows={topTemas}
               columns={temasColumns}
