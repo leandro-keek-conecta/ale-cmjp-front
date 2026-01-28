@@ -5,7 +5,7 @@ import {
   DialogContentText,
   Divider,
 } from "@mui/material";
-import type { Opinion } from "../../pages/home/Panorama";
+import type { Opinion } from "../../pages/Panorama/Panorama";
 import formatDate from "../../utils/formatDate";
 import styles from "./cardDetails.module.css";
 import { useState } from "react";

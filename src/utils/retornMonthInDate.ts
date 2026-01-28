@@ -235,9 +235,12 @@ export function normalizeOpinionsByDay(
 
   if (parsedEntries.length === 0) return [];
 
-  const entriesWithMonth = parsedEntries.filter(
-    (entry) => entry.year !== null && entry.monthIndex !== null,
-  );
+  const hasMonth = (
+    entry: (typeof parsedEntries)[number],
+  ): entry is { year: number; monthIndex: number; day: number; value: number } =>
+    entry.year !== null && entry.monthIndex !== null;
+
+  const entriesWithMonth = parsedEntries.filter(hasMonth);
 
   if (entriesWithMonth.length === 0) {
     return parsedEntries

@@ -1,7 +1,6 @@
 import type UserLogin from "../../types/userLogin";
 import { api } from "../../services/api/api";
-import { defaultTheme } from "../../theme";
-import { ensureThemeColor, getActiveProject } from "../../utils/project";
+import { getActiveProject } from "../../utils/project";
 import { AUTH_LOGOUT_EVENT, CLEAR_PROJECT_SELECTION_EVENT } from "../../constants/events";
 
 export async function login(
