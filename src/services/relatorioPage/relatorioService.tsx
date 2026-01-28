@@ -2,49 +2,41 @@ import { api } from "../api/api";
 
 export async function getMetrics() {
   const projetoId = 5;
+  const { start: monthStart, end: monthEnd } = getLastSixMonthsRange();
+  const { start: dayStart, end: dayEnd } = getCurrentMonthToDateRange();
 
-  const [status, temas, bairros, genero, campanha, tipos, mes, dia] =
-    await Promise.all([
-      api.get("/form-response/metrics/status-funnel", {
-        params: { projetoId },
-      }),
-      api.get("/form-response/metrics/distribution", {
-        params: { projetoId, fieldName: "opiniao", limit: 10 },
-      }),
-      api.get("/form-response/metrics/distribution", {
-        params: { projetoId, fieldName: "bairro", limit: 10 },
-      }),
-      api.get("/form-response/metrics/distribution", {
-        params: { projetoId, fieldName: "genero" },
-      }),
-      api.get("/form-response/metrics/distribution", {
-        params: { projetoId, fieldName: "campanha" },
-      }),
-      api.get("/form-response/metrics/distribution", {
-        params: { projetoId, fieldName: "tipo_opiniao" },
-      }),
-      api.get("/form-response/metrics/timeseries", {
-        params: { projetoId, interval: "month", dateField: "createdAt" },
-      }),
-      api.get("/form-response/metrics/timeseries", {
-        params: {
-          projetoId,
-          interval: "day",
-          dateField: "createdAt",
-          start: "2026-01-01",
-          end: "2026-01-31",
-        },
-      }),
-    ]);
+  const response = await api.get("/form-response/metrics/report", {
+    params: {
+      projetoId,
+      monthStart,
+      monthEnd,
+      dayStart,
+      dayEnd,
+      limits: {
+        opiniao: 10,
+        bairro: 10,
+      },
+    },
+  });
 
-  return {
-    statusFunnel: status.data.data,
-    topTemas: temas.data.data,
-    topBairros: bairros.data.data,
-    opinionsByGender: genero.data.data,
-    campaignAcceptance: campanha.data.data,
-    tipoOpiniao: tipos.data.data,
-    opinionsByMonth: mes.data.data,
-    opinionsByDay: dia.data.data,
-  };
+  return response.data.data;
 }
+
+const toDateOnly = (date: Date) =>
+  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(
+    date.getDate()
+  ).padStart(2, "0")}`;
+
+const getLastSixMonthsRange = () => {
+  const now = new Date();
+  const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  const start = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+  return { start: toDateOnly(start), end: toDateOnly(end) };
+};
+
+const getCurrentMonthToDateRange = () => {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), now.getMonth(), 1);
+  const end = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return { start: toDateOnly(start), end: toDateOnly(end) };
+};

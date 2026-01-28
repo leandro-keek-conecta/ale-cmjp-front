@@ -1,4 +1,4 @@
-import { Box } from "@mui/material";
+﻿import { Box } from "@mui/material";
 import { Layout } from "../../components/layout/Layout";
 import styles from "./RelatorioPage.module.css";
 import CardGridReflect from "../../components/card-grid-reflect";
@@ -11,153 +11,71 @@ import { BarRaceChart } from "../../components/charts/barRace/BarRaceChart";
 import AnimatedNumber from "../../components/animated-number";
 import { useEffect, useState } from "react";
 import { getMetrics } from "../../services/relatorioPage/relatorioService";
+import {
+  groupOpinionsByMonthOnly,
+  normalizeOpinionsByDay,
+} from "../../utils/retornMonthInDate";
 
-const topBairros = [
-  { label: "Mangabeira", value: 182 },
-  { label: "Bancários", value: 160 },
-  { label: "Valentina", value: 148 },
-  { label: "Tambaú", value: 132 },
-  { label: "Manaíra", value: 121 },
-  { label: "Cruz das Armas", value: 98 },
-  { label: "Geisel", value: 87 },
-  { label: "Jaguaribe", value: 75 },
-  { label: "Altiplano", value: 64 },
-  { label: "Cristo", value: 52 },
-];
+type ReportCards = {
+  totalOpinions?: number | string;
+  totalComplaints?: number | string;
+  totalPraise?: number | string;
+  totalKudos?: number | string;
+  totalSuggestions?: number | string;
+};
 
-const topTemas = [
-  { id: 1, tema: "Saúde", total: 210 },
-  { id: 2, tema: "Educação", total: 184 },
-  { id: 3, tema: "Transporte", total: 160 },
-  { id: 4, tema: "Segurança", total: 142 },
-  { id: 5, tema: "Infraestrutura", total: 118 },
-  { id: 6, tema: "Iluminação Pública", total: 96 },
-  { id: 7, tema: "Limpeza Urbana", total: 82 },
-  { id: 8, tema: "Habitação", total: 64 },
-  { id: 9, tema: "Meio Ambiente", total: 51 },
-  { id: 10, tema: "Assistência Social", total: 43 },
-];
+type ReportCard = {
+  id: number;
+  title: string;
+  subtitle: number;
+};
 
-const opinionsByGender = [
-  { label: "Masculino", value: 320 },
-  { label: "Feminino", value: 280 },
-  { label: "Não informado", value: 40 },
-];
+type ChartDatum = {
+  label: string;
+  value: number;
+};
 
-const campaignAcceptance = [
-  { label: "Aceitou", value: 410 },
-  { label: "Não aceitou", value: 230 },
-];
+const toNumber = (value: unknown) => {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string" && value.trim() !== "") {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return 0;
+};
 
-const opinionsByAge = [
-  { label: "Até 18", value: 42 },
-  { label: "19–25", value: 120 },
-  { label: "26–35", value: 210 },
-  { label: "36–45", value: 160 },
-  { label: "46+", value: 90 },
-];
-
-const opinionsByMonth = [
-  { label: "Jan", value: 120 },
-  { label: "Fev", value: 98 },
-  { label: "Mar", value: 143 },
-  { label: "Abr", value: 160 },
-  { label: "Mai", value: 132 },
-];
-
-const opinionsByDay = [
-  { label: "01", value: 5 },
-  { label: "02", value: 12 },
-  { label: "03", value: 9 },
-  { label: "04", value: 18 },
-  { label: "05", value: 7 },
-  { label: "06", value: 14 },
-];
-
-export const cardsData = [
+const buildCards = (cards?: ReportCards) => [
   {
     id: 1,
     title: "Quantidade Total de Opiniões",
-    subtitle: "815",
-
-    content: "Conteúdo do Card 1",
+    subtitle: toNumber(cards?.totalOpinions),
   },
   {
     id: 2,
     title: "Quantidade Total de Reclamações",
-    subtitle: "56",
-    content: "Conteúdo do Card 2",
+    subtitle: toNumber(cards?.totalComplaints),
   },
   {
     id: 3,
     title: "Quantidade Total de Elogios",
-    subtitle: "500",
-    content: "Conteúdo do Card 3",
+    subtitle: toNumber(cards?.totalPraise ?? cards?.totalKudos),
   },
   {
     id: 4,
     title: "Quantidade Total de Sugestões",
-    subtitle: "1.200",
-    content: "Conteúdo do Card 4",
-  },
-];
-
-export const lineaCardData = [
-  {
-    id: 1,
-    title: "Quantidade de Opiniões Mês a Mês",
-    content: "Conteúdo do Linea Card 1",
-  },
-  {
-    id: 2,
-    title: "Quantidade de Opiniões Dia a Dia (mês atual)",
-    content: "Conteúdo do Linea Card 2",
-  },
-];
-
-export const ondeLineCardData = [
-  {
-    id: 1,
-    title: "Quantidade de Opiniões por Faixa Etária → Barras",
-    content: { opinionsByAge },
-  },
-  {
-    id: 2,
-    title: "Quantidade de Opiniões por Gênero",
-    content: "Conteúdo do Onde Line Card 2",
-  },
-  {
-    id: 3,
-    title: "Autorização de comunicação",
-    content: "Conteúdo do Onde Line Card 3",
-  },
-];
-
-export const tableCardData = [
-  {
-    id: 1,
-    title: "Top 10 bairros com mais opiniões",
-    content: "Conteúdo do Linea Card 1",
-  },
-  {
-    id: 2,
-    title: "Top temas mais falados",
-    content: "Conteúdo do Linea Card 2",
+    subtitle: toNumber(cards?.totalSuggestions),
   },
 ];
 
 export default function RelatorioPage() {
-  const [tableCardData, setTableCardData] = useState([]);
-  const [ondeLineCardData, setOndeLineCardData] = useState([]);
-  const [lineaCardData, setLineaCardData] = useState([]);
-  const [cardsData, setCardsData] = useState([]);
-  const [opinionsByDay, setOpinionsByDay] = useState([]);
-  const [opinionsByMonth, setOpinionsByMonth] = useState([]);
-  const [opinionsByGender, setOpinionsByGender] = useState([]);
-  const [campaignAcceptance, setCampaignAcceptance] = useState([]);
-  const [opinionsByAge, setOpinionsByAge] = useState([]);
-  const [topTemas, setTopTemas] = useState([]);
-  const [topBairros, setTopBairros] = useState([]);
+  const [cardsData, setCardsData] = useState<ReportCard[]>([]);
+  const [opinionsByDay, setOpinionsByDay] = useState<ChartDatum[]>([]);
+  const [opinionsByMonth, setOpinionsByMonth] = useState<ChartDatum[]>([]);
+  const [opinionsByGender, setOpinionsByGender] = useState<ChartDatum[]>([]);
+  const [campaignAcceptance, setCampaignAcceptance] = useState<ChartDatum[]>([]);
+  const [opinionsByAge, setOpinionsByAge] = useState<ChartDatum[]>([]);
+  const [topTemas, setTopTemas] = useState<any[]>([]);
+  const [topBairros, setTopBairros] = useState<any[]>([]);
 
   useEffect(() => {
     let active = true;
@@ -167,14 +85,20 @@ export default function RelatorioPage() {
         const response = await getMetrics();
 
         if (!active) return;
-        setOpinionsByDay(response.opinionsByDay);
-        setOpinionsByMonth(response.opinionsByMonth);
-        setOpinionsByGender(response.opinionsByGender);
-        setCampaignAcceptance(response.campaignAcceptance);
-        setTopTemas(response.topTemas);
-        setTopBairros(response.topBairros);
+        setCardsData(buildCards(response.cards));
+        const rawOpinionsByMonth =
+          response.lineByMonth ?? response.opinionsByMonth ?? [];
+        setOpinionsByMonth(groupOpinionsByMonthOnly(rawOpinionsByMonth));
+        const rawOpinionsByDay =
+          response.lineByDay ?? response.opinionsByDay ?? [];
+        setOpinionsByDay(normalizeOpinionsByDay(rawOpinionsByDay));
+
+        setOpinionsByGender(response.opinionsByGender ?? []);
+        setCampaignAcceptance(response.campaignAcceptance ?? []);
+        setTopTemas(response.topTemas ?? []);
+        setTopBairros(response.topBairros ?? []);
+        setOpinionsByAge(response.opinionsByAge ?? []);
       } catch (error) {
-        console.error("Erro ao carregar métricas:", error);
       }
     };
 
@@ -189,7 +113,7 @@ export default function RelatorioPage() {
     <Layout titulo="Tela de Relatório">
       <Box className={styles.container}>
         <Box className={styles.gridContainer}>
-       {/*    {cardsData.map((card, index) => (
+          {cardsData.map((card: any, index) => (
             <CardGridReflect
               key={index}
               children={
@@ -209,7 +133,7 @@ export default function RelatorioPage() {
               }
               span={4}
             />
-          ))} */}
+          ))}
         </Box>
         <Box className={styles.gridContainer} sx={{ marginTop: "1rem" }}>
           <CardGridReflect span={6}>

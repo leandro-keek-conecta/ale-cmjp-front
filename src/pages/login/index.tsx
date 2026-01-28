@@ -276,7 +276,7 @@ export default function LoginPage() {
             <Button
               variant="contained"
               fullWidth
-              style={{ backgroundColor: "#F57C00" }}
+              style={{ backgroundColor: "#5070dd" }}
               sx={{ py: 1.2 }}
               type="submit"
               disabled={loading}
