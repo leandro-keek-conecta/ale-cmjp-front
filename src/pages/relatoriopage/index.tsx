@@ -131,7 +131,7 @@ export default function RelatorioPage() {
                   </h4>
                 </Box>
               }
-              span={4}
+              span={3}
             />
           ))}
         </Box>
