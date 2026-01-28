@@ -10,7 +10,7 @@ import {
   ThermostatOutlined,
 } from "@mui/icons-material";
 
-import styles from "./HomePage.module.css";
+import styles from "./PanoramaPage.module.css";
 import { useEffect, useMemo, useRef, useState } from "react";
 import CardGrid from "../../components/card-grid";
 import CardGridReflect from "../../components/card-grid-reflect";
@@ -68,7 +68,7 @@ const buildFilternDefaultValues = (): FilterFormValues => ({
   texto_opiniao: "",
 });
 
-export default function HomePage() {
+export default function Panorama() {
   const PRESENTATION_SEEN_KEY = "home:presentationSeen";
   const [opinions, setOpinions] = useState<Opinion[]>([]);
   const [filters, setFilters] = useState<FiltersState>(() =>

@@ -5,7 +5,7 @@ import {
   DialogContentText,
   Divider,
 } from "@mui/material";
-import type { Opinion } from "../../pages/home/HomePage";
+import type { Opinion } from "../../pages/Panorama/Panorama";
 import formatDate from "../../utils/formatDate";
 import styles from "./cardDetails.module.css";
 import { useState } from "react";
@@ -43,7 +43,10 @@ export default function CardDetails({ opinions }: CardDetailsProps) {
   return (
     <>
       {opinions.map((item, index) => (
-        <article key={getOpinionKey(item, index)} className={styles.opinionCard}>
+        <article
+          key={getOpinionKey(item, index)}
+          className={styles.opinionCard}
+        >
           <div className={styles.cardHeader}>
             <div className={styles.cardMeta}>
               <div className={styles.name}>{item.nome || "Visitante"}</div>

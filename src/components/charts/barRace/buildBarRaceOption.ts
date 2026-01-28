@@ -12,7 +12,16 @@ type BuildBarRaceOptionParams = {
 export function buildBarRaceOption({
   data,
 }: BuildBarRaceOptionParams): EChartsOption {
-  const sorted = [...data]
+  const normalized = (Array.isArray(data) ? data : [])
+    .filter(
+      (item): item is BarRaceDatum =>
+        Boolean(item && typeof item.label === "string")
+    )
+    .map((item) => ({
+      label: item.label,
+      value: Number.isFinite(item.value) ? item.value : 0,
+    }));
+  const sorted = [...normalized]
     .sort((a, b) => b.value - a.value)
     .slice(0, 10);
   const labels = sorted.map((item) => item.label);
@@ -28,7 +37,7 @@ export function buildBarRaceOption({
   return {
     grid: {
       left: leftPadding,
-      right: 15,
+      right: 50,
       top: 0,
       bottom: 10,
       containLabel: true,

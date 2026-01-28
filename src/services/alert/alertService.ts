@@ -1,16 +1,10 @@
-type AlertOptions = {
-  category?: "error" | "info" | "warning" | "success";
-  title: string;
+// services/alertService.ts
+let showAlert: ((args: { category?: "error" | "info" | "warning" | "success"; title: string }) => void) | null = null;
+
+export const registerAlert = (fn: typeof showAlert) => {
+  showAlert = fn;
 };
 
-type AlertHandler = (options: AlertOptions) => void;
-
-let handler: AlertHandler | null = null;
-
-export function registerAlert(newHandler: AlertHandler) {
-  handler = newHandler;
-}
-
-export function showGlobalAlert(options: AlertOptions) {
-  handler?.(options);
-}
+export const triggerAlert = (args: { category?: "error" | "info" | "warning" | "success"; title: string }) => {
+  if (showAlert) showAlert(args);
+};

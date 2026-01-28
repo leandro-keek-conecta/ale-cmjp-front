@@ -1,0 +1,388 @@
+:root {
+  --primary-color: #4f46e5; /* Azul Keek aproximado */
+  --primary-hover: #4338ca;
+  --text-main: #1e293b;
+  --text-secondary: #64748b;
+  --bg-light: #f8fafc;
+  --white: #ffffff;
+  --glass-bg: rgba(255, 255, 255, 0.15);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --radius-md: 12px;
+  --radius-lg: 24px;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-lg:
+    0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
+
+.container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background-color: #ffff;
+}
+
+.leftSide {
+  flex: 1;
+  background: linear-gradient(135deg, #4f46e5 0%, #312e81 100%);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1rem;
+  color: var(--white);
+  overflow: hidden;
+  height: 100%;
+  color: white;
+  padding: 2rem;
+}
+
+.heroImage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.4; /* Mistura com o azul do fundo */
+  z-index: 0;
+  background-image: url("https://images.unsplash.com/photo-1519389950473-47ba0277781c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1740&q=80");
+  background-size: cover;
+  background-position: center;
+}
+
+.glassCard {
+  position: relative;
+  z-index: 10;
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  padding: 1.5rem;
+  border-radius: var(--radius-md);
+  max-width: 320px;
+  margin-top: auto; /* Empurra para baixo */
+  margin-bottom: 2rem;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  animation: float 6s ease-in-out infinite;
+}
+
+.glassCard h3 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  background-color: #22c55e; /* Verde online */
+  border-radius: 50%;
+  box-shadow: 0 0 8px #22c55e;
+}
+
+.glassCard p {
+  font-size: 0.8rem;
+  opacity: 0.9;
+  line-height: 1.4;
+}
+
+.brandContent {
+  position: relative;
+  z-index: 10;
+}
+
+.brandHeadline {
+  font-size: 2.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 1rem;
+}
+
+.rightSide {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 50%;
+}
+
+.loginContainer {
+  width: 100%;
+  max-width: 400px;
+  animation: slideIn 0.8s ease-out;
+}
+
+.logoArea {
+  margin-bottom: 2.5rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Simulação do Logo Keek */
+.logoSymbol {
+  width: 40px;
+  height: 40px;
+  background: var(--text-main);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.logoText {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-main);
+  letter-spacing: -0.5px;
+}
+
+.welcomeText h2 {
+  font-size: 1.5rem;
+  color: var(--text-main);
+  margin-bottom: 0.5rem;
+}
+
+.welcomeText p {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  margin-bottom: 2rem;
+}
+
+/* Estilo dos Inputs */
+.formGroup {
+  margin-bottom: 1.5rem;
+}
+
+.formGroup :global(.MuiInputBase-root) {
+  height: 2.6rem !important;
+}
+
+.formGroup :global(.MuiOutlinedInput-input) {
+  padding: 12px 14px !important;
+  height: 2.6rem !important;
+}
+
+.formLabel {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-main);
+  margin-bottom: 0.5rem;
+}
+
+.inputWrapper {
+  position: relative;
+}
+
+.formInput {
+  width: 100%;
+  padding: 0.875rem 1rem 0.875rem 2.5rem; /* Espaço para ícone */
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  color: var(--text-main);
+  transition: all 0.2s;
+  background-color: var(--bg-light);
+}
+
+/* Ícones dentro do input (Simulados com CSS ou Emoji para demo) */
+.inputIcon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  font-size: 1rem;
+}
+
+.formInput:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  background-color: var(--white);
+  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+}
+
+.formFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+}
+
+.rememberMe {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.forgotLink {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+
+.forgotLink:hover {
+  color: var(--primary-hover);
+  text-decoration: underline;
+}
+
+/* Botão Principal */
+.btnPrimary {
+  width: 100%;
+  padding: 0.875rem;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
+}
+
+.btnPrimary:hover {
+  background-color: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
+}
+
+.btnPrimary:active {
+  transform: translateY(0);
+}
+
+/* Copyright */
+.footerCopy {
+  margin-top: 3rem;
+  text-align: center;
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+/* --- ANIMAÇÕES --- */
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* --- RESPONSIVIDADE --- */
+@media (max-width: 900px) {
+  .container {
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .leftSide {
+    width: 100%;
+    height: 38vh;
+    min-height: 260px;
+    padding: 1.5rem;
+  }
+
+  .brandHeadline {
+    font-size: 1.8rem;
+  }
+
+  .glassCard {
+    display: none;
+  }
+
+  .rightSide {
+    width: 100%;
+    height: auto;
+    padding: 2rem 1.5rem 2.5rem;
+  }
+
+  .loginContainer {
+    max-width: 420px;
+  }
+
+  .logoArea {
+    margin-bottom: 1.5rem;
+  }
+
+  .welcomeText p {
+    margin-bottom: 1.5rem;
+  }
+
+  .formFooter {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .leftSide {
+    height: 32vh;
+    min-height: 220px;
+    padding: 1.25rem;
+  }
+
+  .brandHeadline {
+    font-size: 1.6rem;
+  }
+
+  .logoSymbol {
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
+  }
+
+  .logoText {
+    font-size: 1.3rem;
+  }
+
+  .welcomeText h2 {
+    font-size: 1.3rem;
+  }
+
+  .welcomeText p {
+    font-size: 0.9rem;
+  }
+
+  .formGroup {
+    margin-bottom: 1rem;
+  }
+
+  .btnPrimary {
+    padding: 0.8rem;
+  }
+
+  .footerCopy {
+    margin-top: 2rem;
+  }
+}
