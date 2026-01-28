@@ -258,7 +258,7 @@ export default function LoginPage() {
               <FormControlLabel
                 control={<Checkbox size="small" />}
                 sx={{ fontSize: "0.7rem" }}
-                label="lembre de mim"
+                label="Lembre de mim"
               />
               <Link
                 href="forgot-password"
@@ -290,7 +290,7 @@ export default function LoginPage() {
           </form>
 
           <div className={styles.footerCopy}>
-            &copy; 2026 Keek Intelig?ncia de Dados. Todos os direitos
+            &copy; 2026 Keek Inteligência de Dados. Todos os direitos
             reservados.
           </div>
         </Box>
