@@ -1,16 +1,23 @@
 import type UserLogin from "../../types/userLogin";
-import { api } from "../api/api";
-import {  getActiveProject } from "../../utils/project";
-import { CLEAR_PROJECT_SELECTION_EVENT } from "../../constants/events";
+import { api } from "../../services/api/api";
+import { defaultTheme } from "../../theme";
+import { ensureThemeColor, getActiveProject } from "../../utils/project";
+import { AUTH_LOGOUT_EVENT, CLEAR_PROJECT_SELECTION_EVENT } from "../../constants/events";
 
 export async function login(
-  data: UserLogin,
+  data: UserLogin
 ) {
   try {
+    console.log("[authService.login] start");
     const response = await api.post(
       "/auth/login",
-      data /*, { skipAuthInterceptor: true }*/,
+      data,
+      {
+        timeout: 15000,
+        validateStatus: (status) => status >= 200 && status < 300,
+      }
     );
+    console.log("[authService.login] response status:", response?.status);
 
     const token = response.data?.response?.accessToken;
     const rawUser = response.data?.response?.user;
@@ -27,14 +34,32 @@ export async function login(
       localStorage.setItem("user", JSON.stringify(userToPersist));
     }
 
-    
+
     return response;
   } catch (error: any) {
-    const message =
-      error.response?.data?.message ||
-      (error.response?.status === 401
-        ? "Login ou senha incorretos"
-        : "Erro ao conectar ao servidor");
+    console.log(
+      "[authService.login] error status:",
+      error?.response?.status,
+      "message:",
+      error?.message
+    );
+    const status = error.response?.status;
+    const isTimeout =
+      error.code === "ECONNABORTED" ||
+      (typeof error.message === "string" &&
+        error.message.toLowerCase().includes("timeout"));
+
+    let message = "Falha ao autenticar. Tente novamente.";
+    if (status === 401) {
+      message = "Login ou senha incorretos.";
+    } else if (status === 429) {
+      message = "Muitas tentativas. Aguarde e tente novamente.";
+    } else if (status && status >= 500) {
+      message = "Servidor indisponível no momento. Tente novamente.";
+    } else if (isTimeout) {
+      message = "Tempo limite ao conectar. Tente novamente.";
+    }
+
     throw new Error(message);
   }
 }
@@ -50,6 +75,7 @@ export async function logout() {
 
     if (typeof window !== "undefined") {
       window.dispatchEvent(new Event(CLEAR_PROJECT_SELECTION_EVENT));
+      window.dispatchEvent(new Event(AUTH_LOGOUT_EVENT));
     }
 
     // Opcional: Redireciona para a pagina de login

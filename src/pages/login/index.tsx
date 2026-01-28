@@ -47,12 +47,19 @@ export default function LoginPage() {
   };
 
   useEffect(() => {
+    console.log("[login] mounted");
+    isMountedRef.current = true;
     logout(); // limpa com seguran?a, sem hooks fora de componente
     setFormData({ email: "", password: "" });
     return () => {
+      console.log("[login] unmounted");
       isMountedRef.current = false;
     };
   }, []);
+
+  useEffect(() => {
+    console.log("[login] loading state:", loading);
+  }, [loading]);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -69,38 +76,57 @@ export default function LoginPage() {
       return;
     }
 
+    console.log("[login] submit start");
     setLoading(true);
 
     const data: UserLogin = {
       email: formData.email,
       password: formData.password,
     };
-
-    let didSucceed = false;
     try {
       const response = await login(data);
+      console.log("[login] response status:", response?.status);
       const user = response.data?.response?.user;
-      if (user) {
-        setUser(user);
+      const token = response.data?.response?.accessToken;
+      if (!user || !token) {
+        throw new Error("Falha ao autenticar. Tente novamente.");
       }
-      didSucceed = true;
-      setAlert({
-        show: true,
-        category: "success",
-        title: "Login realizado com sucesso!",
-      });
-      setLoading(false);
-      navigate("/relatorio");
+
+      if (isMountedRef.current) {
+        setUser(user);
+        setAlert({
+          show: true,
+          category: "success",
+          title: "Login Feito Com Sucesso!",
+        });
+      }
+
+      if (user.role === "ADMIN") {
+        navigate("/panorama");
+        return;
+      }
+    
+
+      navigate("/panorama");
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Erro ao fazer login.";
-      setAlert({
-        show: true,
-        category: "error",
-        title: message,
-      });
+      console.log(
+        "[login] catch error:",
+        error instanceof Error ? error.message : error
+      );
+      const errorMessage =
+        error instanceof Error && error.message
+          ? error.message
+          : "Falha ao autenticar. Tente novamente.";
+      if (isMountedRef.current) {
+        setAlert({
+          show: true,
+          category: "error",
+          title: errorMessage,
+        });
+      }
     } finally {
-      if (!didSucceed && isMountedRef.current) {
+      console.log("[login] finally - mounted:", isMountedRef.current);
+      if (isMountedRef.current) {
         setLoading(false);
       }
     }
@@ -290,7 +316,8 @@ export default function LoginPage() {
           </form>
 
           <div className={styles.footerCopy}>
-            &copy; 2026 Keek Inteligência de Dados. Todos os direitos
+            &copy; 2026 Keek Inteligê
+            ncia de Dados. Todos os direitos
             reservados.
           </div>
         </Box>

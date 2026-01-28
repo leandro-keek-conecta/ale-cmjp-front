@@ -69,6 +69,7 @@ const buildCards = (cards?: ReportCards) => [
 
 export default function RelatorioPage() {
   const [cardsData, setCardsData] = useState<ReportCard[]>([]);
+  const [metricsLoading, setMetricsLoading] = useState(true);
   const [opinionsByDay, setOpinionsByDay] = useState<ChartDatum[]>([]);
   const [opinionsByMonth, setOpinionsByMonth] = useState<ChartDatum[]>([]);
   const [opinionsByGender, setOpinionsByGender] = useState<ChartDatum[]>([]);
@@ -82,6 +83,7 @@ export default function RelatorioPage() {
 
     const fetchMetrics = async () => {
       try {
+        setMetricsLoading(true);
         const response = await getMetrics();
 
         if (!active) return;
@@ -99,6 +101,10 @@ export default function RelatorioPage() {
         setTopBairros(response.topBairros ?? []);
         setOpinionsByAge(response.opinionsByAge ?? []);
       } catch (error) {
+        if (!active) return;
+      }
+      if (active) {
+        setMetricsLoading(false);
       }
     };
 
@@ -138,33 +144,53 @@ export default function RelatorioPage() {
         <Box className={styles.gridContainer} sx={{ marginTop: "1rem" }}>
           <CardGridReflect span={6}>
             <h5>Quantidade de Opiniões Mês a Mês</h5>
-            <LineChart data={opinionsByMonth} height={200} />
+            <LineChart
+              data={opinionsByMonth}
+              height={200}
+              loading={metricsLoading}
+            />
           </CardGridReflect>
 
           <CardGridReflect span={6}>
             <h5>Quantidade de Opiniões Dia a Dia (mês atual)</h5>
-            <LineChart data={opinionsByDay} height={200} />
+            <LineChart
+              data={opinionsByDay}
+              height={200}
+              loading={metricsLoading}
+            />
           </CardGridReflect>
         </Box>
         <Box className={styles.gridContainer} sx={{ marginTop: "1rem" }}>
           <CardGridReflect span={4}>
             <h5>Quantidade de Opiniões por Faixa Etária</h5>
             <Box sx={{ marginTop: "1rem" }}>
-              <BarChart data={opinionsByAge} height={220} />
+              <BarChart
+                data={opinionsByAge}
+                height={220}
+                loading={metricsLoading}
+              />
             </Box>
           </CardGridReflect>
 
           <CardGridReflect span={4}>
             <h5>Quantidade de Opiniões por Gênero</h5>
             <Box sx={{ marginTop: "1rem" }}>
-              <PieChart data={opinionsByGender} height={220} />
+              <PieChart
+                data={opinionsByGender}
+                height={220}
+                loading={metricsLoading}
+              />
             </Box>
           </CardGridReflect>
 
           <CardGridReflect span={4}>
             <h5>Autorização de comunicação</h5>
             <Box sx={{ marginTop: "1rem" }}>
-              <PieChart data={campaignAcceptance} height={220} />
+              <PieChart
+                data={campaignAcceptance}
+                height={220}
+                loading={metricsLoading}
+              />
             </Box>
           </CardGridReflect>
         </Box>
@@ -175,15 +201,19 @@ export default function RelatorioPage() {
         >
           <CardGridReflect span={6} style={{ marginBottom: 0 }} disablePadding>
             <h5 style={{ margin: "1rem" }}>Top 10 bairros com mais opiniões</h5>
-            <BarRaceChart data={topBairros} height={360} />
+            <BarRaceChart
+              data={topBairros}
+              height={360}
+              loading={metricsLoading}
+            />
           </CardGridReflect>
 
           <CardGridReflect
             span={6}
             disablePadding
-            className={styles.topTemasCard}
-            style={{ display: "flex", flexDirection: "column" }}
-          >
+          className={styles.topTemasCard}
+          style={{ display: "flex", flexDirection: "column" }}
+        >
             <h5 style={{ margin: "1rem", marginBottom: "2rem" }}>
               Top temas mais falados
             </h5>

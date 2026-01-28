@@ -1,5 +1,6 @@
 import ReactECharts from "echarts-for-react";
 import type { EChartsOption } from "echarts";
+import { CircularProgress } from "@mui/material";
 
 type BaseChartProps = {
   option: EChartsOption;
@@ -16,11 +17,33 @@ export function BaseChart({
 }: BaseChartProps) {
 
   if (loading) {
-    return <div style={{ height }}>Carregando...</div>;
+    return (
+      <div
+        style={{
+          height,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <CircularProgress size={32} />
+      </div>
+    );
   }
 
   if (empty) {
-    return <div style={{ height }}>Sem dados para exibir</div>;
+    return (
+      <div
+        style={{
+          height,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        Sem dados para exibir
+      </div>
+    );
   }
 
   return (
