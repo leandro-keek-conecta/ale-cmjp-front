@@ -47,18 +47,18 @@ export default function LoginPage() {
   };
 
   useEffect(() => {
-    console.log("[login] mounted");
+    
     isMountedRef.current = true;
     logout(); // limpa com seguran?a, sem hooks fora de componente
     setFormData({ email: "", password: "" });
     return () => {
-      console.log("[login] unmounted");
+      
       isMountedRef.current = false;
     };
   }, []);
 
   useEffect(() => {
-    console.log("[login] loading state:", loading);
+    
   }, [loading]);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -76,7 +76,7 @@ export default function LoginPage() {
       return;
     }
 
-    console.log("[login] submit start");
+    
     setLoading(true);
 
     const data: UserLogin = {
@@ -85,7 +85,7 @@ export default function LoginPage() {
     };
     try {
       const response = await login(data);
-      console.log("[login] response status:", response?.status);
+      
       const user = response.data?.response?.user;
       const token = response.data?.response?.accessToken;
       if (!user || !token) {
@@ -109,10 +109,7 @@ export default function LoginPage() {
 
       navigate("/panorama");
     } catch (error) {
-      console.log(
-        "[login] catch error:",
-        error instanceof Error ? error.message : error
-      );
+
       const errorMessage =
         error instanceof Error && error.message
           ? error.message
@@ -125,7 +122,7 @@ export default function LoginPage() {
         });
       }
     } finally {
-      console.log("[login] finally - mounted:", isMountedRef.current);
+      
       if (isMountedRef.current) {
         setLoading(false);
       }

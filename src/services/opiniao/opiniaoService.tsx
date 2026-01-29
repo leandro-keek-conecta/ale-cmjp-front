@@ -35,7 +35,6 @@ export async function getAllOpinions(): Promise<Opinion[]> {
     action: "getAll",
     entity: "opiniao",
   });
-  console.log("API response:", response);
   const data = response?.data;
   return getArrayPayload(data);
 }
@@ -45,7 +44,6 @@ export async function getTodayOpinions(): Promise<Opinion[]> {
     action: "filterByToday",
     entity: "opiniao",
   });
-  console.log("API response:", response);
   const data = response?.data;
   return getArrayPayload(data);
 }
@@ -61,7 +59,6 @@ export async function getUpDistricts() {
 }
 
 export async function submitOpinion(data: SubmitSummary) {
-  console.log("fui chamado");
   const response = await api.post("", {
     action: "create",
     entity: "opiniao",

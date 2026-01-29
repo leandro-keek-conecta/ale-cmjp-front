@@ -154,14 +154,12 @@ export default function Panorama() {
     if (hasFetched.current) return;
     hasFetched.current = true;
 
-    console.log(filteredOpinions); //
     fetchOpinions();
     fetchTodayOpinions();
   }, []);
 
   useEffect(() => {
     if (opinions.length) {
-      console.log("Opinions carregadas:", opinions);
     }
   }, [opinions]);
 

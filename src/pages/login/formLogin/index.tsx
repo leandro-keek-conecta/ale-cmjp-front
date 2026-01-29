@@ -25,12 +25,9 @@ export default function FormLogin() {
   }
 
   function handleSubmit(e: React.FormEvent) {
-    console.log('Submitting form');
     e.preventDefault();
     const isEmailValid = validateEmail();
     const isPasswordValid = validatePassword();
-    console.log("Email:", email);
-    console.log("Password:", password);
     if (!isEmailValid) {
       alert("Por favor, insira um email válido.");
       return;
