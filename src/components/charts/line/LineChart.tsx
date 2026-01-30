@@ -23,7 +23,6 @@ export function LineChart({
 
   const option = useMemo(() => {
     if (empty) return undefined;
-    console.log(data.length);
     return buildLineChartOption({ data });
   }, [data, empty]);
 

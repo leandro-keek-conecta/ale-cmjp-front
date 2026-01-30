@@ -161,7 +161,7 @@
 .districtChips {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 2px;
 }
 
 .districtChip {

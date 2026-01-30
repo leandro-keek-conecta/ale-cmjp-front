@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { Box } from "@mui/material";
-import documentAnimation from "../../assets/animations/Document.json";
+import documentAnimation from "../../assets/animations/document.json";
 import type { LottieRefCurrentProps } from "lottie-react";
 import Lottie from "lottie-react";
 

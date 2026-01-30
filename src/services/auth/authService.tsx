@@ -7,7 +7,6 @@ export async function login(
   data: UserLogin
 ) {
   try {
-    console.log("[authService.login] start");
     const response = await api.post(
       "/auth/login",
       data,
@@ -16,7 +15,6 @@ export async function login(
         validateStatus: (status) => status >= 200 && status < 300,
       }
     );
-    console.log("[authService.login] response status:", response?.status);
 
     const token = response.data?.response?.accessToken;
     const rawUser = response.data?.response?.user;
@@ -36,12 +34,6 @@ export async function login(
 
     return response;
   } catch (error: any) {
-    console.log(
-      "[authService.login] error status:",
-      error?.response?.status,
-      "message:",
-      error?.message
-    );
     const status = error.response?.status;
     const isTimeout =
       error.code === "ECONNABORTED" ||

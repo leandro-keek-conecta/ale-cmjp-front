@@ -8,7 +8,6 @@ export async function createUSer(user: UserFormValues): Promise<Opinion[]> {
     entity: "usuario",
     payload: user,
   });
-  console.log("API response:", response);
   const data = response?.data;
   return Array.isArray(data) ? data : []; // garante array mesmo quando a API não retornar lista
 }

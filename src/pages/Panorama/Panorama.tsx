@@ -16,8 +16,7 @@ import CardGrid from "../../components/card-grid";
 import CardGridReflect from "../../components/card-grid-reflect";
 import CardDetails from "../../components/cardDetails";
 import {
-  getAllOpinions,
-  getTodayOpinions,
+  getAllOpinions
 } from "../../services/opiniao/opiniaoService";
 import SlideComponent from "../../components/slide";
 import PresentationModal from "../../components/modal";
@@ -25,7 +24,11 @@ import { readFromStorage, saveToStorage } from "../../utils/localStorage";
 import { ClimaIcon } from "../../icons/Filter";
 import { ArrowDown } from "../../icons/arrowDonw";
 import Forms from "../../components/Forms";
-import { getFilterInputs } from "./inputs/inputListFilter";
+import {
+  getFilterInputs,
+  type FilterSelectOptions,
+  type SelectOption,
+} from "./inputs/inputListFilter";
 import {
   applyFilters,
   mapFilterFormToState,
@@ -33,6 +36,10 @@ import {
 import { useForm } from "react-hook-form";
 import type { FilterFormValues, FiltersState } from "../../types/filter";
 import { Layout } from "../../components/layout/Layout";
+import {
+  getFiltros,
+  getMetricas,
+} from "../../services/metricas/metricasService";
 
 export type Opinion = {
   id: number | string;
@@ -48,6 +55,7 @@ export type Opinion = {
   tipo_opiniao?: string;
   texto_opiniao?: string;
 };
+type FilterApiItem = { label: string; value: string; count?: number };
 const fallbackOpinions: Opinion[] = [
   { id: 1, telefone: "99999-9999", opiniao: "Reclamação" },
   { id: 2, telefone: "88888-8888", opiniao: "Sugestão" },
@@ -71,6 +79,11 @@ const buildFilternDefaultValues = (): FilterFormValues => ({
 export default function Panorama() {
   const PRESENTATION_SEEN_KEY = "home:presentationSeen";
   const [opinions, setOpinions] = useState<Opinion[]>([]);
+  const [topDistricts, setTopDistricts] = useState<any[]>([]);
+  const [topTemas, setTopTemas] = useState<any[]>([]);
+  const [filterSelectOptions, setFilterSelectOptions] = useState<
+    Partial<FilterSelectOptions>
+  >({});
   const [filters, setFilters] = useState<FiltersState>(() =>
     mapFilterFormToState(buildFilternDefaultValues()),
   );
@@ -85,12 +98,18 @@ export default function Panorama() {
     () => !readFromStorage<boolean>(PRESENTATION_SEEN_KEY, false),
   );
   const [groupOpinions, setGroupOpinions] = useState<
-    { type: string; count: number }[]
+    { id: number; tema: string; total: number }[]
   >([]);
   const hasFetched = useRef(false);
   const heroTitleRef = useRef<HTMLSpanElement | null>(null);
   const [heroCopyWidth, setHeroCopyWidth] = useState<number | null>(null);
   /*   const navigate = useNavigate(); */
+  const mapSelectOptions = (
+    items: FilterApiItem[] | undefined,
+  ): SelectOption<string>[] =>
+    Array.isArray(items)
+      ? items.map((item) => ({ label: item.label, value: item.value }))
+      : [];
 
   function IInicial(currentPage: number, itensPerPage: number) {
     return (currentPage - 1) * itensPerPage;
@@ -110,58 +129,49 @@ export default function Panorama() {
     defaultValues: buildFilternDefaultValues(),
   });
 
-  async function fetchTodayOpinions() {
-    try {
-      const response = await getTodayOpinions();
-      setTodayOpinions(response);
-    } catch (err) {
-      setError("Erro ao carregar opiniões de hoje.");
-    }
-  }
-
   async function fetchOpinions() {
     try {
-      const response = await getAllOpinions();
-      const opinionsList = Array.isArray(response) ? response : [];
-      quantityPorCategory(opinionsList);
-      setOpinions(opinionsList);
+      const response = await getAllOpinions(5);
+      setOpinions(response.data.items);
     } catch (err) {
       setError("Erro ao carregar opiniões.");
     }
   }
 
-  function quantityPorCategory(opinions: Opinion[]) {
-    const countsMap = opinions.reduce((acc, opinion) => {
-      const label = (opinion.tipo_opiniao || opinion.opiniao || "").trim();
-      const key = normalizeText(label);
-
-      if (!key) return acc; // ignora itens sem categoria
-
-      const current = acc.get(key);
-      acc.set(key, {
-        type: label || "Sem categoria",
-        count: (current?.count ?? 0) + 1,
+  async function fetchFilterOptions() {
+    try {
+      const response = await getFiltros(5);
+      const payload = response?.data?.data ?? response?.data ?? {};
+      setFilterSelectOptions({
+        tipo: mapSelectOptions(payload?.tipoOpiniao),
+        tema: mapSelectOptions(payload?.temas),
+        genero: mapSelectOptions(payload?.genero),
+        faixaEtaria: mapSelectOptions(payload?.faixaEtaria),
       });
+    } catch (err) {
+      console.error("Erro ao carregar filtros.", err);
+    }
+  }
 
-      return acc;
-    }, new Map<string, { type: string; count: number }>());
-
-    const grouped = Array.from(countsMap.values());
-    setGroupOpinions(grouped);
+  async function handleGetMetricas() {
+    const response: any = await getMetricas(5);
+    setGroupOpinions(response.data.data.topTemas || []);
+    console.log("Filtros recebidos:", response.data.data.topTemas);
+    setTodayOpinions(response.data.data.totalOpinionsToday || []);
+    setTopDistricts(response.data.data.topBairros || []);
+    setTopTemas(response.data.data.topTemas || []);
   }
 
   useEffect(() => {
     if (hasFetched.current) return;
     hasFetched.current = true;
-
-    console.log(filteredOpinions); //
+    handleGetMetricas();
+    fetchFilterOptions();
     fetchOpinions();
-    fetchTodayOpinions();
   }, []);
 
   useEffect(() => {
     if (opinions.length) {
-      console.log("Opinions carregadas:", opinions);
     }
   }, [opinions]);
 
@@ -206,59 +216,10 @@ export default function Panorama() {
   const normalizeText = (value?: string | null) =>
     (value || "").normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().trim();
 
-  const getOpinionDistrict = (opinion: Opinion) => {
-    const raw =
-      opinion.bairro ??
-      (opinion as any)?.usuario?.bairro ??
-      (opinion as any)?.user?.bairro ??
-      "";
-    return String(raw || "").trim();
-  };
-
-  const isSameDay = (value?: string | null) => {
-    if (!value) return false;
-    const parsed = new Date(value);
-    if (Number.isNaN(parsed.getTime())) return false;
-    const now = new Date();
-    return (
-      parsed.getFullYear() === now.getFullYear() &&
-      parsed.getMonth() === now.getMonth() &&
-      parsed.getDate() === now.getDate()
-    );
-  };
-
-  const getTopDistricts = (items: Opinion[]) => {
-    const countsMap = items.reduce((acc, opinion) => {
-      const label = getOpinionDistrict(opinion);
-      const key = normalizeText(label);
-
-      if (!key) return acc;
-
-      const current = acc.get(key);
-      acc.set(key, {
-        key,
-        label,
-        count: (current?.count ?? 0) + 1,
-      });
-      return acc;
-    }, new Map<string, { key: string; label: string; count: number }>());
-
-    return Array.from(countsMap.values())
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 5);
-  };
-
   const normalizeType = (item: Opinion) =>
     normalizeText(item.tipo_opiniao || item.opiniao);
 
   const sourceOpinions = opinions.length ? opinions : fallbackOpinions;
-  const topDistricts = useMemo(() => {
-    const fromToday = getTopDistricts(todayOpinions);
-    if (fromToday.length) return fromToday;
-
-    const todayFromAll = opinions.filter((op) => isSameDay(op.horario));
-    return getTopDistricts(todayFromAll);
-  }, [todayOpinions, opinions]);
 
   const filteredByForm = useMemo(
     () => applyFilters<Opinion>(sourceOpinions, filters),
@@ -418,11 +379,11 @@ export default function Panorama() {
                     </div>
                   </div>
                 </div>
-                {topDistricts.length ? (
+                {topTemas.length ? (
                   <div className={styles.districtChips}>
-                    {topDistricts.map((district) => (
-                      <span key={district.key} className={styles.districtChip}>
-                        {district.label}
+                    {topTemas.map((district: any) => (
+                      <span key={district.id} className={styles.districtChip}>
+                        {district.tema}
                       </span>
                     ))}
                   </div>
@@ -479,20 +440,20 @@ export default function Panorama() {
                     </Box>
                   </div>
                   <div className={styles.typeChips}>
-                    {groupOpinions.map(({ type, count }) => {
-                      const typeKey = normalizeText(type) || "outro";
+                    {groupOpinions.map(({ id, tema, total }) => {
+                      const typeKey = normalizeText(tema) || "outro";
                       return (
                         <span
-                          key={typeKey || type}
+                          key={typeKey || id}
                           className={styles.typeChip}
                           data-type={typeKey}
-                          aria-label={`${type} (${count})`}
+                          aria-label={`${tema} (${total})`}
                         >
                           <span className={styles.typeIcon}>
-                            {renderTypeIcon(type)}
+                            {renderTypeIcon(tema)}
                           </span>
-                          <span>{type}</span>
-                          <span className={styles.typeCount}>{count}</span>
+                          <span>{tema}</span>
+                          <span className={styles.typeCount}>{total}</span>
                         </span>
                       );
                     })}
@@ -529,7 +490,7 @@ export default function Panorama() {
               >
                 <Forms<FilterFormValues>
                   errors={filterErrors}
-                  inputsList={getFilterInputs()}
+                  inputsList={getFilterInputs(filterSelectOptions)}
                   control={filterControl}
                 />{" "}
                 <Box className={styles.filterActions}>
