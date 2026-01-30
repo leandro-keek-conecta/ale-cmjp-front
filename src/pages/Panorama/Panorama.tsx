@@ -16,8 +16,7 @@ import CardGrid from "../../components/card-grid";
 import CardGridReflect from "../../components/card-grid-reflect";
 import CardDetails from "../../components/cardDetails";
 import {
-  getAllOpinions,
-  getTodayOpinions,
+  getAllOpinions
 } from "../../services/opiniao/opiniaoService";
 import SlideComponent from "../../components/slide";
 import PresentationModal from "../../components/modal";
