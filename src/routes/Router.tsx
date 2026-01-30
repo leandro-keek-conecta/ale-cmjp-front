@@ -6,14 +6,16 @@ import RelatorioPage from "../pages/relatoriopage";
 import LoginPage from "../pages/login";
 import { AuthProvider } from "../context/AuthContext";
 import NotFound from "../pages/notFound/NotFoundPage";
+import ProtectedRoute from "./ProtectedRoute";
 
 const RoutesConfig = () => (
   <AuthProvider>
     <Routes>
-      <Route path="/panorama" element={<HomePage />} />
+      <Route path="/panorama" element={<ProtectedRoute allowedRoles={["USER", "ADMIN", "SUPERADMIN"]}><HomePage /></ProtectedRoute>} />
+      <Route path="/relatorio" element={<ProtectedRoute allowedRoles={["USER", "ADMIN", "SUPERADMIN"]}><RelatorioPage /></ProtectedRoute>} />
       <Route path="/dashboards/embed/:id" element={<EmbedDashboardPage />} />
       <Route path="/form-page" element={<FormsPage />} />
-      <Route path="/relatorio" element={<RelatorioPage />} />
+
 
       <Route path="/" element={<LoginPage />} />
 

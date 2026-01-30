@@ -1,14 +1,14 @@
 import { api } from "../api/api";
 import type { Opinion } from "../../pages/Panorama/Panorama";
 import type { OpinionFormValues } from "../../types/opiniao";
-import { number } from "echarts";
 
+/*
 const now = new Date();
 const year = now.getFullYear();
 const month = String(now.getMonth() + 1).padStart(2, "0");
 const day = String(now.getDate()).padStart(2, "0");
 
-const today = `${year}-${month}-${day}`;
+ const today = `${year}-${month}-${day}`;
 const oneYearAgo = `${year - 1}-${month}-${day}`;
 
 type OpinionsQuery = {
@@ -24,7 +24,7 @@ type OpinionsRawResponse = {
   items?: Opinion[];
   limit?: number;
   offset?: number;
-};
+}; */
 
 const getArrayPayload = (data: unknown) => {
   if (Array.isArray(data)) return data;
@@ -53,10 +53,6 @@ type SubmitSummary = Partial<
     | "acao"
   >
 >;
-
-const toOpinionsPayload = (data: any): OpinionsRawResponse =>
-  (data?.data ?? data) as OpinionsRawResponse;
-
 
 export async function getAllOpinions(projectId: number) {
   const response = await api.get(`/form-response/raw?projetoId=${projectId}&select=nome,telefone,ano_nascimento,genero,bairro,campanha,opiniao,outra_opiniao,tipo_opiniao,texto_opiniao`);
