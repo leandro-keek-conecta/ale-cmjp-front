@@ -49,6 +49,9 @@ export type Opinion = {
   bairro?: string;
   campanha?: string;
   horario?: string | null;
+  startedAt?: string | null;
+  submittedAt?: string | null;
+  createdAt?: string | null;
   acao?: string;
   opiniao: string;
   outra_opiniao?: string;
@@ -56,14 +59,6 @@ export type Opinion = {
   texto_opiniao?: string;
 };
 type FilterApiItem = { label: string; value: string; count?: number };
-const fallbackOpinions: Opinion[] = [
-  { id: 1, telefone: "99999-9999", opiniao: "Reclamação" },
-  { id: 2, telefone: "88888-8888", opiniao: "Sugestão" },
-  { id: 4, telefone: "66666-6666", opiniao: "Elogio" },
-  { id: 5, telefone: "55555-5555", opiniao: "Reclamação" },
-  { id: 6, telefone: "44444-4444", opiniao: "Sugestão" },
-  { id: 8, telefone: "22222-2222", opiniao: "Elogio" },
-];
 
 const buildFilternDefaultValues = (): FilterFormValues => ({
   dataInicio: null,
@@ -219,7 +214,7 @@ export default function Panorama() {
   const normalizeType = (item: Opinion) =>
     normalizeText(item.tipo_opiniao || item.opiniao);
 
-  const sourceOpinions = opinions.length ? opinions : fallbackOpinions;
+  const sourceOpinions = opinions.length ? opinions : [];
 
   const filteredByForm = useMemo(
     () => applyFilters<Opinion>(sourceOpinions, filters),

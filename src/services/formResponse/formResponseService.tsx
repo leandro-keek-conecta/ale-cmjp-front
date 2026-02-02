@@ -5,6 +5,23 @@ type FormResponsePayload = {
   projetoId: number;
   status?: "STARTED" | "COMPLETED";
   fields: Record<string, any>;
+  userId?: number;
+  ip?: string | null;
+  userAgent?: string | null;
+  startedAt?: string;
+  completedAt?: string;
+  submittedAt?: string;
+  source?: string | null;
+  channel?: string | null;
+  utmSource?: string | null;
+  utmMedium?: string | null;
+  utmCampaign?: string | null;
+  deviceType?: string | null;
+  os?: string | null;
+  browser?: string | null;
+  locale?: string | null;
+  timezone?: string | null;
+  metadata?: Record<string, any> | null;
 };
 
 type FormResponseUpdatePayload = {
@@ -12,6 +29,21 @@ type FormResponseUpdatePayload = {
   submittedAt?: string;
   completedAt?: string;
   fields?: Record<string, any>;
+  userId?: number;
+  ip?: string | null;
+  userAgent?: string | null;
+  startedAt?: string;
+  source?: string | null;
+  channel?: string | null;
+  utmSource?: string | null;
+  utmMedium?: string | null;
+  utmCampaign?: string | null;
+  deviceType?: string | null;
+  os?: string | null;
+  browser?: string | null;
+  locale?: string | null;
+  timezone?: string | null;
+  metadata?: Record<string, any> | null;
 };
 
 export async function createFormResponse(payload: FormResponsePayload) {

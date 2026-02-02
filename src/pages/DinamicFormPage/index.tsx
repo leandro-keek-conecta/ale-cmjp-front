@@ -25,6 +25,8 @@ import {
   updateFormResponse,
 } from "../../services/formResponse/formResponseService";
 import getForms from "@/services/forms/formsService";
+import { submitOpiniionTest } from "@/services/opiniao/opiniaoService";
+import { useAuth } from "@/context/AuthContext";
 
 type FormPage = {
   title: string;
@@ -68,6 +70,99 @@ const formatPhoneInput = (value: string) => {
   return formatted;
 };
 
+const compactObject = (obj: Record<string, unknown>) =>
+  Object.fromEntries(
+    Object.entries(obj).filter(([, value]) => value !== undefined),
+  );
+
+const getUtmParams = () => {
+  if (typeof window === "undefined") return {};
+  const params = new URLSearchParams(window.location.search);
+  const getParam = (key: string) => {
+    const value = params.get(key);
+    return value && value.trim() ? value : undefined;
+  };
+
+  return {
+    utmSource: getParam("utm_source"),
+    utmMedium: getParam("utm_medium"),
+    utmCampaign: getParam("utm_campaign"),
+  };
+};
+
+const getDeviceTypeFromUA = (ua: string) => {
+  if (/iPad|Tablet/i.test(ua)) return "tablet";
+  if (/Mobi|Android|iPhone|iPod/i.test(ua)) return "mobile";
+  return "desktop";
+};
+
+const getOSFromUA = (ua: string) => {
+  if (/Windows NT/i.test(ua)) return "Windows";
+  if (/Android/i.test(ua)) return "Android";
+  if (/iPhone|iPad|iPod/i.test(ua)) return "iOS";
+  if (/Mac OS X/i.test(ua)) return "macOS";
+  if (/Linux/i.test(ua)) return "Linux";
+  return undefined;
+};
+
+const getBrowserFromUA = (ua: string) => {
+  if (/Edg/i.test(ua)) return "Edge";
+  if (/OPR|Opera/i.test(ua)) return "Opera";
+  if (/Firefox/i.test(ua)) return "Firefox";
+  if (/Chrome/i.test(ua) && !/Edg|OPR|Opera/i.test(ua)) return "Chrome";
+  if (/Safari/i.test(ua) && !/Chrome|Edg|OPR|Opera/i.test(ua)) return "Safari";
+  return undefined;
+};
+
+const buildFormResponseContext = () => {
+  if (typeof window === "undefined" || typeof navigator === "undefined") {
+    return {};
+  }
+
+  const userAgent = navigator.userAgent || undefined;
+  const locale = navigator.language || undefined;
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || undefined;
+  const referrer = typeof document === "undefined" ? "" : document.referrer;
+
+  const context = {
+    userAgent,
+    locale,
+    timezone,
+    deviceType: userAgent ? getDeviceTypeFromUA(userAgent) : undefined,
+    os: userAgent ? getOSFromUA(userAgent) : undefined,
+    browser: userAgent ? getBrowserFromUA(userAgent) : undefined,
+    metadata: referrer ? { referrer } : undefined,
+    ...getUtmParams(),
+  };
+
+  return compactObject(context);
+};
+
+const coerceNumberValue = (value: unknown) => {
+  if (value === null || value === undefined) return null;
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : null;
+  }
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+    const parsed = Number(trimmed);
+    return Number.isFinite(parsed) ? parsed : value;
+  }
+  return null;
+};
+
+const coerceValueForInput = (input: InputType<any>, value: unknown) => {
+  switch (input.type) {
+    case "number":
+      return coerceNumberValue(value);
+    case "switch":
+      return typeof value === "boolean" ? value : Boolean(value);
+    default:
+      return value;
+  }
+};
+
 export default function DinamicFormsPage() {
   const [currentStep, setCurrentStep] = useState(0);
   const [pages, setPages] = useState<FormPage[]>([]);
@@ -90,6 +185,8 @@ export default function DinamicFormsPage() {
     message: string;
   } | null>(null);
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const responseContext = useMemo(() => buildFormResponseContext(), []);
 
   const {
     control,
@@ -109,18 +206,22 @@ export default function DinamicFormsPage() {
   ) => {
     return inputs.reduce(
       (acc, input) => {
+        let resolvedValue: unknown;
         if (input.name === "telefone") {
-          acc[input.name] = formatPhoneInput(String(values[input.name] ?? ""));
+          resolvedValue = formatPhoneInput(String(values[input.name] ?? ""));
+          acc[input.name] = coerceValueForInput(input, resolvedValue);
           return acc;
         }
         if (input.name === "outra_opiniao") {
           const rawValue = values[input.name];
-          acc[input.name] =
-            rawValue === undefined || rawValue === "" ? null : rawValue;
+          resolvedValue =
+            rawValue === undefined || rawValue === "" ? "" : rawValue;
+          acc[input.name] = coerceValueForInput(input, resolvedValue);
           return acc;
         }
-        acc[input.name] =
+        resolvedValue =
           values[input.name] ?? (input.type === "switch" ? false : "");
+        acc[input.name] = coerceValueForInput(input, resolvedValue);
         return acc;
       },
       {} as Record<string, any>,
@@ -139,6 +240,45 @@ export default function DinamicFormsPage() {
   };
 
   async function onSubmitUser(
+    values: Record<string, any>,
+    inputs: InputType<any>[],
+  ) {
+    setUserAlert(null);
+    try {
+      const fields = buildFieldsPayloadForInputs(values, inputs);
+      const response = await submitOpiniionTest({
+        formVersionId: 5,
+        projetoId: 5,
+        status: "STARTED",
+        fields,
+        userId: user?.id,
+        ...responseContext,
+      });
+      console.log("Resposta do submitOpiniionTest:", response);
+      const createdId = resolveResponseId(response);
+      if (!createdId) {
+        setUserAlert({
+          severity: "error",
+          message: "N\u00e3o foi poss\u00edvel recuperar o ID da resposta.",
+        });
+        return;
+      }
+      setResponseId(createdId);
+      setUserAlert({
+        severity: "success",
+        message: "Usu\u00e1rio cadastrado com sucesso.",
+      });
+      setCurrentStep((prev) => Math.min(prev + 1, pages.length));
+    } catch (error) {
+      console.error("Erro ao cadastrar usu\u00e1rio:", error);
+      setUserAlert({
+        severity: "error",
+        message: "N\u00e3o foi poss\u00edvel cadastrar o usu\u00e1rio. Tente novamente.",
+      });
+    }
+  }
+
+/*   async function onSubmitUser(
     values: Record<string, any>,
     inputs: InputType<any>[],
   ) {
@@ -224,7 +364,7 @@ export default function DinamicFormsPage() {
         message: "Não foi possível cadastrar o usuário. Tente novamente.",
       });
     }
-  }
+  } */
 
   async function onSubmitOpinion(values: Record<string, any>) {
     setOpinionAlert(null);
@@ -247,6 +387,8 @@ export default function DinamicFormsPage() {
         submittedAt: now,
         completedAt: now,
         fields,
+        userId: user?.id,
+        ...responseContext,
       });
 
       setSummary({
@@ -327,7 +469,7 @@ export default function DinamicFormsPage() {
       case "number":
         return {
           ...base,
-          type: "text",
+          type: "number",
         };
 
       case "textarea":
@@ -456,6 +598,8 @@ export default function DinamicFormsPage() {
     });
   }, [page, showOutraOpiniao]);
 
+  
+
   const handleStepSubmit = async () => {
     if (!page) return;
     const fields = resolvedPageInputs.map((i) => i.name);
@@ -463,6 +607,7 @@ export default function DinamicFormsPage() {
     if (!valid) return;
 
     const values = getValues() as Record<string, any>;
+    console.log("Submitting step", currentStep, values);
     if (currentStep === 0) {
       await onSubmitUser(values, page.inputs);
       return;

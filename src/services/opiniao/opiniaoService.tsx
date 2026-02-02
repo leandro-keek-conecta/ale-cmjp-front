@@ -2,8 +2,8 @@ import { api } from "../api/api";
 import type { Opinion } from "../../pages/Panorama/Panorama";
 import type { OpinionFormValues } from "../../types/opiniao";
 
-/*
 const now = new Date();
+/*
 const year = now.getFullYear();
 const month = String(now.getMonth() + 1).padStart(2, "0");
 const day = String(now.getDate()).padStart(2, "0");
@@ -25,6 +25,14 @@ type OpinionsRawResponse = {
   limit?: number;
   offset?: number;
 }; */
+
+type FieldValue =
+  | { type: "text"; value: string }
+  | { type: "number"; value: number }
+  | { type: "select"; value: string | string[] }
+  | { type: "switch"; value: boolean };
+
+type DynamicFormFields = Record<string, FieldValue>;
 
 const getArrayPayload = (data: unknown) => {
   if (Array.isArray(data)) return data;
@@ -54,8 +62,34 @@ type SubmitSummary = Partial<
   >
 >;
 
+export type SubmitFormPayload = {
+  formVersionId: number;
+  projetoId: number;
+  status: "STARTED" | "COMPLETED" | "ABANDONED";
+  fields: Record<string, unknown>;
+  userId?: number;
+  ip?: string | null;
+  userAgent?: string | null;
+  startedAt?: string;
+  completedAt?: string;
+  submittedAt?: string;
+  source?: string | null;
+  channel?: string | null;
+  utmSource?: string | null;
+  utmMedium?: string | null;
+  utmCampaign?: string | null;
+  deviceType?: string | null;
+  os?: string | null;
+  browser?: string | null;
+  locale?: string | null;
+  timezone?: string | null;
+  metadata?: Record<string, unknown> | null;
+};
+
 export async function getAllOpinions(projectId: number) {
-  const response = await api.get(`/form-response/raw?projetoId=${projectId}&select=nome,telefone,ano_nascimento,genero,bairro,campanha,opiniao,outra_opiniao,tipo_opiniao,texto_opiniao`);
+  const response = await api.get(
+    `/form-response/raw?projetoId=${projectId}&select=nome,telefone,ano_nascimento,genero,bairro,campanha,opiniao,outra_opiniao,tipo_opiniao,texto_opiniao,startedAt,submittedAt,createdAt`,
+  );
   return response?.data;
 }
 
@@ -86,4 +120,12 @@ export async function submitOpinion(data: SubmitSummary) {
   });
 
   return response;
+}
+
+export async function submitOpiniionTest(payload: SubmitFormPayload) {
+  const response = await api.post("/form-response/create", {
+    ...payload,
+  });
+
+  return response.data;
 }

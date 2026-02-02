@@ -29,6 +29,7 @@ export interface InputType<TFieldValues extends FieldValues = FieldValues> {
   placeholder?: string;
   type:
     | "text"
+    | "number"
     | "email"
     | "password"
     | "Date"
@@ -224,7 +225,7 @@ export default function Forms<TFieldValues extends FieldValues = FieldValues>({
                     <TextArea
                       label={input.title}
                       placeholder={input.placeholder || ""}
-                      value={value || ""}
+                      value={value ?? ""}
                       onChange={(e) => {
                         onChange(e.target.value);
                         onInputChange?.(input.name, e.target.value);
@@ -240,7 +241,7 @@ export default function Forms<TFieldValues extends FieldValues = FieldValues>({
                     label={input.title}
                     placeholder={input.placeholder || ""}
                     type={input.type}
-                    value={value || ""}
+                    value={value ?? ""}
                     onChange={(e) => {
                       onChange(e.target.value);
                       onInputChange?.(input.name, e.target.value);
