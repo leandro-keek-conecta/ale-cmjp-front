@@ -49,9 +49,6 @@ export type Opinion = {
   bairro?: string;
   campanha?: string;
   horario?: string | null;
-  startedAt?: string | null;
-  submittedAt?: string | null;
-  createdAt?: string | null;
   acao?: string;
   opiniao: string;
   outra_opiniao?: string;
@@ -343,7 +340,7 @@ export default function Panorama() {
             </div>
             <Box className={styles.statsRow}>
               <CardGridReflect
-                span={4}
+                span={2}
                 className={`${styles.statCard} ${styles.reveal}`}
                 data-reveal
                 style={{ ["--reveal-delay" as any]: "0.12s" }}
@@ -360,7 +357,7 @@ export default function Panorama() {
               </CardGridReflect>
               {/* Card 2 */}
               <CardGridReflect
-                span={4}
+                span={5}
                 className={`${styles.statCard} ${styles.reveal}`}
                 data-reveal
                 style={{ ["--reveal-delay" as any]: "0.12s" }}
@@ -389,7 +386,7 @@ export default function Panorama() {
               </CardGridReflect>
               {/* Card 3 */}
               <CardGridReflect
-                span={4}
+                span={5}
                 className={`${styles.statCard} ${styles.reveal}`}
                 data-reveal
                 style={{ ["--reveal-delay" as any]: "0.18s" }}

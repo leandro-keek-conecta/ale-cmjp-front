@@ -18,7 +18,7 @@ import {
   DialogTitle,
   DialogContentText,
 } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   checkFormResponseExists,
   createFormResponse,
@@ -121,7 +121,8 @@ const buildFormResponseContext = () => {
 
   const userAgent = navigator.userAgent || undefined;
   const locale = navigator.language || undefined;
-  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || undefined;
+  const timezone =
+    Intl.DateTimeFormat().resolvedOptions().timeZone || undefined;
   const referrer = typeof document === "undefined" ? "" : document.referrer;
 
   const context = {
@@ -185,6 +186,12 @@ export default function DinamicFormsPage() {
     message: string;
   } | null>(null);
   const navigate = useNavigate();
+  const { project: projectParam, slug: slugParam } = useParams<{
+    project?: string;
+    slug?: string;
+  }>();
+  const projectName = projectParam ?? "";
+  const formSlug = slugParam ?? "";
   const { user } = useAuth();
   const responseContext = useMemo(() => buildFormResponseContext(), []);
 
@@ -273,98 +280,11 @@ export default function DinamicFormsPage() {
       console.error("Erro ao cadastrar usu\u00e1rio:", error);
       setUserAlert({
         severity: "error",
-        message: "N\u00e3o foi poss\u00edvel cadastrar o usu\u00e1rio. Tente novamente.",
+        message:
+          "N\u00e3o foi poss\u00edvel cadastrar o usu\u00e1rio. Tente novamente.",
       });
     }
   }
-
-/*   async function onSubmitUser(
-    values: Record<string, any>,
-    inputs: InputType<any>[],
-  ) {
-    const data = values as UserFormValues;
-    setUserAlert(null);
-    const formattedPhone = formatPhoneInput(data.telefone || "");
-    if (!PHONE_FULL_REGEX.test(formattedPhone)) {
-      setError("telefone", {
-        type: "pattern",
-        message: "Use o formato 83 9 9999 - 9999",
-      });
-      return;
-    }
-    if (formattedPhone !== data.telefone) {
-      setValue("telefone", formattedPhone, {
-        shouldDirty: true,
-        shouldValidate: true,
-      });
-    }
-    const resolvedProjectId = projectId || DEFAULT_PROJECT_ID;
-    try {
-      const existsPayload = await checkFormResponseExists(
-        resolvedProjectId,
-        "telefone",
-        formattedPhone,
-      );
-      const existsId = resolveResponseId(existsPayload);
-      const exists = Boolean(
-        existsPayload?.data?.exists ?? existsPayload?.exists ?? existsId,
-      );
-      if (exists) {
-        if (!existsId) {
-          setUserAlert({
-            severity: "error",
-            message:
-              "Usuário já cadastrado, mas não foi possível recuperar o ID da resposta.",
-          });
-          return;
-        }
-        setResponseId(existsId);
-        setUserAlert({
-          severity: "success",
-          message: "Usuário já cadastrado. Continuando com a opinião.",
-        });
-        setCurrentStep((prev) => Math.min(prev + 1, pages.length));
-        return;
-      }
-
-      const versionId = formVersionId ?? 0;
-      if (!versionId) {
-        setUserAlert({
-          severity: "error",
-          message: "Versão do formulário não encontrada.",
-        });
-        return;
-      }
-
-      const fields = buildFieldsPayloadForInputs(values, inputs);
-      const response = await createFormResponse({
-        formVersionId: versionId,
-        projetoId: resolvedProjectId,
-        status: "STARTED",
-        fields,
-      });
-      const createdId = resolveResponseId(response);
-      if (!createdId) {
-        setUserAlert({
-          severity: "error",
-          message: "Não foi possível criar o cadastro do usuário.",
-        });
-        return;
-      }
-      setResponseId(createdId);
-      setUserAlert({
-        severity: "success",
-        message: "Usuário cadastrado com sucesso.",
-      });
-      setCurrentStep((prev) => Math.min(prev + 1, pages.length));
-    } catch (error) {
-      console.error("Erro ao cadastrar usuário:", error);
-      setUserAlert({
-        severity: "error",
-        message: "Não foi possível cadastrar o usuário. Tente novamente.",
-      });
-    }
-  } */
 
   async function onSubmitOpinion(values: Record<string, any>) {
     setOpinionAlert(null);
@@ -393,9 +313,7 @@ export default function DinamicFormsPage() {
 
       setSummary({
         tema:
-          fields.opiniao === "Outros"
-            ? fields.outra_opiniao
-            : fields.opiniao,
+          fields.opiniao === "Outros" ? fields.outra_opiniao : fields.opiniao,
         tipo: fields.tipo_opiniao,
         texto_opiniao: fields.texto_opiniao,
       });
@@ -417,36 +335,6 @@ export default function DinamicFormsPage() {
   async function saveOptInPreference() {
     navigate("/");
   }
-
-  /*   const opinionInputs = useMemo(() => {
-    const base = getOpinionInputs();
-
-    const filtered = base.filter((i) =>
-      showOutraOpiniao ? true : i.name !== "outra_opiniao",
-    );
-
-    return filtered.map((i) => {
-      if (i.name === "usuario_id") {
-        // (Opcional) se seu InputType suportar "disabled", deixe travado
-        return {
-          ...i,
-          disabled: false,
-          readOnly: true, // ou inputProps: { readOnly: true } (depende do seu Forms)
-        };
-      }
-
-      if (i.name === "outra_opiniao") {
-        return {
-          ...i,
-          rules: showOutraOpiniao
-            ? { required: "Descreva qual é a outra opinião" }
-            : undefined,
-        };
-      }
-
-      return i;
-    });
-  }, [showOutraOpiniao, userId]); */
 
   function mapBackendFieldToInput(field: any): InputType<any> {
     const base = {
@@ -549,10 +437,7 @@ export default function DinamicFormsPage() {
   useEffect(() => {
     const fetchFormData = async () => {
       try {
-        const projectName = "ale-cmjp";
-        const slug = "formulario-de-opiniao";
-
-        const response = await getForms(slug, projectName);
+        const response = await getForms(formSlug, projectName);
 
         const activeVersion = response.data.data.activeVersion;
         const projectFromResponse = response.data.data.projeto;
@@ -574,7 +459,7 @@ export default function DinamicFormsPage() {
     };
 
     fetchFormData();
-  }, []);
+  }, [formSlug, projectName]);
 
   const page = currentStep < pages.length ? pages[currentStep] : null;
   const resolvedPageInputs = useMemo(() => {
@@ -597,8 +482,6 @@ export default function DinamicFormsPage() {
       return [input];
     });
   }, [page, showOutraOpiniao]);
-
-  
 
   const handleStepSubmit = async () => {
     if (!page) return;

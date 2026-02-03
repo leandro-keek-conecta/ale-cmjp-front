@@ -22,21 +22,26 @@ export async function getMetrics() {
   return response.data.data;
 }
 
-const toDateOnly = (date: Date) =>
-  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(
-    date.getDate()
-  ).padStart(2, "0")}`;
+const toUtcStartOfDayISOString = (date: Date) =>
+  new Date(
+    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0)
+  ).toISOString();
+
+const toUtcEndOfDayISOString = (date: Date) =>
+  new Date(
+    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59, 999)
+  ).toISOString();
 
 const getLastSixMonthsRange = () => {
   const now = new Date();
   const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
   const start = new Date(now.getFullYear(), now.getMonth() - 5, 1);
-  return { start: toDateOnly(start), end: toDateOnly(end) };
+  return { start: toUtcStartOfDayISOString(start), end: toUtcEndOfDayISOString(end) };
 };
 
 const getCurrentMonthToDateRange = () => {
   const now = new Date();
   const start = new Date(now.getFullYear(), now.getMonth(), 1);
   const end = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  return { start: toDateOnly(start), end: toDateOnly(end) };
+  return { start: toUtcStartOfDayISOString(start), end: toUtcEndOfDayISOString(end) };
 };
