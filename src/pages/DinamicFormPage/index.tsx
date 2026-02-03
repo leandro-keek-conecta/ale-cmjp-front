@@ -4,7 +4,6 @@ import HorizontalLinearAlternativeLabelStepper from "../../components/stepper";
 import { useEffect, useMemo, useState } from "react";
 import Forms, { type InputType } from "../../components/Forms";
 import { useForm } from "react-hook-form";
-import type { UserFormValues } from "../../types/user";
 import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
 import {
   Card,
@@ -19,11 +18,7 @@ import {
   DialogContentText,
 } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
-import {
-  checkFormResponseExists,
-  createFormResponse,
-  updateFormResponse,
-} from "../../services/formResponse/formResponseService";
+import { updateFormResponse } from "../../services/formResponse/formResponseService";
 import getForms from "@/services/forms/formsService";
 import { submitOpiniionTest } from "@/services/opiniao/opiniaoService";
 import { useAuth } from "@/context/AuthContext";
@@ -45,6 +40,7 @@ const USER_FIELDS = [
 ] as const;
 
 const DEFAULT_PROJECT_ID = 5;
+const DEFAULT_FORM_VERSION_ID = 5;
 
 export type SubmitSummary = {
   id?: string;
@@ -52,8 +48,6 @@ export type SubmitSummary = {
   tipo?: string;
   texto_opiniao?: string;
 };
-
-const PHONE_FULL_REGEX = /^\d{2} 9 \d{4} - \d{4}$/;
 
 const formatPhoneInput = (value: string) => {
   const digits = value.replace(/\D/g, "").slice(0, 11);
@@ -167,7 +161,9 @@ const coerceValueForInput = (input: InputType<any>, value: unknown) => {
 export default function DinamicFormsPage() {
   const [currentStep, setCurrentStep] = useState(0);
   const [pages, setPages] = useState<FormPage[]>([]);
-  const [formVersionId, setFormVersionId] = useState<number | null>(null);
+  const [formVersionId, setFormVersionId] = useState<number>(
+    DEFAULT_FORM_VERSION_ID,
+  );
   const [projectId, setProjectId] = useState<number>(DEFAULT_PROJECT_ID);
   const [responseId, setResponseId] = useState<number | string | null>(null);
   const steps = useMemo(() => {
@@ -201,7 +197,6 @@ export default function DinamicFormsPage() {
     trigger,
     getValues,
     setValue,
-    setError,
     reset,
   } = useForm({
     defaultValues: buildDefaultValuesFromPages(pages),
@@ -254,8 +249,8 @@ export default function DinamicFormsPage() {
     try {
       const fields = buildFieldsPayloadForInputs(values, inputs);
       const response = await submitOpiniionTest({
-        formVersionId: 5,
-        projetoId: 5,
+        formVersionId,
+        projetoId: projectId,
         status: "STARTED",
         fields,
         userId: user?.id,
@@ -447,9 +442,9 @@ export default function DinamicFormsPage() {
 
         const pages = groupFieldsByBlocks(blocks, fields);
         setPages(pages);
-        setFormVersionId(
-          typeof activeVersion?.id === "number" ? activeVersion.id : null,
-        );
+        if (typeof activeVersion?.id === "number") {
+          setFormVersionId(activeVersion.id);
+        }
         if (typeof projectFromResponse?.id === "number") {
           setProjectId(projectFromResponse.id);
         }

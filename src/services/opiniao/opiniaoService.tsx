@@ -3,7 +3,6 @@ import { apiPublic } from "../apiPublic/api";
 import type { Opinion } from "../../pages/Panorama/Panorama";
 import type { OpinionFormValues } from "../../types/opiniao";
 
-const now = new Date();
 /*
 const year = now.getFullYear();
 const month = String(now.getMonth() + 1).padStart(2, "0");
@@ -26,14 +25,6 @@ type OpinionsRawResponse = {
   limit?: number;
   offset?: number;
 }; */
-
-type FieldValue =
-  | { type: "text"; value: string }
-  | { type: "number"; value: number }
-  | { type: "select"; value: string | string[] }
-  | { type: "switch"; value: boolean };
-
-type DynamicFormFields = Record<string, FieldValue>;
 
 const getArrayPayload = (data: unknown) => {
   if (Array.isArray(data)) return data;

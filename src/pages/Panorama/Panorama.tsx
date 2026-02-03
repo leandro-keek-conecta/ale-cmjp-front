@@ -49,6 +49,9 @@ export type Opinion = {
   bairro?: string;
   campanha?: string;
   horario?: string | null;
+  startedAt?: string | null;
+  submittedAt?: string | null;
+  createdAt?: string | null;
   acao?: string;
   opiniao: string;
   outra_opiniao?: string;

@@ -283,14 +283,17 @@ export function normalizeOpinionsByDay(
 
     if (!minDate || !maxDate) return [];
 
+    const minDateValue = minDate as Date;
+    const maxDateValue = maxDate as Date;
+
     const results: OpinionByMonth[] = [];
     const cursor = new Date(
-      minDate.getFullYear(),
-      minDate.getMonth(),
-      minDate.getDate(),
+      minDateValue.getFullYear(),
+      minDateValue.getMonth(),
+      minDateValue.getDate(),
     );
 
-    while (cursor <= maxDate) {
+    while (cursor <= maxDateValue) {
       const key = formatDateKey(cursor);
       results.push({
         label: formatDayMonthLabel(cursor),
