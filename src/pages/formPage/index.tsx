@@ -1,7 +1,7 @@
 import { Box, Button, IconButton } from "@mui/material";
 import styles from "./FormsPage.module.css";
 import HorizontalLinearAlternativeLabelStepper from "../../components/stepper";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Forms from "../../components/Forms";
 import { getUserInputs } from "./userImputList/user";
 import { useForm } from "react-hook-form";
@@ -24,6 +24,7 @@ import {
 import { createUSer } from "../../services/user/userService";
 import { useNavigate } from "react-router-dom";
 import { submitOpinion } from "../../services/opiniao/opiniaoService";
+import getForms from "@/services/forms/formsService";
 
 const steps = ["Dados do Usuário", "Dados da Opinião", "Concluído"];
 
@@ -104,7 +105,6 @@ export default function FormsPage() {
   } | null>(null);
   const navigate = useNavigate();
 
-
   const {
     control: userControl,
     formState: { errors: userErrors },
@@ -164,7 +164,6 @@ export default function FormsPage() {
       });
     }
 
-    console.log("Generated user ID:", newUserId);
     setUserId(newUserId);
 
     // Pré-preenche campos da opinião:
@@ -176,10 +175,8 @@ export default function FormsPage() {
   }
 
   async function onSubmitOpinion(data: OpinionFormValues) {
-    console.log("Opinion form:", data);
     setOpinionAlert(null);
     try {
-      console.log("entrei");
       // garante consistência do payload
       const payload = {
         usuario_id: userId || data.usuario_id,
@@ -280,6 +277,21 @@ export default function FormsPage() {
       return i;
     });
   }, [showOutraOpiniao, userId]);
+
+  useEffect(() => {
+    const fetchFormData = async () => {
+      try {
+        const projectName = "ale-cmjp";
+        const slug = "formulario-de-opiniao";
+        const response = await getForms(slug, projectName);
+        console.log("Form data fetched:", response.data);
+        // Aqui você pode usar os dados do formulário conforme necessário
+      } catch (error) {
+        console.error("Erro ao buscar dados do formulário:", error);
+      }
+    };
+    fetchFormData();
+  }, []);
 
   const getOpinionPreviewText = (text: string) =>
     text.length > 70 ? `${text.slice(0, 70)}...` : text;

@@ -56,14 +56,6 @@ export type Opinion = {
   texto_opiniao?: string;
 };
 type FilterApiItem = { label: string; value: string; count?: number };
-const fallbackOpinions: Opinion[] = [
-  { id: 1, telefone: "99999-9999", opiniao: "Reclamação" },
-  { id: 2, telefone: "88888-8888", opiniao: "Sugestão" },
-  { id: 4, telefone: "66666-6666", opiniao: "Elogio" },
-  { id: 5, telefone: "55555-5555", opiniao: "Reclamação" },
-  { id: 6, telefone: "44444-4444", opiniao: "Sugestão" },
-  { id: 8, telefone: "22222-2222", opiniao: "Elogio" },
-];
 
 const buildFilternDefaultValues = (): FilterFormValues => ({
   dataInicio: null,
@@ -219,7 +211,7 @@ export default function Panorama() {
   const normalizeType = (item: Opinion) =>
     normalizeText(item.tipo_opiniao || item.opiniao);
 
-  const sourceOpinions = opinions.length ? opinions : fallbackOpinions;
+  const sourceOpinions = opinions.length ? opinions : [];
 
   const filteredByForm = useMemo(
     () => applyFilters<Opinion>(sourceOpinions, filters),
@@ -348,7 +340,7 @@ export default function Panorama() {
             </div>
             <Box className={styles.statsRow}>
               <CardGridReflect
-                span={4}
+                span={2}
                 className={`${styles.statCard} ${styles.reveal}`}
                 data-reveal
                 style={{ ["--reveal-delay" as any]: "0.12s" }}
@@ -365,7 +357,7 @@ export default function Panorama() {
               </CardGridReflect>
               {/* Card 2 */}
               <CardGridReflect
-                span={4}
+                span={5}
                 className={`${styles.statCard} ${styles.reveal}`}
                 data-reveal
                 style={{ ["--reveal-delay" as any]: "0.12s" }}
@@ -394,7 +386,7 @@ export default function Panorama() {
               </CardGridReflect>
               {/* Card 3 */}
               <CardGridReflect
-                span={4}
+                span={5}
                 className={`${styles.statCard} ${styles.reveal}`}
                 data-reveal
                 style={{ ["--reveal-delay" as any]: "0.18s" }}

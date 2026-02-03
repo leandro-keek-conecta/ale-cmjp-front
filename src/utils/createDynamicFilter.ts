@@ -12,8 +12,26 @@ const faixaEtariaMap: Record<string, { min: number; max: number }> = {
   "65+": { min: 65, max: 200 },
 };
 
-const getFaixaEtariaRange = (value?: string | null) =>
-  value ? (faixaEtariaMap[value] ?? null) : null;
+const normalizeFaixaLabel = (value: string) =>
+  value
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+
+const faixaEtariaMapNormalized = Object.fromEntries(
+  Object.entries(faixaEtariaMap).map(([label, range]) => [
+    normalizeFaixaLabel(label),
+    range,
+  ]),
+);
+
+const getFaixaEtariaRange = (value?: string | null) => {
+  if (!value) return null;
+  const normalized = normalizeFaixaLabel(value);
+  return faixaEtariaMapNormalized[normalized] ?? null;
+};
 
 const getBirthYear = (item: any) => {
   const raw =
@@ -28,6 +46,22 @@ const getBirthYear = (item: any) => {
 const toDate = (value: unknown) => {
   if (value instanceof Date) return value;
   if (typeof value === "string" || typeof value === "number") {
+    if (typeof value === "string") {
+      const trimmed = value.trim();
+      const match = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (match) {
+        const year = Number(match[1]);
+        const month = Number(match[2]);
+        const day = Number(match[3]);
+        if (
+          Number.isFinite(year) &&
+          Number.isFinite(month) &&
+          Number.isFinite(day)
+        ) {
+          return new Date(year, month - 1, day);
+        }
+      }
+    }
     const parsed = new Date(value);
     return Number.isNaN(parsed.getTime()) ? null : parsed;
   }
@@ -74,20 +108,31 @@ export const filterMappers: Record<string, FilterFn<any>> = {
     const inicio = toDate(value.inicio);
     const fim = toDate(value.fim);
     if (!inicio || !fim) return items;
-    const start = inicio.getTime();
-    const end = fim.getTime();
+    const start = new Date(inicio.getTime());
+    const end = new Date(fim.getTime());
+    if (
+      end.getHours() === 0 &&
+      end.getMinutes() === 0 &&
+      end.getSeconds() === 0 &&
+      end.getMilliseconds() === 0
+    ) {
+      end.setHours(23, 59, 59, 999);
+    }
 
     return items.filter((i) => {
       const rawDate =
+        i?.submittedAt ??
+        i?.completedAt ??
+        i?.startedAt ??
+        i?.createdAt ??
         i?.criadoEm ??
         i?.horario ??
         i?.horario_opiniao ??
-        i?.createdAt ??
         i?.data;
       const parsed = rawDate ? new Date(rawDate) : null;
       if (!parsed || Number.isNaN(parsed.getTime())) return false;
       const time = parsed.getTime();
-      return time >= start && time <= end;
+      return time >= start.getTime() && time <= end.getTime();
     });
   },
 

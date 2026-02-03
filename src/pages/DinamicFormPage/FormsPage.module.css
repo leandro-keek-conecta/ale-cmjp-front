@@ -1,0 +1,103 @@
+.container {
+    padding: 24px 16px 32px;
+    width: 100%;
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #f4f4f4;
+    min-height: 100vh;
+    box-sizing: border-box;
+    justify-content: center;
+}
+
+.formBox {
+  gap: 2rem;
+  background-color: #ffffff;
+  padding: 2rem;
+  border-radius: 18px;
+  width: 100%;
+  max-width: 35rem;
+  min-width: 0;
+  box-shadow: 10px 10px 17px 5px rgba(0, 0, 0, 0.12);
+}
+
+.logo {
+  display: block;
+  position: fixed;
+  left: 40rem;
+  top: 20rem;
+  z-index: 1;
+  max-width: 600px;
+  height: auto;
+}
+
+.stepperBox {
+  width: 100%;
+  margin-top: 1rem;
+  margin-bottom: 2rem;
+  min-width: 0;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.buttonsBox {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.submitButton {
+  font-size: 1rem;
+  letter-spacing: 0.04em;
+  text-align: center;
+  justify-content: center;
+  width: 35%;
+  font-weight: 500 !important;
+  cursor: pointer;
+  max-height: 44px !important;
+  color: #ffffff !important;
+  background-color: #1e8e9c !important;
+  border-radius: 12px !important;
+}
+
+@media (max-width: 900px) {
+  .formBox {
+    padding: 1.5rem;
+    border-radius: 14px;
+    max-width: 720px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  }
+}
+
+@media (max-width: 720px) {
+  .container {
+    padding: 16px 12px 24px;
+  }
+
+  .formBox {
+    padding: 1.25rem;
+    gap: 1.5rem;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  }
+
+  .stepperBox {
+    margin-top: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .buttonsBox {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .submitButton {
+    width: 100%;
+    max-width: none;
+    min-height: 46px;
+  }
+}

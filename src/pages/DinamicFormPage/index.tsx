@@ -1,0 +1,724 @@
+import { Box, Button, IconButton } from "@mui/material";
+import styles from "./FormsPage.module.css";
+import HorizontalLinearAlternativeLabelStepper from "../../components/stepper";
+import { useEffect, useMemo, useState } from "react";
+import Forms, { type InputType } from "../../components/Forms";
+import { useForm } from "react-hook-form";
+import type { UserFormValues } from "../../types/user";
+import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
+import {
+  Card,
+  CardContent,
+  Typography,
+  Stack,
+  Chip,
+  Divider,
+  Alert,
+  Dialog,
+  DialogTitle,
+  DialogContentText,
+} from "@mui/material";
+import { useNavigate, useParams } from "react-router-dom";
+import {
+  checkFormResponseExists,
+  createFormResponse,
+  updateFormResponse,
+} from "../../services/formResponse/formResponseService";
+import getForms from "@/services/forms/formsService";
+import { submitOpiniionTest } from "@/services/opiniao/opiniaoService";
+import { useAuth } from "@/context/AuthContext";
+
+type FormPage = {
+  title: string;
+  inputs: InputType<any>[];
+};
+
+const USER_FIELDS = [
+  "id",
+  "horario",
+  "nome",
+  "telefone",
+  "ano_nascimento",
+  "genero",
+  "bairro",
+  "campanha",
+] as const;
+
+const DEFAULT_PROJECT_ID = 5;
+
+export type SubmitSummary = {
+  id?: string;
+  tema?: string;
+  tipo?: string;
+  texto_opiniao?: string;
+};
+
+const PHONE_FULL_REGEX = /^\d{2} 9 \d{4} - \d{4}$/;
+
+const formatPhoneInput = (value: string) => {
+  const digits = value.replace(/\D/g, "").slice(0, 11);
+  const ddd = digits.slice(0, 2);
+  const ninth = digits.slice(2, 3);
+  const part1 = digits.slice(3, 7);
+  const part2 = digits.slice(7, 11);
+
+  let formatted = "";
+  if (ddd) formatted += ddd;
+  if (ninth) formatted += ` ${ninth}`;
+  if (part1) formatted += ` ${part1}`;
+  if (part2) formatted += ` - ${part2}`;
+  return formatted;
+};
+
+const compactObject = (obj: Record<string, unknown>) =>
+  Object.fromEntries(
+    Object.entries(obj).filter(([, value]) => value !== undefined),
+  );
+
+const getUtmParams = () => {
+  if (typeof window === "undefined") return {};
+  const params = new URLSearchParams(window.location.search);
+  const getParam = (key: string) => {
+    const value = params.get(key);
+    return value && value.trim() ? value : undefined;
+  };
+
+  return {
+    utmSource: getParam("utm_source"),
+    utmMedium: getParam("utm_medium"),
+    utmCampaign: getParam("utm_campaign"),
+  };
+};
+
+const getDeviceTypeFromUA = (ua: string) => {
+  if (/iPad|Tablet/i.test(ua)) return "tablet";
+  if (/Mobi|Android|iPhone|iPod/i.test(ua)) return "mobile";
+  return "desktop";
+};
+
+const getOSFromUA = (ua: string) => {
+  if (/Windows NT/i.test(ua)) return "Windows";
+  if (/Android/i.test(ua)) return "Android";
+  if (/iPhone|iPad|iPod/i.test(ua)) return "iOS";
+  if (/Mac OS X/i.test(ua)) return "macOS";
+  if (/Linux/i.test(ua)) return "Linux";
+  return undefined;
+};
+
+const getBrowserFromUA = (ua: string) => {
+  if (/Edg/i.test(ua)) return "Edge";
+  if (/OPR|Opera/i.test(ua)) return "Opera";
+  if (/Firefox/i.test(ua)) return "Firefox";
+  if (/Chrome/i.test(ua) && !/Edg|OPR|Opera/i.test(ua)) return "Chrome";
+  if (/Safari/i.test(ua) && !/Chrome|Edg|OPR|Opera/i.test(ua)) return "Safari";
+  return undefined;
+};
+
+const buildFormResponseContext = () => {
+  if (typeof window === "undefined" || typeof navigator === "undefined") {
+    return {};
+  }
+
+  const userAgent = navigator.userAgent || undefined;
+  const locale = navigator.language || undefined;
+  const timezone =
+    Intl.DateTimeFormat().resolvedOptions().timeZone || undefined;
+  const referrer = typeof document === "undefined" ? "" : document.referrer;
+
+  const context = {
+    userAgent,
+    locale,
+    timezone,
+    deviceType: userAgent ? getDeviceTypeFromUA(userAgent) : undefined,
+    os: userAgent ? getOSFromUA(userAgent) : undefined,
+    browser: userAgent ? getBrowserFromUA(userAgent) : undefined,
+    metadata: referrer ? { referrer } : undefined,
+    ...getUtmParams(),
+  };
+
+  return compactObject(context);
+};
+
+const coerceNumberValue = (value: unknown) => {
+  if (value === null || value === undefined) return null;
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : null;
+  }
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+    const parsed = Number(trimmed);
+    return Number.isFinite(parsed) ? parsed : value;
+  }
+  return null;
+};
+
+const coerceValueForInput = (input: InputType<any>, value: unknown) => {
+  switch (input.type) {
+    case "number":
+      return coerceNumberValue(value);
+    case "switch":
+      return typeof value === "boolean" ? value : Boolean(value);
+    default:
+      return value;
+  }
+};
+
+export default function DinamicFormsPage() {
+  const [currentStep, setCurrentStep] = useState(0);
+  const [pages, setPages] = useState<FormPage[]>([]);
+  const [formVersionId, setFormVersionId] = useState<number | null>(null);
+  const [projectId, setProjectId] = useState<number>(DEFAULT_PROJECT_ID);
+  const [responseId, setResponseId] = useState<number | string | null>(null);
+  const steps = useMemo(() => {
+    const labels = pages.map((p) => p.title);
+    return labels.length ? [...labels, "Concluído"] : [];
+  }, [pages]);
+  const [showOutraOpiniao, setShowOutraOpiniao] = useState(false);
+  const [summary, setSummary] = useState<SubmitSummary | null>(null);
+  const [isOpinionTextModalOpen, setIsOpinionTextModalOpen] = useState(false);
+  const [userAlert, setUserAlert] = useState<{
+    severity: "success" | "error";
+    message: string;
+  } | null>(null);
+  const [opinionAlert, setOpinionAlert] = useState<{
+    severity: "success" | "error";
+    message: string;
+  } | null>(null);
+  const navigate = useNavigate();
+  const { project: projectParam, slug: slugParam } = useParams<{
+    project?: string;
+    slug?: string;
+  }>();
+  const projectName = projectParam ?? "";
+  const formSlug = slugParam ?? "";
+  const { user } = useAuth();
+  const responseContext = useMemo(() => buildFormResponseContext(), []);
+
+  const {
+    control,
+    formState: { errors },
+    trigger,
+    getValues,
+    setValue,
+    setError,
+    reset,
+  } = useForm({
+    defaultValues: buildDefaultValuesFromPages(pages),
+  });
+
+  const buildFieldsPayloadForInputs = (
+    values: Record<string, any>,
+    inputs: InputType<any>[],
+  ) => {
+    return inputs.reduce(
+      (acc, input) => {
+        let resolvedValue: unknown;
+        if (input.name === "telefone") {
+          resolvedValue = formatPhoneInput(String(values[input.name] ?? ""));
+          acc[input.name] = coerceValueForInput(input, resolvedValue);
+          return acc;
+        }
+        if (input.name === "outra_opiniao") {
+          const rawValue = values[input.name];
+          resolvedValue =
+            rawValue === undefined || rawValue === "" ? "" : rawValue;
+          acc[input.name] = coerceValueForInput(input, resolvedValue);
+          return acc;
+        }
+        resolvedValue =
+          values[input.name] ?? (input.type === "switch" ? false : "");
+        acc[input.name] = coerceValueForInput(input, resolvedValue);
+        return acc;
+      },
+      {} as Record<string, any>,
+    );
+  };
+
+  const resolveResponseId = (payload: any) => {
+    if (!payload) return null;
+    return (
+      payload?.data?.id ??
+      payload?.id ??
+      payload?.data?.responseId ??
+      payload?.responseId ??
+      null
+    );
+  };
+
+  async function onSubmitUser(
+    values: Record<string, any>,
+    inputs: InputType<any>[],
+  ) {
+    setUserAlert(null);
+    try {
+      const fields = buildFieldsPayloadForInputs(values, inputs);
+      const response = await submitOpiniionTest({
+        formVersionId: 5,
+        projetoId: 5,
+        status: "STARTED",
+        fields,
+        userId: user?.id,
+        ...responseContext,
+      });
+      console.log("Resposta do submitOpiniionTest:", response);
+      const createdId = resolveResponseId(response);
+      if (!createdId) {
+        setUserAlert({
+          severity: "error",
+          message: "N\u00e3o foi poss\u00edvel recuperar o ID da resposta.",
+        });
+        return;
+      }
+      setResponseId(createdId);
+      setUserAlert({
+        severity: "success",
+        message: "Usu\u00e1rio cadastrado com sucesso.",
+      });
+      setCurrentStep((prev) => Math.min(prev + 1, pages.length));
+    } catch (error) {
+      console.error("Erro ao cadastrar usu\u00e1rio:", error);
+      setUserAlert({
+        severity: "error",
+        message:
+          "N\u00e3o foi poss\u00edvel cadastrar o usu\u00e1rio. Tente novamente.",
+      });
+    }
+  }
+
+  async function onSubmitOpinion(values: Record<string, any>) {
+    setOpinionAlert(null);
+    try {
+      if (!responseId) {
+        setOpinionAlert({
+          severity: "error",
+          message: "Cadastro do usuário não encontrado para atualização.",
+        });
+        return;
+      }
+
+      const fields = buildFieldsPayloadForInputs(
+        values,
+        pages.flatMap((p) => p.inputs),
+      );
+      const now = new Date().toISOString();
+      await updateFormResponse(responseId, {
+        status: "COMPLETED",
+        submittedAt: now,
+        completedAt: now,
+        fields,
+        userId: user?.id,
+        ...responseContext,
+      });
+
+      setSummary({
+        tema:
+          fields.opiniao === "Outros" ? fields.outra_opiniao : fields.opiniao,
+        tipo: fields.tipo_opiniao,
+        texto_opiniao: fields.texto_opiniao,
+      });
+      setOpinionAlert({
+        severity: "success",
+        message: "Opinião enviada com sucesso.",
+      });
+
+      setCurrentStep(pages.length);
+    } catch (err) {
+      console.error("Erro ao enviar opinião:", err);
+      setOpinionAlert({
+        severity: "error",
+        message: "Não foi possível enviar a opinião. Tente novamente.",
+      });
+    }
+  }
+
+  async function saveOptInPreference() {
+    navigate("/");
+  }
+
+  function mapBackendFieldToInput(field: any): InputType<any> {
+    const base = {
+      name: field.name,
+      title: field.label,
+      colSpan: 12,
+      rules: field.required
+        ? { required: `${field.label} é obrigatório` }
+        : undefined,
+    };
+
+    switch (field.type) {
+      case "text":
+        return {
+          ...base,
+          type: field.options?.selectOptions ? "Select" : "text",
+          selectOptions: field.options?.selectOptions,
+        };
+
+      case "number":
+        return {
+          ...base,
+          type: "number",
+        };
+
+      case "textarea":
+        return {
+          ...base,
+          type: "textarea",
+        };
+
+      case "switch":
+        return {
+          ...base,
+          type: "switch",
+        };
+
+      default:
+        return {
+          ...base,
+          type: "text",
+        };
+    }
+  }
+
+  function buildDefaultValuesFromPages(pages: FormPage[]) {
+    return pages
+      .flatMap((p) => p.inputs)
+      .reduce(
+        (acc, input) => {
+          acc[input.name] = input.type === "switch" ? false : "";
+          return acc;
+        },
+        {} as Record<string, any>,
+      );
+  }
+
+  const inputChangeHandlers: Record<string, (value: unknown) => void> = {
+    opiniao: (value) => {
+      const isOutros = value === "Outros";
+      setShowOutraOpiniao(isOutros);
+      if (!isOutros) {
+        setValue("outra_opiniao", "");
+      }
+    },
+    telefone: (value) => {
+      const formatted = formatPhoneInput(String(value ?? ""));
+      setValue("telefone", formatted, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+    },
+  };
+
+  const handleInputChange = (name: string, value: unknown) => {
+    inputChangeHandlers[name]?.(value);
+  };
+
+  useEffect(() => {
+    if (!pages.length) return;
+    reset(buildDefaultValuesFromPages(pages));
+  }, [pages, reset]);
+
+  function groupFieldsByBlocks(
+    blocks: { title: string; fields: string[] }[],
+    fields: any[],
+  ) {
+    const fieldMap = new Map<string, any>();
+    fields.forEach((field) => fieldMap.set(field.name, field));
+
+    return blocks.map((block) => ({
+      title: block.title,
+      inputs: block.fields
+        .map((name) => fieldMap.get(name))
+        .filter(Boolean)
+        .map(mapBackendFieldToInput),
+    }));
+  }
+
+  useEffect(() => {
+    const fetchFormData = async () => {
+      try {
+        const response = await getForms(formSlug, projectName);
+
+        const activeVersion = response.data.data.activeVersion;
+        const projectFromResponse = response.data.data.projeto;
+
+        const blocks = activeVersion.schema.blocks;
+        const fields = activeVersion.fields;
+
+        const pages = groupFieldsByBlocks(blocks, fields);
+        setPages(pages);
+        setFormVersionId(
+          typeof activeVersion?.id === "number" ? activeVersion.id : null,
+        );
+        if (typeof projectFromResponse?.id === "number") {
+          setProjectId(projectFromResponse.id);
+        }
+      } catch (error) {
+        console.error("Erro ao buscar dados do formulário:", error);
+      }
+    };
+
+    fetchFormData();
+  }, [formSlug, projectName]);
+
+  const page = currentStep < pages.length ? pages[currentStep] : null;
+  const resolvedPageInputs = useMemo(() => {
+    if (!page) return [];
+
+    return page.inputs.flatMap((input) => {
+      if (input.name === "outra_opiniao") {
+        if (!showOutraOpiniao) return [];
+        return [
+          {
+            ...input,
+            rules: {
+              ...(input.rules ?? {}),
+              required: "Descreva qual é a outra opinião",
+            },
+          },
+        ];
+      }
+
+      return [input];
+    });
+  }, [page, showOutraOpiniao]);
+
+  const handleStepSubmit = async () => {
+    if (!page) return;
+    const fields = resolvedPageInputs.map((i) => i.name);
+    const valid = await trigger(fields);
+    if (!valid) return;
+
+    const values = getValues() as Record<string, any>;
+    console.log("Submitting step", currentStep, values);
+    if (currentStep === 0) {
+      await onSubmitUser(values, page.inputs);
+      return;
+    }
+    if (currentStep === pages.length - 1) {
+      await onSubmitOpinion(values);
+      return;
+    }
+
+    setCurrentStep((s) => Math.min(s + 1, pages.length));
+  };
+
+  const getOpinionPreviewText = (text: string) =>
+    text.length > 70 ? `${text.slice(0, 70)}...` : text;
+
+  const isFormStep = currentStep < pages.length;
+  const showBackButton = currentStep > 0 && currentStep < pages.length;
+  const primaryButtonLabel =
+    currentStep === 0
+      ? "Enviar usuário"
+      : currentStep === pages.length - 1
+        ? "Enviar opinião"
+        : "Próximo";
+
+  return (
+    <Box className={styles.container}>
+      <Box className={styles.formBox}>
+        <Typography
+          variant="h5"
+          fontWeight={700}
+          sx={{ mb: 3, textAlign: "center" }}
+        >
+          Registre Sua Opinião
+        </Typography>
+        <Box className={styles.stepperBox}>
+          <HorizontalLinearAlternativeLabelStepper
+            step={steps}
+            activeNumberStep={currentStep}
+          />
+        </Box>
+
+        <Box>
+          {page && resolvedPageInputs.length > 0 && (
+            <Forms
+              inputsList={resolvedPageInputs}
+              control={control}
+              errors={errors}
+              onInputChange={handleInputChange}
+            />
+          )}
+          {(currentStep === 0 || currentStep === 1) && userAlert && (
+            <Alert severity={userAlert.severity} sx={{ mt: 2 }}>
+              {userAlert.message}
+            </Alert>
+          )}
+          {currentStep === pages.length - 1 && opinionAlert && (
+            <Alert severity={opinionAlert.severity} sx={{ mt: 2 }}>
+              {opinionAlert.message}
+            </Alert>
+          )}
+
+          <Box className={styles.buttonsBox}>
+            {isFormStep && !showBackButton && (
+              <Button
+                className={styles.submitButton}
+                onClick={handleStepSubmit}
+              >
+                {primaryButtonLabel}
+              </Button>
+            )}
+
+            {showBackButton && (
+              <Box
+                sx={{
+                  position: "relative",
+                  width: "100%",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Button
+                  className={styles.submitButton}
+                  onClick={handleStepSubmit}
+                  sx={{ minWidth: { xs: "100%", sm: "35%" } }}
+                >
+                  {primaryButtonLabel}
+                </Button>
+                <IconButton
+                  aria-label="Voltar para cadastro do usuário"
+                  onClick={() =>
+                    setCurrentStep((prev) => Math.max(prev - 1, 0))
+                  }
+                  sx={{
+                    position: "absolute",
+                    left: 0,
+                    color: "#1e8e9c",
+                  }}
+                >
+                  <KeyboardBackspaceIcon />
+                </IconButton>
+              </Box>
+            )}
+            {currentStep === pages.length && (
+              <Card
+                elevation={0}
+                sx={{ border: "1px solid #eee", borderRadius: 3 }}
+              >
+                <CardContent>
+                  <Stack spacing={2.5} alignItems="center" textAlign="center">
+                    {/* Sucesso */}
+                    <Typography variant="h5" fontWeight={700}>
+                      Opinião registrada com sucesso ✅
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ maxWidth: 520 }}
+                    >
+                      Valeu por participar! Isso ajuda a priorizar melhorias e
+                      ações reais.
+                    </Typography>
+                    {/* Resumo */}
+                    <Stack
+                      direction="row"
+                      spacing={1}
+                      useFlexGap
+                      flexWrap="wrap"
+                      justifyContent="center"
+                      sx={{ maxWidth: 720 }}
+                    >
+                      {summary?.tema && (
+                        <Chip label={`Tema: ${summary.tema}`} />
+                      )}
+                      {summary?.tipo && (
+                        <Chip label={`Tipo: ${summary.tipo}`} />
+                      )}
+                      {summary?.texto_opiniao && (
+                        <Chip
+                          label={`Texto da opinião: ${getOpinionPreviewText(
+                            summary.texto_opiniao,
+                          )}`}
+                          onClick={() => setIsOpinionTextModalOpen(true)}
+                          clickable
+                          title="Ver texto completo"
+                          sx={{
+                            maxWidth: "100%",
+                            ".MuiChip-label": {
+                              maxWidth: "100%",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                            },
+                          }}
+                        />
+                      )}
+                    </Stack>
+
+                    <Divider sx={{ width: "100%", maxWidth: 720 }} />
+
+                    <Dialog
+                      open={isOpinionTextModalOpen}
+                      onClose={() => setIsOpinionTextModalOpen(false)}
+                      fullWidth
+                      maxWidth="sm"
+                    >
+                      <DialogTitle>Texto da opinião</DialogTitle>
+                      <DialogContentText component="div" sx={{ px: 2, pb: 2 }}>
+                        {summary?.texto_opiniao || "Sem texto"}
+                      </DialogContentText>
+                    </Dialog>
+
+                    {/* CTAs */}
+                    <Stack
+                      direction={{ xs: "column", sm: "row" }}
+                      spacing={1.5}
+                      sx={{ pt: 1 }}
+                    >
+                      <Button
+                        variant="contained"
+                        onClick={async () => {
+                          setIsOpinionTextModalOpen(false);
+                          // salva opt-in se marcado
+                          await saveOptInPreference();
+
+                          // finalizar fluxo (você escolhe)
+                          // 1) reset total:
+                          // setCurrentStep(0);
+
+                          // 2) ou levar pro início:
+                          setCurrentStep(0);
+                        }}
+                      >
+                        Concluir
+                      </Button>
+
+                      <Button
+                        variant="outlined"
+                        onClick={() => {
+                          setSummary(null);
+                          setShowOutraOpiniao(false);
+                          setOpinionAlert(null);
+                          setIsOpinionTextModalOpen(false);
+                          const currentValues = getValues() as Record<
+                            string,
+                            any
+                          >;
+                          const nextValues = buildDefaultValuesFromPages(pages);
+                          USER_FIELDS.forEach((field) => {
+                            if (currentValues?.[field] !== undefined) {
+                              (nextValues as Record<string, any>)[field] =
+                                currentValues[field];
+                            }
+                          });
+                          reset(nextValues);
+                          setCurrentStep(Math.min(1, pages.length - 1));
+                        }}
+                      >
+                        Enviar outra opinião
+                      </Button>
+                    </Stack>
+                  </Stack>
+                </CardContent>
+              </Card>
+            )}
+          </Box>
+        </Box>
+      </Box>
+    </Box>
+  );
+}

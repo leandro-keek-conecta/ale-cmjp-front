@@ -178,6 +178,18 @@ const parseDateParts = (input: string | Date): DateParts | null => {
   };
 };
 
+const formatDayMonthLabel = (date: Date) => {
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  return `${day}/${month}`;
+};
+
+const formatDateKey = (date: Date) => {
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  return `${date.getFullYear()}-${month}-${day}`;
+};
+
 export function normalizeOpinionsByDay(
   data: OpinionByDayInput[] | null | undefined,
 ): OpinionByMonth[] {
@@ -249,6 +261,45 @@ export function normalizeOpinionsByDay(
         label: String(entry.day).padStart(2, "0"),
         value: entry.value,
       }));
+  }
+
+  const uniqueMonths = new Set(
+    entriesWithMonth.map((entry) => `${entry.year}-${entry.monthIndex}`),
+  );
+
+  if (uniqueMonths.size > 1) {
+    const dayMap = new Map<string, number>();
+    let minDate: Date | null = null;
+    let maxDate: Date | null = null;
+
+    entriesWithMonth.forEach((entry) => {
+      const date = new Date(entry.year, entry.monthIndex, entry.day);
+      const key = formatDateKey(date);
+      dayMap.set(key, (dayMap.get(key) ?? 0) + entry.value);
+
+      if (!minDate || date < minDate) minDate = date;
+      if (!maxDate || date > maxDate) maxDate = date;
+    });
+
+    if (!minDate || !maxDate) return [];
+
+    const results: OpinionByMonth[] = [];
+    const cursor = new Date(
+      minDate.getFullYear(),
+      minDate.getMonth(),
+      minDate.getDate(),
+    );
+
+    while (cursor <= maxDate) {
+      const key = formatDateKey(cursor);
+      results.push({
+        label: formatDayMonthLabel(cursor),
+        value: dayMap.get(key) ?? 0,
+      });
+      cursor.setDate(cursor.getDate() + 1);
+    }
+
+    return results;
   }
 
   const latest = entriesWithMonth.reduce((current, entry) => {

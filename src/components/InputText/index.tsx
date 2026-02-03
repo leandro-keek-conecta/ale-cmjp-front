@@ -4,7 +4,7 @@ import { useMediaQuery } from "@mui/material"; // Importa o hook
 interface InputTexProps {
   label: string;
   placeholder?: string;
-  type?: "text" | "email" | "password" | "Date" | "inputFile"; // Tipos de input
+  type?: "text" | "number" | "email" | "password" | "Date" | "inputFile"; // Tipos de input
   value?: string | number; // Valor do input
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void; // Manipulador de evento
   error?: boolean; // Indica se há erro

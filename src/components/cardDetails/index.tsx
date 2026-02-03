@@ -19,10 +19,16 @@ export default function CardDetails({ opinions }: CardDetailsProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const normalize = (value?: string | null) =>
     (value || "").normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().trim();
+  const resolveOpinionDate = (opinion: Opinion) =>
+    opinion.submittedAt ??
+    opinion.createdAt ??
+    opinion.startedAt ??
+    opinion.horario ??
+    null;
   const getOpinionKey = (item: Opinion, index: number) => {
     const idPart = item.id ?? "opinion";
     const userPart = item.usuario_id ?? "user";
-    const timePart = item.horario ?? "time";
+    const timePart = resolveOpinionDate(item) ?? "time";
     return `${idPart}-${userPart}-${timePart}-${index}`;
   };
 
@@ -54,7 +60,7 @@ export default function CardDetails({ opinions }: CardDetailsProps) {
           </div>
           <div className={styles.meta}>
             <span>{item.bairro || "Bairro não informado"}</span>
-            <span> {formatDate(item.horario)}</span>
+            <span> {formatDate(resolveOpinionDate(item))}</span>
           </div>
           <Box
             className={styles.opnionTextClick}

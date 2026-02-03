@@ -7,6 +7,7 @@ import LoginPage from "../pages/login";
 import { AuthProvider } from "../context/AuthContext";
 import NotFound from "../pages/notFound/NotFoundPage";
 import ProtectedRoute from "./ProtectedRoute";
+import DinamicFormsPage from "../pages/DinamicFormPage";
 
 const RoutesConfig = () => (
   <AuthProvider>
@@ -15,6 +16,8 @@ const RoutesConfig = () => (
       <Route path="/relatorio" element={<ProtectedRoute allowedRoles={["USER", "ADMIN", "SUPERADMIN"]}><RelatorioPage /></ProtectedRoute>} />
       <Route path="/dashboards/embed/:id" element={<EmbedDashboardPage />} />
       <Route path="/form-page" element={<FormsPage />} />
+      <Route path="/form/:project/:slug" element={<DinamicFormsPage />} />
+      <Route path="/form/:slug" element={<DinamicFormsPage />} />
 
 
       <Route path="/" element={<LoginPage />} />
