@@ -1,4 +1,4 @@
-import { api } from "../api/api";
+import { apiPublic } from "../apiPublic/api";
 
 type FormResponsePayload = {
   formVersionId: number;
@@ -47,7 +47,7 @@ type FormResponseUpdatePayload = {
 };
 
 export async function createFormResponse(payload: FormResponsePayload) {
-  const response = await api.post("/form-response/create", payload);
+  const response = await apiPublic.post("/form-response/create", payload);
   return response?.data;
 }
 
@@ -55,7 +55,7 @@ export async function updateFormResponse(
   responseId: number | string,
   payload: FormResponseUpdatePayload,
 ) {
-  const response = await api.patch(
+  const response = await apiPublic.patch(
     `/form-response/update/${responseId}`,
     payload,
   );
@@ -67,7 +67,7 @@ export async function checkFormResponseExists(
   fieldName: string,
   value: string,
 ) {
-  const response = await api.get("/form-response/exists", {
+  const response = await apiPublic.get("/form-response/exists", {
     params: { projetoId, fieldName, value },
   });
   return response?.data;

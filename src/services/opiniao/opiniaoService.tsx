@@ -1,4 +1,5 @@
 import { api } from "../api/api";
+import { apiPublic } from "../apiPublic/api";
 import type { Opinion } from "../../pages/Panorama/Panorama";
 import type { OpinionFormValues } from "../../types/opiniao";
 
@@ -123,7 +124,7 @@ export async function submitOpinion(data: SubmitSummary) {
 }
 
 export async function submitOpiniionTest(payload: SubmitFormPayload) {
-  const response = await api.post("/form-response/create", {
+  const response = await apiPublic.post("/form-response/create", {
     ...payload,
   });
 

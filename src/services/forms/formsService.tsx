@@ -1,7 +1,8 @@
-import { api } from "../api/api";
+import { apiPublic } from "../apiPublic/api";
 
 export default function getForms(slug: string, projectName: string) {
-
-  const response = api.get(`/public/projetos/${projectName}/forms/slug/${slug}`)
+  const response = apiPublic.get(
+    `/public/projetos/${projectName}/forms/slug/${slug}`,
+  );
   return response;
 }
