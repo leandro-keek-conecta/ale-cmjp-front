@@ -39,8 +39,8 @@ const USER_FIELDS = [
   "campanha",
 ] as const;
 
-const DEFAULT_PROJECT_ID = 5;
-const DEFAULT_FORM_VERSION_ID = 5;
+const DEFAULT_PROJECT_ID = 1;
+const DEFAULT_FORM_VERSION_ID = 1;
 
 export type SubmitSummary = {
   id?: string;
