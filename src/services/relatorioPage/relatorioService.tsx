@@ -1,7 +1,7 @@
 import { api } from "../api/api";
 
 export async function getMetrics() {
-  const projetoId = 5;
+  const projetoId = 1;
   const { start: monthStart, end: monthEnd } = getLastSixMonthsRange();
   const { start: dayStart, end: dayEnd } = getCurrentMonthToDateRange();
 
