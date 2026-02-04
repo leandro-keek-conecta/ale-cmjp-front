@@ -82,7 +82,7 @@ export default function Panorama() {
   const [filters, setFilters] = useState<FiltersState>(() =>
     mapFilterFormToState(buildFilternDefaultValues()),
   );
-  const [todayOpinions, setTodayOpinions] = useState<Opinion[]>([]);
+  const [todayOpinions, setTodayOpinions] = useState<number>(0);
   const [error, setError] = useState("");
   const [filterType] = useState<string>("all");
   const [filterExpanded, setFilterExpanded] = useState(false);
@@ -152,7 +152,7 @@ export default function Panorama() {
     const response: any = await getMetricas(1);
     setGroupOpinions(response.data.data.topTemas || []);
     console.log("Filtros recebidos:", response.data.data.topTemas);
-    setTodayOpinions(response.data.data.totalOpinionsToday || []);
+    setTodayOpinions(response.data.data.totalOpinionsToday || 0);
     setTopDistricts(response.data.data.topBairros || []);
     setTopTemas(response.data.data.topTemas || []);
   }
@@ -356,7 +356,7 @@ export default function Panorama() {
                   </div>
                 </div>
                 {/* _________________________________________ */}
-                <div className={styles.statValue}>{todayOpinions.length}</div>
+                <div className={styles.statValue}>{todayOpinions}</div>
               </CardGridReflect>
               {/* Card 2 */}
               <CardGridReflect
