@@ -72,7 +72,7 @@ export function Layout({
     activeProject?.corHex,
     defaultTheme.palette.primary.main
   );
-  const isAdminOrMore = user?.role === "ADMIN";
+  const isAdminOrMore = user?.role === "ADMIN" || user?.role === "SUPERADMIN";
   const userName =
     typeof user?.name === "string" && user.name.trim().length
       ? user.name

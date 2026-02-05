@@ -73,7 +73,9 @@ export default function RelatorioPage() {
   const [opinionsByDay, setOpinionsByDay] = useState<ChartDatum[]>([]);
   const [opinionsByMonth, setOpinionsByMonth] = useState<ChartDatum[]>([]);
   const [opinionsByGender, setOpinionsByGender] = useState<ChartDatum[]>([]);
-  const [campaignAcceptance, setCampaignAcceptance] = useState<ChartDatum[]>([]);
+  const [campaignAcceptance, setCampaignAcceptance] = useState<ChartDatum[]>(
+    [],
+  );
   const [opinionsByAge, setOpinionsByAge] = useState<ChartDatum[]>([]);
   const [topTemas, setTopTemas] = useState<any[]>([]);
   const [topBairros, setTopBairros] = useState<any[]>([]);
@@ -97,8 +99,13 @@ export default function RelatorioPage() {
 
         setOpinionsByGender(response.opinionsByGender ?? []);
         setCampaignAcceptance(response.campaignAcceptance ?? []);
-        setTopTemas(response.topTemas ?? []);
+        const temasData = response.topTemas.map((item:any) =>({
+          label: item.tema, value: item.total,
+        }));
+        setTopTemas(temasData);
+        console.log("response.topTemas", response.topTemas);
         setTopBairros(response.topBairros ?? []);
+        console.log("response.topBairros", response.topBairros);
         setOpinionsByAge(response.opinionsByAge ?? []);
       } catch (error) {
         if (!active) return;
@@ -211,17 +218,16 @@ export default function RelatorioPage() {
           <CardGridReflect
             span={6}
             disablePadding
-          className={styles.topTemasCard}
-          style={{ display: "flex", flexDirection: "column" }}
-        >
+            className={styles.topTemasCard}
+            style={{ display: "flex", flexDirection: "column" }}
+          >
             <h5 style={{ margin: "1rem", marginBottom: "2rem" }}>
               Top temas mais falados
             </h5>
-            <GenericDataTable
-              rows={topTemas}
-              columns={temasColumns}
-              hideActions
-              height="100%"
+            <BarRaceChart
+              data={topTemas}
+              height={360}
+              loading={metricsLoading}
             />
           </CardGridReflect>
         </Box>
