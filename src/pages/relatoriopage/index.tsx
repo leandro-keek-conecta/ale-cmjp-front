@@ -3,19 +3,31 @@ import { Layout } from "../../components/layout/Layout";
 import styles from "./RelatorioPage.module.css";
 import CardGridReflect from "../../components/card-grid-reflect";
 import { BarChart } from "../../components/charts/bar/BarChart";
-import { GenericDataTable } from "../../components/DataTable";
-import { temasColumns } from "./colunsOfThemaDay/colunsThemaData";
+import { ClimaIcon } from "../../icons/Filter";
 import { LineChart } from "../../components/charts/line/LineChart";
 import { PieChart } from "../../components/charts/pie/PieChart";
 import { BarRaceChart } from "../../components/charts/barRace/BarRaceChart";
 import AnimatedNumber from "../../components/animated-number";
 import { useEffect, useState } from "react";
 import { getMetrics } from "../../services/relatorioPage/relatorioService";
+import { ArrowDown } from "../../icons/arrowDonw";
 import {
   groupOpinionsByMonthOnly,
   normalizeOpinionsByDay,
 } from "../../utils/retornMonthInDate";
-
+import CardGrid from "@/components/card-grid";
+import Forms from "@/components/Forms";
+import { useForm } from "react-hook-form";
+import {
+  applyFilters,
+  mapFilterFormToState,
+} from "../../utils/createDynamicFilter";
+import type { FilterFormValues, FiltersState } from "../../types/filter";
+import Button from "@/components/Button";
+import {
+  getFilterInputs,
+  type FilterSelectOptions,
+} from "./inputs/inputListFilter";
 type ReportCards = {
   totalOpinions?: number | string;
   totalComplaints?: number | string;
@@ -34,6 +46,17 @@ type ChartDatum = {
   label: string;
   value: number;
 };
+
+const buildFilternDefaultValues = (): FilterFormValues => ({
+  dataInicio: null,
+  dataFim: null,
+  tipo: "",
+  tema: "",
+  bairro: "",
+  genero: "",
+  faixaEtaria: "",
+  texto_opiniao: "",
+});
 
 const toNumber = (value: unknown) => {
   if (typeof value === "number" && Number.isFinite(value)) return value;
@@ -73,13 +96,28 @@ export default function RelatorioPage() {
   const [opinionsByDay, setOpinionsByDay] = useState<ChartDatum[]>([]);
   const [opinionsByMonth, setOpinionsByMonth] = useState<ChartDatum[]>([]);
   const [opinionsByGender, setOpinionsByGender] = useState<ChartDatum[]>([]);
+  const [filterExpanded, setFilterExpanded] = useState(false);
   const [campaignAcceptance, setCampaignAcceptance] = useState<ChartDatum[]>(
     [],
   );
+  const [filters, setFilters] = useState<FiltersState>(() =>
+    mapFilterFormToState(buildFilternDefaultValues()),
+  );
+
+  const {
+    control: filterControl,
+    formState: { errors: filterErrors },
+    handleSubmit: handleFilterSubmit,
+    reset: resetFilterForm,
+  } = useForm<FilterFormValues>({
+    defaultValues: buildFilternDefaultValues(),
+  });
   const [opinionsByAge, setOpinionsByAge] = useState<ChartDatum[]>([]);
   const [topTemas, setTopTemas] = useState<any[]>([]);
   const [topBairros, setTopBairros] = useState<any[]>([]);
-
+  const [filterSelectOptions, setFilterSelectOptions] = useState<
+    Partial<FilterSelectOptions>
+  >({});
   useEffect(() => {
     let active = true;
 
@@ -99,13 +137,12 @@ export default function RelatorioPage() {
 
         setOpinionsByGender(response.opinionsByGender ?? []);
         setCampaignAcceptance(response.campaignAcceptance ?? []);
-        const temasData = response.topTemas.map((item:any) =>({
-          label: item.tema, value: item.total,
+        const temasData = response.topTemas.map((item: any) => ({
+          label: item.tema,
+          value: item.total,
         }));
         setTopTemas(temasData);
-        console.log("response.topTemas", response.topTemas);
         setTopBairros(response.topBairros ?? []);
-        console.log("response.topBairros", response.topBairros);
         setOpinionsByAge(response.opinionsByAge ?? []);
       } catch (error) {
         if (!active) return;
@@ -122,9 +159,88 @@ export default function RelatorioPage() {
     };
   }, []);
 
+  useEffect(() => {
+    const elements = document.querySelectorAll<HTMLElement>("[data-reveal]");
+    if (!elements.length) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add(styles.revealed);
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.18 },
+    );
+
+    elements.forEach((element) => observer.observe(element));
+
+    return () => observer.disconnect();
+  }, []);
+
+  const handleClearFilters = () => {
+    const defaults = buildFilternDefaultValues();
+    resetFilterForm(defaults);
+    setFilters(mapFilterFormToState(defaults));
+  };
+
+  async function onSubmitUser(data: FilterFormValues) {
+    setFilters(mapFilterFormToState(data));
+  }
+
   return (
     <Layout titulo="Tela de Relatório">
       <Box className={styles.container}>
+        <CardGrid
+          className={`${styles.searchCard} ${styles.reveal}`}
+          span={12}
+          data-reveal
+          style={{ ["--reveal-delay" as any]: "0.28s" }}
+        >
+          <Box className={styles.searchContainer}>
+            <Box className={styles.headerSearch}>
+              <Box className={styles.statHeader}>
+                <ClimaIcon />
+                <Box>
+                  <Box className={styles.statLabel}>Filtros</Box>
+                </Box>
+              </Box>
+            </Box>
+            <Box onClick={() => setFilterExpanded(!filterExpanded)}>
+              <ArrowDown />
+            </Box>
+          </Box>
+          <Box
+            className={`${styles.filterContainerBody} ${
+              filterExpanded ? styles.expanded : ""
+            }`}
+          >
+            <Forms<FilterFormValues>
+              errors={filterErrors}
+              inputsList={getFilterInputs(filterSelectOptions)}
+              control={filterControl}
+            />{" "}
+            <Box className={styles.filterActions}>
+              <Button
+                className={styles.filterButton}
+                type="button"
+                onClick={handleClearFilters}
+              >
+                Limpar
+              </Button>
+              <Button
+                className={`${styles.filterButton} ${styles.filterButtonPrimary}`}
+                type="button"
+                onClick={handleFilterSubmit(onSubmitUser)}
+              >
+                Aplicar Filtros
+              </Button>
+            </Box>
+          </Box>
+        </CardGrid>
+
         <Box className={styles.gridContainer}>
           {cardsData.map((card: any, index) => (
             <CardGridReflect

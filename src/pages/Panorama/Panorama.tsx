@@ -459,6 +459,7 @@ export default function Panorama() {
                 </Box>
               </CardGridReflect>
             </Box>
+            {/* Componente de Filtro */}
             <CardGrid
               className={`${styles.searchCard} ${styles.reveal}`}
               span={12}
