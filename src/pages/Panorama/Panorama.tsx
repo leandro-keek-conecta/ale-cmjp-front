@@ -89,7 +89,7 @@ export default function Panorama() {
   const [filterExpanded, setFilterExpanded] = useState(false);
   const [searchTerm] = useState("");
   const [itensPerPage] = useState(12);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(5);
   const [showPresentationModal, setShowPresentationModal] = useState<boolean>(
     () => !readFromStorage<boolean>(PRESENTATION_SEEN_KEY, false),
   );
@@ -475,6 +475,7 @@ export default function Panorama() {
                 </Box>
               </CardGridReflect>
             </Box>
+            {/* Componente de Filtro */}
             <CardGrid
               className={`${styles.searchCard} ${styles.reveal}`}
               span={12}

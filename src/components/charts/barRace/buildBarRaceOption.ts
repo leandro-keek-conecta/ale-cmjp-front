@@ -37,7 +37,7 @@ export function buildBarRaceOption({
   return {
     grid: {
       left: leftPadding,
-      right: 50,
+      right: 10,
       top: 0,
       bottom: 10,
       containLabel: true,
@@ -57,13 +57,12 @@ export function buildBarRaceOption({
       axisLine: { show: false },
       axisTick: { show: false },
       axisLabel: {
-        color: "#334155",
+        color: "#554133",
         fontSize: 12,
         fontWeight: 500,
         margin: 12,
       },
     },
-
     series: [
       {
         type: "bar",
@@ -75,8 +74,10 @@ export function buildBarRaceOption({
         label: {
           show: true,
           position: "right",
-          color: "#0f172a",
+          color: "#334155",
           fontWeight: 600,
+          fontSize: 11,
+          formatter: ({ value }) => `${value ?? ""}`,
         },
       },
     ],

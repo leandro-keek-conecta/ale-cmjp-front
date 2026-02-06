@@ -18,7 +18,7 @@ export function buildLineChartOption({
   return {
     grid: {
       left: 0,
-      right: 0,
+      right: 8,
       top: 25,
       bottom: 0,
       containLabel: true,
@@ -43,6 +43,14 @@ export function buildLineChartOption({
         symbolSize: 6,
         lineStyle: {
           width: 3,
+        },
+        label: {
+          show: true,
+          position: "top",
+          fontSize: 11,
+          fontWeight: 600,
+          color: "#334155",
+          formatter: ({ value }) => `${value ?? ""}`,
         },
       },
     ],
