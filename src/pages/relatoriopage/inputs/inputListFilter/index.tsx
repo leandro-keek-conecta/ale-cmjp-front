@@ -107,13 +107,6 @@ export const getFilterInputs = (
       type: "Select",
       colSpan: 6,
       selectOptions: resolved.faixaEtaria,
-    },
-    {
-      name: "texto_opiniao",
-      title: "Texto da opinião",
-      placeholder: "Busque por palavra-chave",
-      type: "text",
-      colSpan: 12,
-    },
+    }
   ];
 };

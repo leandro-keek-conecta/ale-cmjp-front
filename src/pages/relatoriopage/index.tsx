@@ -8,8 +8,11 @@ import { LineChart } from "../../components/charts/line/LineChart";
 import { PieChart } from "../../components/charts/pie/PieChart";
 import { BarRaceChart } from "../../components/charts/barRace/BarRaceChart";
 import AnimatedNumber from "../../components/animated-number";
-import { useEffect, useState } from "react";
-import { getMetrics } from "../../services/relatorioPage/relatorioService";
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  getMetrics,
+  type MetricsParams,
+} from "../../services/relatorioPage/relatorioService";
 import { ArrowDown } from "../../icons/arrowDonw";
 import {
   groupOpinionsByMonthOnly,
@@ -19,7 +22,6 @@ import CardGrid from "@/components/card-grid";
 import Forms from "@/components/Forms";
 import { useForm } from "react-hook-form";
 import {
-  applyFilters,
   mapFilterFormToState,
 } from "../../utils/createDynamicFilter";
 import type { FilterFormValues, FiltersState } from "../../types/filter";
@@ -57,6 +59,95 @@ const buildFilternDefaultValues = (): FilterFormValues => ({
   faixaEtaria: "",
   texto_opiniao: "",
 });
+
+const toUtcStartOfDayISOString = (date: Date) =>
+  new Date(
+    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0),
+  ).toISOString();
+
+const toUtcEndOfDayISOString = (date: Date) =>
+  new Date(
+    Date.UTC(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+      23,
+      59,
+      59,
+      999,
+    ),
+  ).toISOString();
+
+const parseDateInput = (value: unknown) => {
+  if (value instanceof Date) return value;
+  if (typeof value === "number") {
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  }
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+    const match = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (match) {
+      const year = Number(match[1]);
+      const month = Number(match[2]);
+      const day = Number(match[3]);
+      if (
+        Number.isFinite(year) &&
+        Number.isFinite(month) &&
+        Number.isFinite(day)
+      ) {
+        return new Date(year, month - 1, day);
+      }
+    }
+    const parsed = new Date(trimmed);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  }
+  return null;
+};
+
+const normalizeParam = (value: string) => value.trim();
+
+const buildMetricsParamsFromForm = (
+  data: FilterFormValues,
+): MetricsParams => {
+  const params: MetricsParams = {};
+
+  const startDate = parseDateInput(data.dataInicio);
+  const endDate = parseDateInput(data.dataFim);
+  if (startDate && endDate) {
+    params.start = toUtcStartOfDayISOString(startDate);
+    params.end = toUtcEndOfDayISOString(endDate);
+  }
+
+  if (data.tema) {
+    const tema = normalizeParam(data.tema);
+    if (tema) params.temas = tema;
+  }
+
+  if (data.tipo) {
+    const tipo = normalizeParam(data.tipo);
+    if (tipo) params.tipoOpiniao = tipo;
+  }
+
+  if (data.genero) {
+    const genero = normalizeParam(data.genero);
+    if (genero) params.genero = genero;
+  }
+
+  if (data.bairro) {
+    const bairro = normalizeParam(data.bairro);
+    if (bairro) params.bairros = bairro;
+  }
+
+  if (data.faixaEtaria) {
+    const faixaEtaria = normalizeParam(data.faixaEtaria);
+    if (faixaEtaria) params.faixaEtaria = faixaEtaria;
+  }
+
+
+  return params;
+};
 
 const toNumber = (value: unknown) => {
   if (typeof value === "number" && Number.isFinite(value)) return value;
@@ -100,7 +191,7 @@ export default function RelatorioPage() {
   const [campaignAcceptance, setCampaignAcceptance] = useState<ChartDatum[]>(
     [],
   );
-  const [filters, setFilters] = useState<FiltersState>(() =>
+  const [, setFilters] = useState<FiltersState>(() =>
     mapFilterFormToState(buildFilternDefaultValues()),
   );
 
@@ -115,49 +206,50 @@ export default function RelatorioPage() {
   const [opinionsByAge, setOpinionsByAge] = useState<ChartDatum[]>([]);
   const [topTemas, setTopTemas] = useState<any[]>([]);
   const [topBairros, setTopBairros] = useState<any[]>([]);
-  const [filterSelectOptions, setFilterSelectOptions] = useState<
+  const [filterSelectOptions] = useState<
     Partial<FilterSelectOptions>
   >({});
+
+  const activeRef = useRef(true);
+
+  const fetchMetrics = useCallback(async (params?: MetricsParams) => {
+    try {
+      setMetricsLoading(true);
+      const response = await getMetrics(params);
+
+      if (!activeRef.current) return;
+      setCardsData(buildCards(response.cards));
+      const rawOpinionsByMonth =
+        response.lineByMonth ?? response.opinionsByMonth ?? [];
+      setOpinionsByMonth(groupOpinionsByMonthOnly(rawOpinionsByMonth));
+      const rawOpinionsByDay = response.lineByDay ?? response.opinionsByDay ?? [];
+      setOpinionsByDay(normalizeOpinionsByDay(rawOpinionsByDay));
+
+      setOpinionsByGender(response.opinionsByGender ?? []);
+      setCampaignAcceptance(response.campaignAcceptance ?? []);
+      const temasData = response.topTemas.map((item: any) => ({
+        label: item.tema,
+        value: item.total,
+      }));
+      setTopTemas(temasData);
+      setTopBairros(response.topBairros ?? []);
+      setOpinionsByAge(response.opinionsByAge ?? []);
+    } catch (error) {
+      if (!activeRef.current) return;
+    }
+    if (activeRef.current) {
+      setMetricsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
-    let active = true;
-
-    const fetchMetrics = async () => {
-      try {
-        setMetricsLoading(true);
-        const response = await getMetrics();
-
-        if (!active) return;
-        setCardsData(buildCards(response.cards));
-        const rawOpinionsByMonth =
-          response.lineByMonth ?? response.opinionsByMonth ?? [];
-        setOpinionsByMonth(groupOpinionsByMonthOnly(rawOpinionsByMonth));
-        const rawOpinionsByDay =
-          response.lineByDay ?? response.opinionsByDay ?? [];
-        setOpinionsByDay(normalizeOpinionsByDay(rawOpinionsByDay));
-
-        setOpinionsByGender(response.opinionsByGender ?? []);
-        setCampaignAcceptance(response.campaignAcceptance ?? []);
-        const temasData = response.topTemas.map((item: any) => ({
-          label: item.tema,
-          value: item.total,
-        }));
-        setTopTemas(temasData);
-        setTopBairros(response.topBairros ?? []);
-        setOpinionsByAge(response.opinionsByAge ?? []);
-      } catch (error) {
-        if (!active) return;
-      }
-      if (active) {
-        setMetricsLoading(false);
-      }
-    };
-
+    activeRef.current = true;
     void fetchMetrics();
 
     return () => {
-      active = false;
+      activeRef.current = false;
     };
-  }, []);
+  }, [fetchMetrics]);
 
   useEffect(() => {
     const elements = document.querySelectorAll<HTMLElement>("[data-reveal]");
@@ -184,10 +276,14 @@ export default function RelatorioPage() {
     const defaults = buildFilternDefaultValues();
     resetFilterForm(defaults);
     setFilters(mapFilterFormToState(defaults));
+    void fetchMetrics();
   };
 
   async function onSubmitUser(data: FilterFormValues) {
     setFilters(mapFilterFormToState(data));
+    const params = buildMetricsParamsFromForm(data);
+    
+    void fetchMetrics(params);
   }
 
   return (

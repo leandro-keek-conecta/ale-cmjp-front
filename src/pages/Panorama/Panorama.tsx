@@ -88,7 +88,7 @@ export default function Panorama() {
   const [filterExpanded, setFilterExpanded] = useState(false);
   const [searchTerm] = useState("");
   const [itensPerPage] = useState(12);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(5);
   const [showPresentationModal, setShowPresentationModal] = useState<boolean>(
     () => !readFromStorage<boolean>(PRESENTATION_SEEN_KEY, false),
   );
@@ -126,7 +126,7 @@ export default function Panorama() {
 
   async function fetchOpinions() {
     try {
-      const response = await getAllOpinions(1);
+      const response = await getAllOpinions(5);
       setOpinions(response.data.items);
     } catch (err) {
       setError("Erro ao carregar opiniões.");
@@ -135,7 +135,7 @@ export default function Panorama() {
 
   async function fetchFilterOptions() {
     try {
-      const response = await getFiltros(1);
+      const response = await getFiltros(5);
       const payload = response?.data?.data ?? response?.data ?? {};
       setFilterSelectOptions({
         tipo: mapSelectOptions(payload?.tipoOpiniao),
@@ -149,7 +149,7 @@ export default function Panorama() {
   }
 
   async function handleGetMetricas() {
-    const response: any = await getMetricas(1);
+    const response: any = await getMetricas(5);
     setGroupOpinions(response.data.data.topTemas || []);
     console.log("Filtros recebidos:", response.data.data.topTemas);
     setTodayOpinions(response.data.data.totalOpinionsToday || 0);
