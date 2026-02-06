@@ -66,6 +66,14 @@ export function buildBarChartOption({
         itemStyle: {
           borderRadius: [6, 6, 0, 0],
         },
+        label: {
+          show: true,
+          position: "top",
+          color: "#334155",
+          fontWeight: 600,
+          fontSize: 11,
+          formatter: ({ value }) => `${value ?? ""}`,
+        },
       },
     ],
   };
