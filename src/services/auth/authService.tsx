@@ -1,6 +1,6 @@
 import type UserLogin from "../../types/userLogin";
 import { api } from "../../services/api/api";
-import { getActiveProject } from "../../utils/project";
+import { getActiveProject, storeProjectContext } from "../../utils/project";
 import { AUTH_LOGOUT_EVENT, CLEAR_PROJECT_SELECTION_EVENT } from "../../constants/events";
 
 export async function login(
@@ -29,6 +29,10 @@ export async function login(
 
     if (userToPersist) {
       localStorage.setItem("user", JSON.stringify(userToPersist));
+    }
+
+    if (activeProject) {
+      storeProjectContext(activeProject);
     }
 
 

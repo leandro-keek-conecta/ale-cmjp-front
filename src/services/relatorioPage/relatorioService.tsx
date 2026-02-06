@@ -1,7 +1,11 @@
 import { api } from "../api/api";
+import { getStoredProjectId } from "../../utils/project";
 
 export async function getMetrics() {
-  const projetoId = 1;
+  const projetoId = getStoredProjectId();
+  if (!projetoId) {
+    throw new Error("Projeto não encontrado para buscar relatórios.");
+  }
   const { start: monthStart, end: monthEnd } = getLastSixMonthsRange();
   const { start: dayStart, end: dayEnd } = getCurrentMonthToDateRange();
 

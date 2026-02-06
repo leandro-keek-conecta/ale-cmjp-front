@@ -1,5 +1,19 @@
+import { normalizeProjectFromUser, type RawUserProject } from "./projectSelection";
+
+export const PROJECT_CONTEXT_KEY = "projectContext";
+
 export type ProjectLike = {
+  id?: number | null;
+  projetoId?: number | null;
+  nome?: string | null;
+  name?: string | null;
   corHex?: string | null;
+  url?: string | null;
+  groupId?: string | null;
+  reportId?: string | null;
+  hiddenTabs?: string[] | null;
+  access?: unknown;
+  projeto?: ProjectLike | null;
   [key: string]: unknown;
 };
 
@@ -23,12 +37,101 @@ export function getActiveProject(user: UserWithProjects): ProjectLike | null {
     return null;
   }
 
-  const projectWithColor = projects.find((project) => {
-    const color = project?.corHex;
-    return typeof color === "string" && color.trim().length > 0;
-  });
+  const firstProject = projects[0];
+  if (firstProject && typeof firstProject === "object") {
+    const nested =
+      (firstProject as ProjectLike).projeto &&
+      typeof (firstProject as ProjectLike).projeto === "object"
+        ? (firstProject as ProjectLike).projeto
+        : null;
+    if (nested) {
+      return nested as ProjectLike;
+    }
+  }
 
-  return projectWithColor ?? projects[0] ?? null;
+  return firstProject ?? null;
+}
+
+export function getProjectId(
+  project: ProjectLike | null | undefined
+): number | null {
+  if (!project || typeof project !== "object") {
+    return null;
+  }
+
+  if (typeof project.projetoId === "number") {
+    return project.projetoId;
+  }
+
+  if (typeof project.id === "number") {
+    return project.id;
+  }
+
+  const nested =
+    project.projeto && typeof project.projeto === "object"
+      ? (project.projeto as ProjectLike)
+      : null;
+
+  if (nested) {
+    if (typeof nested.id === "number") {
+      return nested.id;
+    }
+    if (typeof nested.projetoId === "number") {
+      return nested.projetoId;
+    }
+  }
+
+  return null;
+}
+
+export function storeProjectContext(project: ProjectLike | null | undefined) {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  const normalized = normalizeProjectFromUser(project as RawUserProject);
+  if (typeof normalized.id !== "number") {
+    return null;
+  }
+
+  try {
+    localStorage.setItem(PROJECT_CONTEXT_KEY, JSON.stringify(normalized));
+  } catch {
+    return null;
+  }
+
+  return normalized;
+}
+
+export function getStoredProjectId(): number | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  const rawContext = localStorage.getItem(PROJECT_CONTEXT_KEY);
+  if (rawContext) {
+    try {
+      const parsed = JSON.parse(rawContext) as { id?: number | null };
+      if (typeof parsed?.id === "number") {
+        return parsed.id;
+      }
+    } catch {
+      // ignore parse errors and fall back to user storage
+    }
+  }
+
+  const userString = localStorage.getItem("user");
+  if (!userString) {
+    return null;
+  }
+
+  try {
+    const user = JSON.parse(userString) as UserWithProjects;
+    const project = getActiveProject(user);
+    return getProjectId(project);
+  } catch {
+    return null;
+  }
 }
 
 export function ensureThemeColor(color: unknown, fallback: string): string {

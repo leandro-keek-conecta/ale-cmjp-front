@@ -40,6 +40,7 @@ import {
   getFiltros,
   getMetricas,
 } from "../../services/metricas/metricasService";
+import { getStoredProjectId } from "../../utils/project";
 
 export type Opinion = {
   id: number | string;
@@ -126,7 +127,12 @@ export default function Panorama() {
 
   async function fetchOpinions() {
     try {
-      const response = await getAllOpinions(1);
+      const projectId = getStoredProjectId();
+      if (!projectId) {
+        setError("Nenhum projeto vinculado ao usuário.");
+        return;
+      }
+      const response = await getAllOpinions(projectId);
       setOpinions(response.data.items);
     } catch (err) {
       setError("Erro ao carregar opiniões.");
@@ -135,7 +141,12 @@ export default function Panorama() {
 
   async function fetchFilterOptions() {
     try {
-      const response = await getFiltros(1);
+      const projectId = getStoredProjectId();
+      if (!projectId) {
+        setError("Nenhum projeto vinculado ao usuário.");
+        return;
+      }
+      const response = await getFiltros(projectId);
       const payload = response?.data?.data ?? response?.data ?? {};
       setFilterSelectOptions({
         tipo: mapSelectOptions(payload?.tipoOpiniao),
@@ -149,7 +160,12 @@ export default function Panorama() {
   }
 
   async function handleGetMetricas() {
-    const response: any = await getMetricas(1);
+    const projectId = getStoredProjectId();
+    if (!projectId) {
+      setError("Nenhum projeto vinculado ao usuário.");
+      return;
+    }
+    const response: any = await getMetricas(projectId);
     setGroupOpinions(response.data.data.topTemas || []);
     console.log("Filtros recebidos:", response.data.data.topTemas);
     setTodayOpinions(response.data.data.totalOpinionsToday || 0);
