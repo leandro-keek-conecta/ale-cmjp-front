@@ -1,0 +1,299 @@
+.container {
+  padding: 1rem;
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 0.6s ease,
+    transform 0.6s ease;
+  transition-delay: var(--reveal-delay, 0s);
+  will-change: opacity, transform;
+}
+
+.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.userForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  background-color: #ffff;
+  padding: 2rem;
+}
+
+.bottonContainer {
+  display: flex;
+  justify-content: center;
+  margin-top: 0.9rem;
+}
+
+.button {
+  background-color: #5070dd;
+  padding: 0.5rem;
+  border: none;
+  width: 8rem;
+  border-radius: 8px;
+  color: #fff;
+  font-family: "Lato", sans-serif;
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.buttonContent {
+  background-color: #5070dd !important;
+  color: white !important;
+}
+
+.buttonContainer {
+  overflow: hidden;
+  transition:
+    max-height 0.3s ease,
+    opacity 0.3s ease;
+}
+
+.visible {
+  max-height: 100px; /* Ajuste conforme necessário */
+  opacity: 1;
+}
+
+.hidden {
+  max-height: 0;
+  opacity: 0;
+}
+
+.button:hover {
+  background-color: #3a5bbf;
+}
+
+.searchCard {
+  margin-top: 16px;
+  background-color: var(--card-strong) !important;
+  border-radius: 16px !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: var(--shadow-soft) !important;
+  display: flex !important;
+  flex-direction: column;
+  gap: 14px;
+  padding: 1rem !important;
+}
+
+.searchHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.searchIntro {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.controls {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.searchContainer {
+  height: 100%;
+  display: grid;
+  grid-template-columns: 0fr auto 1fr;
+  width: 100%;
+  align-items: center;
+}
+
+.headerSearch {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  grid-column: 2;
+}
+
+.statHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.statLabel {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+.toggleButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  grid-column: 3;
+  justify-self: end;
+}
+
+.filterContainerBody {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  width: 100%;
+  transform: translateY(-6px);
+  transition:
+    max-height 0.35s ease,
+    opacity 0.25s ease,
+    transform 0.25s ease;
+}
+
+.filterContainerBody.expanded {
+  max-height: 1200px;
+  opacity: 1;
+  width: 100%;
+  transform: translateY(0);
+}
+
+.filterContainerBody :global(.form-container) {
+  margin-top: 0.5rem;
+}
+
+.filterActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.filterButton {
+  background: rgba(12, 130, 216, 0.08) !important;
+  color: var(--accent-2) !important;
+  padding: 5px 10px !important;
+  border-radius: 10px !important;
+  border: 1px solid var(--border) !important;
+  text-transform: none !important;
+  font-weight: 700 !important;
+  box-shadow: none !important;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    background 0.18s ease;
+}
+
+.filterButton:hover {
+  background: rgba(12, 130, 216, 0.16) !important;
+  transform: translateY(-1px);
+}
+
+.filterButtonPrimary {
+  background: #0067b3 !important;
+  color: #ffffff !important;
+  box-shadow: var(--shadow-soft) !important;
+}
+
+.filterButtonPrimary:hover {
+  background: #0067b3bd !important;
+  box-shadow: 0 16px 36px rgba(227, 6, 19, 0.22) !important;
+}
+
+.projectSection {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.projectHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.projectTitle {
+  font-weight: 700;
+  color: var(--text);
+}
+
+.projectBlock {
+  border-radius: 12px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  background: rgba(12, 130, 216, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.projectRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.projectSubtitle {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.emptyState {
+  padding: 1rem;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.searchInput {
+  flex: 1 1 260px;
+}
+
+.searchInput :global(.MuiOutlinedInput-root) {
+  background: #ffffff;
+}
+
+.searchInput :global(.MuiOutlinedInput-notchedOutline) {
+  border-color: var(--border);
+}
+
+.searchInput :global(.Mui-focused .MuiOutlinedInput-notchedOutline) {
+  border-color: var(--accent-2);
+  box-shadow: 0 0 0 3px rgba(12, 130, 216, 0.2);
+}
+
+@media (max-width: 768px) {
+  .bottonContainer {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0 0.9rem;
+  }
+
+  .button {
+    width: 100%;
+    font-size: 0.95rem;
+  }
+
+  .MuiDataGrid-root {
+    font-size: 0.85rem !important;
+  }
+
+  .searchCard {
+    padding: 1rem !important;
+    gap: 10px;
+    border-radius: 14px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    transition: none;
+    transform: none;
+  }
+}
