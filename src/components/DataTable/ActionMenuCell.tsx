@@ -46,7 +46,7 @@ export function ActionMenuCell({
             "& .MuiMenuItem-root": {
               fontWeight: 500,
               fontSize: "0.9rem",
-              "&:hover": { backgroundColor: "#EE8552", color: "white" },
+              "&:hover": { backgroundColor: "#5070dd", color: "white" },
             },
           },
         }}

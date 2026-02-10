@@ -18,7 +18,7 @@ export const getUserInputs = (isEditing = false): InputType<FormValues>[] => {
       title: "Nome",
       placeholder: "Digite seu nome completo",
       type: "text",
-      colSpan: 6,
+      colSpan: 4,
       rules: { required: "Nome é obrigatório" },
     },
     {
@@ -26,7 +26,7 @@ export const getUserInputs = (isEditing = false): InputType<FormValues>[] => {
       title: "E-mail",
       placeholder: "Digite seu e-mail completo",
       type: "email",
-      colSpan: 6,
+      colSpan: 4,
       rules: {
         required: "E-mail é obrigatório",
         pattern: {
@@ -40,28 +40,14 @@ export const getUserInputs = (isEditing = false): InputType<FormValues>[] => {
       title: "Nível de Acesso",
       placeholder: "Selecione o papel global",
       type: "Select",
-      colSpan: 6,
+      colSpan: 4,
       selectOptions: [
         { label: "Usuário Comum", value: "USER" },
         { label: "Administrador", value: "ADMIN" },
         { label: "Administrador Geral", value: "SUPERADMIN" },
       ],
       rules: { required: "Função é obrigatória" },
-    },
-    {
-      name: "gender",
-      title: "Genero",
-      placeholder: "Selecione o genero",
-      type: "Select",
-      colSpan: 6,
-      selectOptions: [
-        { label: "Feminino", value: "Feminino" },
-        { label: "Masculino", value: "Masculino" },
-        { label: "Outro", value: "Outro" },
-        { label: "Prefiro nao informar", value: "Prefiro nao informar" },
-      ],
-      rules: { required: "Genero e obrigatorio" },
-    },
+    }
   ];
 
   if (!isEditing) {

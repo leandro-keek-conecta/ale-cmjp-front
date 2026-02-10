@@ -21,10 +21,10 @@ import {
   DialogTitle,
   DialogContentText,
 } from "@mui/material";
-import { createUSer } from "../../services/user/userService";
+
 import { useNavigate } from "react-router-dom";
 import { submitOpinion } from "../../services/opiniao/opiniaoService";
-import getForms from "@/services/forms/formsService";
+import getForms, { createUSer } from "@/services/forms/formsService";
 
 const steps = ["Dados do Usuário", "Dados da Opinião", "Concluído"];
 

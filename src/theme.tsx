@@ -6,7 +6,7 @@ export const defaultTheme = createTheme({
     primary: {
       main: "#FF7A01", // Cor padrão (verde keekInteligencia)
       light: "#5ba55e",
-      dark: "#EE8552",
+      dark: "#5070dd",
       contrastText: "#ffffff",
     },
     secondary: {
@@ -50,7 +50,7 @@ export const defaultTheme = createTheme({
         },
         containedPrimary: {
           "&:hover": {
-            backgroundColor: "#EE8552", // Use a cor escura ou uma variação
+            backgroundColor: "#5070dd", // Use a cor escura ou uma variação
           },
         },
       },
@@ -97,7 +97,6 @@ export const createDynamicTheme = (primaryColor: string) =>
       },
     },
   });
-
 
 // Mantenha os outros temas se ainda forem usados por rotas específicas
 export const bayeuxTheme = createTheme({

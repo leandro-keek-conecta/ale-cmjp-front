@@ -1,5 +1,5 @@
 .container {
-  padding: 1rem;
+  padding: 1.5rem 1rem 1rem !important;
 }
 
 .reveal {
@@ -72,15 +72,18 @@
 }
 
 .searchCard {
-  margin-top: 16px;
   background-color: var(--card-strong) !important;
   border-radius: 16px !important;
   border: 1px solid var(--border) !important;
   box-shadow: var(--shadow-soft) !important;
   display: flex !important;
   flex-direction: column;
-  gap: 14px;
+  margin-bottom: 1rem;
   padding: 1rem !important;
+}
+
+.searchCard[data-editing="true"] {
+  border-top-left-radius: 0 !important;
 }
 
 .searchHeader {
@@ -117,6 +120,12 @@
   flex-direction: row;
   justify-content: center;
   grid-column: 2;
+}
+
+.cancelEditAbove {
+  text-align: left;
+  margin-bottom: 0;
+  width: 100%;
 }
 
 .statHeader {
