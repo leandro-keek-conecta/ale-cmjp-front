@@ -1,5 +1,5 @@
 import { deleteUser } from "@/services/user/userService";
-import { Dialog,DialogTitle,DialogContent,DialogActions,Button,Box,Typography } from "@mui/material";
+import { Dialog,DialogTitle,DialogContent,DialogActions,Button,Typography } from "@mui/material";
 
 interface ModalProps {
   openModal: boolean;
