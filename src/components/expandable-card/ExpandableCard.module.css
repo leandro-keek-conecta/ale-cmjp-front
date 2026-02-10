@@ -1,0 +1,86 @@
+﻿.card {
+  background-color: var(--card-strong);
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 1rem;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+.toggleButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+}
+
+.body {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  width: 100%;
+  transform: translateY(-6px);
+  transition:
+    max-height 0.35s ease,
+    opacity 0.25s ease,
+    transform 0.25s ease;
+}
+
+.expanded {
+  max-height: 1200px;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.content {
+  width: 100%;
+}
+
+.content :global(.form-container) {
+  margin-top: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .card {
+    gap: 10px;
+    border-radius: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .body {
+    transition: none;
+    transform: none;
+  }
+}
