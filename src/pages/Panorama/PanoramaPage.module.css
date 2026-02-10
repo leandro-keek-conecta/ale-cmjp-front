@@ -17,7 +17,7 @@
 .container {
   position: relative;
   min-height: 100vh;
-  padding: 48px 24px 80px !important;
+  padding: 1rem 1rem 80px !important;
   overflow: hidden;
   background: var(--bg);
 }

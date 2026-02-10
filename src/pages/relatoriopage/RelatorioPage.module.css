@@ -1,6 +1,5 @@
 .container {
-  margin: 2rem;
-  width: calc(100% - 4rem);
+  padding: 1rem !important;
 }
 
 .searchCard {
@@ -81,8 +80,8 @@
 .filterActions {
   display: flex;
   justify-content: flex-end;
-  gap: 12px;
-  margin-top: 12px;
+  gap: 5px;
+  margin-top: 5px;
   flex-wrap: wrap;
 }
 
@@ -141,7 +140,7 @@
 @keyframes topTemasReveal {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(5px);
   }
   to {
     opacity: 1;
