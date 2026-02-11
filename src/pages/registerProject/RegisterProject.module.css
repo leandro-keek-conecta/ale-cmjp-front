@@ -1,0 +1,94 @@
+.container {
+  padding: 1rem;
+  height: 100%;
+  width: 100%;
+}
+
+.formContainer {
+  padding: 1rem 0rem;
+}
+
+.bottonContainer {
+  display: flex;
+  justify-content: center;
+  margin-top: 0.9rem;
+}
+
+.button {
+  background-color: #5070dd;
+  padding: 0.5rem;
+  border: none;
+  width: 8rem;
+  border-radius: 8px;
+  color: #fff;
+  font-family: "Lato", sans-serif;
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.buttonEdit {
+  background-color: #5070dd;
+  padding: 0.5rem;
+  border: none;
+  width: 8rem;
+  border-radius: 8px 8px 0px 0px;
+  color: #fff;
+  font-family: "Lato", sans-serif;
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.buttonContent {
+  background-color: #5070dd !important;
+  color: white !important;
+  background-color: #5070dd;
+  padding: 0.5rem;
+  border: none;
+  width: 10rem;
+  border-radius: 8px 8px 0px 0px !important;
+  color: #fff;
+  font-family: "Lato", sans-serif;
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.buttonContainer {
+  overflow: hidden;
+  transition:
+    max-height 0.3s ease,
+    opacity 0.3s ease;
+}
+
+.visible {
+  max-height: 100px;
+  opacity: 1;
+}
+
+.hidden {
+  max-height: 0;
+  opacity: 0;
+}
+
+.cancelEditAbove {
+  text-align: left;
+  margin-bottom: 0;
+  width: 100%;
+}
+
+.button:hover {
+  background-color: #3a5bbf;
+}
+
+.card {
+  margin-bottom: 1rem;
+}
+
+.cardEditing {
+  border-top-left-radius: 0 !important;
+}

@@ -10,6 +10,7 @@ interface InputTexProps {
   error?: boolean; // Indica se há erro
   helperText?: string; // Mensagem de erro ou ajuda
   className?: string;
+  required?: boolean;
 }
 
 export default function InputTex({
@@ -21,6 +22,7 @@ export default function InputTex({
   error = false,
   helperText = "",
   className,
+  required = false,
 }: InputTexProps) {
   const isMobile = useMediaQuery("(max-width:768px)");
   const size = isMobile ? "2.6rem" : "2.6rem";
@@ -34,6 +36,7 @@ export default function InputTex({
       onChange={onChange}
       error={error}
       helperText={helperText}
+      required={required}
       className={className}
       fullWidth
       InputLabelProps={{

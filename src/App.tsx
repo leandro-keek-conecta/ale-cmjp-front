@@ -6,7 +6,7 @@ import ScrollToTop from "./components/ScrollToTop";
 const App = () => (
   <BrowserRouter>
     <ScrollToTop />
-    <VLibrasWidget disabledOnPaths={["/relatorio", "/login", "/cadastro-usuario"]} />
+    <VLibrasWidget disabledOnPaths={["/relatorio", "/login", "/cadastro-usuario", "/cadastro-projeto"]} />
     <RoutesConfig />
   </BrowserRouter>
 );

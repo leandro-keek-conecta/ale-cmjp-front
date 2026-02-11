@@ -4,20 +4,42 @@ import arrowDown from "../../assets/animations/Arrowdown.json";
 import type { LottieRefCurrentProps } from "lottie-react";
 import Lottie from "lottie-react";
 
-export function ArrowDown() {
+type ArrowDownProps = {
+  rotated?: boolean;
+  disableToggle?: boolean;
+  className?: string;
+  onClick?: (event: React.MouseEvent<HTMLElement>) => void;
+};
+
+export function ArrowDown({
+  rotated,
+  disableToggle = false,
+  className,
+  onClick,
+}: ArrowDownProps) {
   const lottieRef = useRef<LottieRefCurrentProps>(null);
-  const [rotated, setRotated] = useState(false);
+  const [internalRotated, setInternalRotated] = useState(false);
+  const isControlled = typeof rotated === "boolean";
+  const resolvedRotated = isControlled ? rotated : internalRotated;
+
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    if (!isControlled && !disableToggle) {
+      setInternalRotated((prev) => !prev);
+    }
+    onClick?.(event);
+  };
 
   return (
     <Box
+      className={className}
       sx={{
         width: 40,
         height: 40,
         cursor: "pointer",
-        transform: rotated ? "rotate(180deg)" : "rotate(0deg)",
+        transform: resolvedRotated ? "rotate(180deg)" : "rotate(0deg)",
         transition: "transform 0.25s ease",
       }}
-      onClick={() => setRotated((prev) => !prev)}
+      onClick={handleClick}
       onMouseEnter={() => lottieRef.current?.play()}
       onMouseLeave={() => lottieRef.current?.goToAndStop(0, true)}
     >
