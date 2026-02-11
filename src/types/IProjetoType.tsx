@@ -9,3 +9,15 @@ export default interface Projeto {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface ProjetoBasicFormValues {
+  slug: string;
+  name: string;
+  cliente?: string;
+  descricaoCurta?: string;
+  reportId?: string;
+  groupId?: string;
+  corHex?: string;
+  logoUrl?: string;
+  ativo: boolean;
+}

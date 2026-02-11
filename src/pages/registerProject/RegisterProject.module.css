@@ -4,6 +4,46 @@
   width: 100%;
 }
 
-.card{
+.formContainer {
+  padding: 1rem 0rem;
+}
+
+.bottonContainer {
+  display: flex;
+  justify-content: center;
+  margin-top: 0.9rem;
+}
+
+.button {
+  background-color: #5070dd;
+  padding: 0.5rem;
+  border: none;
+  width: 8rem;
+  border-radius: 8px;
+  color: #fff;
+  font-family: "Lato", sans-serif;
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.buttonContent {
+  background-color: #5070dd !important;
+  color: white !important;
+}
+
+.buttonContainer {
+  overflow: hidden;
+  transition:
+    max-height 0.3s ease,
+    opacity 0.3s ease;
+}
+
+.button:hover {
+  background-color: #3a5bbf;
+}
+
+.card {
   margin-bottom: 1rem;
 }
