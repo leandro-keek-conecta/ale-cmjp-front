@@ -124,6 +124,9 @@ export default function Forms<TFieldValues extends FieldValues = FieldValues>({
                 const fieldError = errors[input.name as Path<TFieldValues>] as
                   | FieldError
                   | undefined;
+                const isRequired = Boolean(
+                  (input.rules as { required?: unknown } | undefined)?.required
+                );
 
                 if (input.type === "switch") {
                   const checkedValue =
@@ -167,6 +170,7 @@ export default function Forms<TFieldValues extends FieldValues = FieldValues>({
                       placeholder={input.placeholder}
                       value={normalizedValue as SelectValue}
                       isMulti={input.selectProps?.isMulti}
+                      required={isRequired}
                       onChange={(selectedValue) => {
                         let mappedValue: any;
 
@@ -226,6 +230,7 @@ export default function Forms<TFieldValues extends FieldValues = FieldValues>({
                       label={input.title}
                       placeholder={input.placeholder || ""}
                       value={value ?? ""}
+                      required={isRequired}
                       onChange={(e) => {
                         onChange(e.target.value);
                         onInputChange?.(input.name, e.target.value);
@@ -242,6 +247,7 @@ export default function Forms<TFieldValues extends FieldValues = FieldValues>({
                     placeholder={input.placeholder || ""}
                     type={input.type}
                     value={value ?? ""}
+                    required={isRequired}
                     onChange={(e) => {
                       onChange(e.target.value);
                       onInputChange?.(input.name, e.target.value);

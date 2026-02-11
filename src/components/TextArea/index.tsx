@@ -10,6 +10,7 @@ interface TextAreaProps {
   error?: boolean;
   minRows?: number;
   maxRows?: number;
+  required?: boolean;
 }
 
 export default function TextArea({
@@ -21,6 +22,7 @@ export default function TextArea({
   error = false,
   minRows = 2 ,
   maxRows = 6,
+  required = false,
 }: TextAreaProps) {
   const isMobile = useMediaQuery("(max-width:768px)");
   const fontSize = isMobile ? "1rem" : "1rem";
@@ -33,6 +35,7 @@ export default function TextArea({
       onChange={onChange}
       helperText={helperText}
       error={error}
+      required={required}
       fullWidth
       multiline
       minRows={minRows}

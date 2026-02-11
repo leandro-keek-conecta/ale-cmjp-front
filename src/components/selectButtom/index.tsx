@@ -20,6 +20,7 @@ interface SelectTexProps {
   error?: boolean;
   helperText?: string;
   isMulti?: boolean;
+  required?: boolean;
 }
 
 export default function SelectButton({
@@ -31,6 +32,7 @@ export default function SelectButton({
   error = false,
   helperText = "",
   isMulti = false,
+  required = false,
 }: SelectTexProps) {
   const isMobile = useMediaQuery("(max-width:768px)");
   const size = isMobile ? "2.6rem" : "2.6rem";
@@ -49,6 +51,7 @@ export default function SelectButton({
       variant="outlined"
       error={error}
       helperText={helperText}
+      required={required}
       fullWidth
       InputLabelProps={{
         shrink: true,
