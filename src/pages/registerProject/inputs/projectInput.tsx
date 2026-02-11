@@ -1,7 +1,14 @@
 import type { InputType } from "@/components/Forms";
 import type { ProjetoBasicFormValues } from "@/types/IProjetoType";
 
+type SelectOption = {
+  label: string;
+  value: string | number | boolean;
+};
+
+
 export const getProjetoBasicInputs = (
+  userOptions: SelectOption[] = [],
   isEditing = false,
 ): InputType<ProjetoBasicFormValues>[] => {
   return [
@@ -35,8 +42,7 @@ export const getProjetoBasicInputs = (
       title: "Cliente",
       placeholder: "Nome do cliente",
       type: "Select",
-      selectOptions: [
-      ],
+      selectOptions: userOptions,
       colSpan: 4,
     },
     {

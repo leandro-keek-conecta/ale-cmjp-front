@@ -15,10 +15,15 @@ import { useEffect, useState } from "react";
 import Forms from "@/components/Forms";
 import { getProjetoBasicInputs } from "./inputs/projectInput";
 import { generateSlug } from "@/utils/generateSlug";
+import { fetchUsers } from "@/services/user/userService";
+import type User from "@/types/IUserType";
 
 export default function RegisterProject() {
   const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [userOptions, setUserOptions] = useState<
+    Array<{ label: string; value: string }>
+  >([]);
   const {
     control,
     watch,
@@ -42,6 +47,39 @@ export default function RegisterProject() {
       });
     }
   }, [generatedSlug, isSlugManuallyEdited, setValue]);
+
+  useEffect(() => {
+    let isMounted = true;
+    fetchUsers()
+      .then((users: User[]) => {
+        if (!isMounted) {
+          return;
+        }
+        const options = users
+          .map((user) => {
+            const label = user.name?.trim() || user.email?.trim();
+            if (!label) {
+              return null;
+            }
+            return { label, value: label };
+          })
+          .filter(
+            (option): option is { label: string; value: string } =>
+              option !== null
+          );
+        setUserOptions(options);
+      })
+      .catch((error) => {
+        console.error("Erro ao carregar usuários:", error);
+        if (isMounted) {
+          setUserOptions([]);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
   return (
     <Layout titulo="Cadastro de Projetos">
       <Box className={styles.container}>
@@ -59,7 +97,10 @@ export default function RegisterProject() {
               {isEditing ? "Editar Projeto" : "Dados do Projeto"}
             </Typography>
             <Forms
-              inputsList={getProjetoBasicInputs(isSlugManuallyEdited)}
+              inputsList={getProjetoBasicInputs(
+                userOptions,
+                isSlugManuallyEdited
+              )}
               control={control}
               errors={errors}
               onInputChange={(name, value) => {
