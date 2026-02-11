@@ -5,6 +5,7 @@ export default interface Projeto {
   name: string;
   state: string;
   logoUrl?: string;
+  slug?: string;
   users?: User[]; 
   createdAt: string;
   updatedAt: string;

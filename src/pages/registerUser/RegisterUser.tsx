@@ -292,8 +292,7 @@ export default function RegisterUser() {
     const fetchProjects = async () => {
       try {
         const response = await getProjects();
-        const payload = response?.data;
-        const list = normalizeProjectsPayload(payload);
+        const list = normalizeProjectsPayload(response);
         if (isMounted) {
           setProjects(list);
         }

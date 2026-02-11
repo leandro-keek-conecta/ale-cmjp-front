@@ -40,6 +40,22 @@
     opacity 0.3s ease;
 }
 
+.visible {
+  max-height: 100px;
+  opacity: 1;
+}
+
+.hidden {
+  max-height: 0;
+  opacity: 0;
+}
+
+.cancelEditAbove {
+  text-align: left;
+  margin-bottom: 0;
+  width: 100%;
+}
+
 .button:hover {
   background-color: #3a5bbf;
 }
