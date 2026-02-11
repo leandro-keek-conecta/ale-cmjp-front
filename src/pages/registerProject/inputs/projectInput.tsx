@@ -9,7 +9,6 @@ type SelectOption = {
 
 export const getProjetoBasicInputs = (
   userOptions: SelectOption[] = [],
-  isEditing = false,
 ): InputType<ProjetoBasicFormValues>[] => {
   return [
     {

@@ -265,10 +265,7 @@ export default function RegisterProject() {
               {isEditing ? "Editar Projeto" : "Dados do Projeto"}
             </Typography>
             <Forms
-              inputsList={getProjetoBasicInputs(
-                userOptions,
-                isSlugManuallyEdited,
-              )}
+              inputsList={getProjetoBasicInputs(userOptions)}
               control={control}
               errors={errors}
               onInputChange={(name, value) => {
