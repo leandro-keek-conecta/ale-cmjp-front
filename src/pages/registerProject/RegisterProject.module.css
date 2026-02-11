@@ -28,9 +28,34 @@
   transition: background-color 0.3s ease;
 }
 
+.buttonEdit {
+  background-color: #5070dd;
+  padding: 0.5rem;
+  border: none;
+  width: 8rem;
+  border-radius: 8px 8px 0px 0px;
+  color: #fff;
+  font-family: "Lato", sans-serif;
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
 .buttonContent {
   background-color: #5070dd !important;
   color: white !important;
+  background-color: #5070dd;
+  padding: 0.5rem;
+  border: none;
+  width: 10rem;
+  border-radius: 8px 8px 0px 0px !important;
+  color: #fff;
+  font-family: "Lato", sans-serif;
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
 .buttonContainer {
@@ -62,4 +87,8 @@
 
 .card {
   margin-bottom: 1rem;
+}
+
+.cardEditing {
+  border-top-left-radius: 0 !important;
 }

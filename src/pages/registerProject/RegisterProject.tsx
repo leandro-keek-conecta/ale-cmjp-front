@@ -32,6 +32,7 @@ export default function RegisterProject() {
   const [isEditing, setIsEditing] = useState(false);
   const [editingProjectId, setEditingProjectId] = useState<number | null>(null);
   const [projects, setProjects] = useState<Projeto[]>([]);
+  const [expanded, setExpanded] = useState(true);
   const [userOptions, setUserOptions] = useState<
     Array<{ label: string; value: string }>
   >([]);
@@ -137,6 +138,7 @@ export default function RegisterProject() {
   };
 
   const handleEditProject = (row: { id: number }) => {
+    
     const selected = projects.find((project) => project.id === row.id);
     if (!selected) return;
 
@@ -157,6 +159,7 @@ export default function RegisterProject() {
     });
 
     setIsEditing(true);
+    setExpanded(true);
     setEditingProjectId(selected.id);
     setIsSlugManuallyEdited(true);
   };
@@ -245,7 +248,8 @@ export default function RegisterProject() {
       <Box className={styles.container}>
         <ExpandableCard
           title="Cadastro de Projetos"
-          defaultExpanded
+          expanded={expanded}
+          onToggle={(next) => setExpanded(next)}
           className={styles.card}
         >
           <Box
@@ -302,13 +306,17 @@ export default function RegisterProject() {
         >
           <Button
             onClick={handleCancelEdit}
-            className={styles.buttonContent}
+            className={`${styles.buttonContent} ${styles.buttonEdit}`}
             type="button"
           >
             Cancelar edição
           </Button>
         </Box>
-        <ExpandableCard title="Projetos cadastrados" defaultExpanded={false}>
+        <ExpandableCard
+          title="Projetos cadastrados"
+          defaultExpanded={false}
+          className={`${styles.card} ${isEditing ? styles.cardEditing : ""}`}
+        >
           <GenericDataTable
             rows={projectRows}
             columns={columnsProjects}
