@@ -26,6 +26,7 @@ export default function InputFile({
   helperText = "",
 }: InputFileProps) {
   const [fileName, setFileName] = React.useState<string>("");
+  const inputRef = React.useRef<HTMLInputElement | null>(null);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files?.length) {
@@ -42,7 +43,7 @@ export default function InputFile({
         placeholder={placeholder}
         variant="outlined"
         value={fileName} // Exibe o nome do arquivo selecionado
-        onClick={() => document.getElementById("file-input")?.click()} // Abre o seletor de arquivos ao clicar
+        onClick={() => inputRef.current?.click()} // Abre o seletor de arquivos ao clicar
         InputProps={{
           endAdornment: (
             <CloudUploadIcon
@@ -50,7 +51,7 @@ export default function InputFile({
                 cursor: "pointer",
                 marginLeft: 1,
               }}
-              onClick={() => document.getElementById("file-input")?.click()} // Abre o seletor de arquivos
+              onClick={() => inputRef.current?.click()} // Abre o seletor de arquivos
             />
           ),
         }}
@@ -74,9 +75,9 @@ export default function InputFile({
         }}
       />
       <VisuallyHiddenInput
-        id="file-input"
         type="file"
         onChange={handleFileChange}
+        ref={inputRef}
       />
     </Box>
   );

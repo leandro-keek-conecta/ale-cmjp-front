@@ -13,9 +13,14 @@ export async function createProject(payload: ProjetoBasicFormValues) {
 
 export async function updateProject(
   id: number,
-  payload: ProjetoBasicFormValues,
+  payload: Partial<ProjetoBasicFormValues>,
 ) {
   const response = await api.patch(`projeto/update/${id}`, payload);
+  return response.data?.data ?? response.data;
+}
+
+export async function getProjectById(id: number) {
+  const response = await api.get(`projeto/${id}`);
   return response.data?.data ?? response.data;
 }
 

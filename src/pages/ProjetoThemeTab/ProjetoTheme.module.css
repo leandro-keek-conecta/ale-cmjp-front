@@ -1,0 +1,109 @@
+/* src/pages/ProjetoThemeTab/ProjetoTheme.module.css */
+.container {
+  width: 100%;
+  min-height: 100vh;
+  padding: 2rem;
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+}
+
+.contentLeft {
+  flex: 0 0 25%;
+  max-width: 100% !important;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+bottonContainer {
+  display: flex;
+  justify-content: center;
+  margin-top: 0.9rem;
+}
+
+.button {
+  background-color: #5070dd;
+  padding: 0.5rem;
+  border: none;
+  width: 100%;
+  border-radius: 8px;
+  color: #fff;
+  font-family: "Lato", sans-serif;
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.buttonContent {
+  background-color: #5070dd !important;
+  color: white !important;
+}
+
+.buttonContainer {
+  overflow: hidden;
+  transition:
+    max-height 0.3s ease,
+    opacity 0.3s ease;
+}
+
+.visible {
+  max-height: 100px; /* Ajuste conforme necessário */
+  opacity: 1;
+}
+
+.hidden {
+  max-height: 0;
+  opacity: 0;
+}
+
+.button:hover {
+  background-color: #3a5bbf;
+}
+/* #e30613 */
+
+@media (max-width: 760px) {
+  .contentLeft {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex-basis: 100% !important;
+  }
+}
+
+.formCard {
+  width: 100%;
+  max-width: 100%;
+}
+
+.contentHeight {
+  flex: 1;
+  min-width: 0;
+}
+
+.heroInput {
+  max-height: 220px;
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    max-height 0.28s ease,
+    opacity 0.22s ease,
+    transform 0.22s ease,
+    margin 0.22s ease;
+}
+
+.heroInputHidden {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(-6px);
+  margin: 0 !important;
+  pointer-events: none;
+}
+
+.bottonContainer {
+  display: flex;
+  justify-content: center;
+  margin-top: 0.9rem;
+}

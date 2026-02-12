@@ -8,7 +8,7 @@ import type {
   PathValue,
 } from "react-hook-form";
 import { Controller } from "react-hook-form";
-import { Box } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import InputTex from "../../components/InputText";
 import SelectButton from "../../components/selectButtom";
 import InputFile from "../InputFIle";
@@ -46,6 +46,7 @@ export interface InputType<TFieldValues extends FieldValues = FieldValues> {
   rules?: object;
   value?: SelectValue;
   containerClassName?: string;
+  sectionTitle?: string;
 }
 
 interface FormsProps<TFieldValues extends FieldValues = FieldValues> {
@@ -113,6 +114,18 @@ export default function Forms<TFieldValues extends FieldValues = FieldValues>({
             }}
             className={input.containerClassName}
           >
+            {input.sectionTitle ? (
+              <Typography
+                variant="subtitle1"
+                sx={{
+                  fontWeight: 700,
+                  color: "var(--text)",
+                  mb: 1,
+                }}
+              >
+                {input.sectionTitle}
+              </Typography>
+            ) : null}
             <Controller
               name={input.name}
               control={control}
@@ -208,6 +221,8 @@ export default function Forms<TFieldValues extends FieldValues = FieldValues>({
                 if (input.type === "inputFile") {
                   return (
                     <InputFile
+                      label={input.title}
+                      placeholder={input.placeholder}
                       onChange={(event) => {
                         const files = event.target.files;
                         if (files) {
@@ -220,6 +235,8 @@ export default function Forms<TFieldValues extends FieldValues = FieldValues>({
                           );
                         }
                       }}
+                      error={Boolean(fieldError)}
+                      helperText={fieldError?.message as string}
                     />
                   );
                 }
