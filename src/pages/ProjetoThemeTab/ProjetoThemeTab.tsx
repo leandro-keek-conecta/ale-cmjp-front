@@ -20,6 +20,13 @@ import {
 } from "@/services/projeto/ProjetoService";
 import { getStoredProjectId } from "@/utils/project";
 import type Projeto from "@/types/IProjetoType";
+import CustomAlert from "@/components/Alert";
+
+type AlertState = {
+  show: boolean;
+  category?: "success" | "error" | "info" | "warning";
+  title?: string;
+};
 
 const toNumber = (value: unknown, fallback = 0) => {
   const parsed = typeof value === "number" ? value : Number(value);
@@ -29,6 +36,7 @@ const toNumber = (value: unknown, fallback = 0) => {
 export default function ProjetoThemeTab() {
   const defaultValues = useMemo(() => buildThemeDefaultValues(), []);
   const [loading, setLoading] = useState(false);
+  const [alert, setAlert] = useState<AlertState>({ show: false });
   const {
     control,
     formState: { errors },
@@ -438,16 +446,32 @@ export default function ProjetoThemeTab() {
   const handleSave = async (data: ThemeFormValues) => {
     try {
       setLoading(true);
+      setAlert({ show: false });
       const projectId = getStoredProjectId();
       if (!projectId) {
-        console.error("Nenhum projeto vinculado ao usuario.");
+        setAlert({
+          show: true,
+          category: "error",
+          title: "Nenhum projeto vinculado ao usuario.",
+        });
         return;
       }
       const payload = buildPayload(data);
-      console.log("Payload tema:", payload);
       await updateProject(projectId, payload);
+      setAlert({
+        show: true,
+        category: "success",
+        title: "Estilizacao atualizada com sucesso.",
+      });
     } catch (error) {
       console.error("Erro ao atualizar tema:", error);
+      setAlert({
+        show: true,
+        category: "error",
+        title:
+          (error as { message?: string })?.message ||
+          "Erro ao atualizar estilizacao.",
+      });
     } finally {
       setLoading(false);
     }
@@ -455,6 +479,13 @@ export default function ProjetoThemeTab() {
 
   return (
     <Layout titulo="Tela de Estilização">
+      {alert.show && (
+        <CustomAlert
+          category={alert.category}
+          title={alert.title ?? ""}
+          onClose={() => setAlert({ show: false })}
+        />
+      )}
       <Box className={styles.container}>
         <Box className={styles.contentLeft}>
           <ExpandableCard
