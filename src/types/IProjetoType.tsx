@@ -1,12 +1,59 @@
 import type User from "./IUserType";
 
+export type ThemeConfig = {
+  background?: string;
+  fontFamily?: string;
+  highlightTone?: string;
+  // adicione outros tokens globais se o front usar
+};
+
+export type HeroConfig = {
+  showHero?: boolean;
+  copy?: {
+    kicker?: string;
+    title?: string;
+    highlight?: string;
+    subtitle?: string;
+  };
+  slide?: {
+    badge?: string;
+    mapTitle?: string;
+    mapSubtitle?: string;
+    slides?: Array<{
+      title?: string;
+      description?: string;
+      image?: string;
+    }>;
+  };
+  cards?: {
+    count?: number;
+    items?: Array<{
+      metric: string;
+      title: string;
+      subtitle?: string;
+    }>;
+  };
+  clima?: {
+    metric?: string;
+    title?: string;
+    subtitle?: string;
+  };
+};
+
 export default interface Projeto {
   id: number;
+  slug: string;
   name: string;
-  state: string;
+  cliente?: string;
+  descricaoCurta?: string;
   logoUrl?: string;
-  slug?: string;
-  users?: User[]; 
+  reportId?: string;
+  groupId?: string;
+  corHex?: string;
+  ativo: boolean;
+  themeConfig?: ThemeConfig;
+  heroConfig?: HeroConfig;
+  users?: User[];
   createdAt: string;
   updatedAt: string;
 }
@@ -21,4 +68,6 @@ export interface ProjetoBasicFormValues {
   corHex?: string;
   logoUrl?: string;
   ativo: boolean;
+  themeConfig?: ThemeConfig;
+  heroConfig?: HeroConfig;
 }

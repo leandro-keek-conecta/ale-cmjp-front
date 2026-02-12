@@ -1,20 +1,18 @@
 import Button from "@/components/Button";
 import CardGrid from "@/components/card-grid";
 import CardGridReflect from "@/components/card-grid-reflect";
-import SlideComponent from "@/components/slide";
+import SlideComponent, { type SlideItem } from "@/components/slide";
 import {
   ChatBubbleOutline,
   InsertChartOutlined,
-  LightbulbOutlined,
   LocationOnOutlined,
-  PriorityHigh,
-  StarBorderRounded,
   ThermostatOutlined,
 } from "@mui/icons-material";
 import { Box, Typography } from "@mui/material";
 import styles from "./ThemePreview.module.css";
 import {
   useEffect,
+  useMemo,
   useRef,
   useState,
   type CSSProperties,
@@ -40,10 +38,18 @@ export type ThemePreviewSettings = {
   highlightTone?: "primary" | "accent" | "gradient";
   subtitle?: string;
   fontFamily?: string;
-};
-
-export type ThemeMetricMocks = {
-  groupOpinions?: { id: number | string; tema: string; total: number }[];
+  slideBadge?: string;
+  slideMapTitle?: string;
+  slideMapSubtitle?: string;
+  slide1_title?: string;
+  slide1_description?: string;
+  slide1_image?: string | FileList;
+  slide2_title?: string;
+  slide2_description?: string;
+  slide2_image?: string | FileList;
+  slide3_title?: string;
+  slide3_description?: string;
+  slide3_image?: string | FileList;
 };
 
 export type ThemeMetricCard = {
@@ -56,7 +62,7 @@ export type ThemeMetricCard = {
 type ThemePreviewProps = {
   settings?: ThemePreviewSettings;
   metricCards?: ThemeMetricCard[];
-  mockMetrics?: ThemeMetricMocks;
+  climaCard?: ThemeMetricCard;
   showHeroSlide?: boolean;
 };
 
@@ -74,16 +80,12 @@ const buildFilternDefaultValues = (): FilterFormValues => ({
 export default function ThemePreview({
   settings,
   metricCards,
-  mockMetrics,
+  climaCard,
   showHeroSlide = true,
 }: ThemePreviewProps) {
   const heroTitleRef = useRef<HTMLSpanElement | null>(null);
   const [heroCopyWidth, setHeroCopyWidth] = useState<number | null>(null);
   const [filterExpanded, setFilterExpanded] = useState(false);
-  const [error, setError] = useState("");
-  const [groupOpinions, setGroupOpinions] = useState<
-    { id: number; tema: string; total: number }[]
-  >([]);
   const [, setFilters] = useState<FiltersState>(() =>
     mapFilterFormToState(buildFilternDefaultValues()),
   );
@@ -118,7 +120,80 @@ export default function ThemePreview({
   const useGradient = highlightTone === "gradient";
   const showHero = showHeroSlide !== false;
 
-  const appliedGroupOpinions = mockMetrics?.groupOpinions ?? groupOpinions;
+  const imageUrlsRef = useRef<string[]>([]);
+
+  const resolvedImages = useMemo(() => {
+    const createdUrls: string[] = [];
+    const resolveImage = (
+      value: string | FileList | undefined,
+      fallback: string,
+    ) => {
+      if (typeof value === "string") {
+        const trimmed = value.trim();
+        return trimmed.length ? trimmed : fallback;
+      }
+      if (value && value.length) {
+        const file = value[0];
+        const url = URL.createObjectURL(file);
+        createdUrls.push(url);
+        return url;
+      }
+      return fallback;
+    };
+
+    return {
+      urls: createdUrls,
+      slide1: resolveImage(
+        resolvedSettings.slide1_image,
+        "https://s3.keekconecta.com.br/ale-cmjp/fotos/ale-1.jpg",
+      ),
+      slide2: resolveImage(
+        resolvedSettings.slide2_image,
+        "https://s3.keekconecta.com.br/ale-cmjp/fotos/ale-2.jpg",
+      ),
+      slide3: resolveImage(
+        resolvedSettings.slide3_image,
+        "https://s3.keekconecta.com.br/ale-cmjp/fotos/ale-5.png",
+      ),
+    };
+  }, [
+    resolvedSettings.slide1_image,
+    resolvedSettings.slide2_image,
+    resolvedSettings.slide3_image,
+  ]);
+
+  useEffect(() => {
+    imageUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+    imageUrlsRef.current = resolvedImages.urls;
+    return () => {
+      resolvedImages.urls.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [resolvedImages.urls]);
+
+  const slideItems: SlideItem[] = [
+    {
+      title: resolvedSettings.slide1_title || "Pronta para responder",
+      description:
+        resolvedSettings.slide1_description ||
+        "Interface humanizada para tirar duvidas da populacao a qualquer hora.",
+      image: resolvedImages.slide1,
+    },
+    {
+      title: resolvedSettings.slide2_title || "Assistente presente nas ruas",
+      description:
+        resolvedSettings.slide2_description ||
+        "Registra solicitacoes diretamente dos bairros e agiliza o atendimento.",
+      image: resolvedImages.slide2,
+    },
+    {
+      title: resolvedSettings.slide3_title || "Conversas claras e objetivas",
+      description:
+        resolvedSettings.slide3_description ||
+        "Painel mostra o que esta acontecendo em tempo real, sem complicacao.",
+      image: resolvedImages.slide3,
+    },
+  ];
+
   const defaultMetricCards: ThemeMetricCard[] = [
     {
       id: "card-1",
@@ -265,14 +340,54 @@ export default function ThemePreview({
       : {}),
   };
 
-  const normalizeText = (value?: string | null) =>
-    (value || "").normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().trim();
-  const renderTypeIcon = (type: string) => {
-    const key = normalizeText(type);
-    if (key === "reclamacao") return <PriorityHigh fontSize="small" />;
-    if (key === "sugestao") return <LightbulbOutlined fontSize="small" />;
-    if (key === "elogio") return <StarBorderRounded fontSize="small" />;
-    return <ChatBubbleOutline fontSize="small" />;
+  const renderMetricCard = (
+    card: ThemeMetricCard,
+    span: number,
+    className?: string,
+  ) => {
+    const meta = getMetricMeta(card.metric);
+    const title = (card.title || "").trim() || meta?.label || "Metrica";
+    const subtitle = (card.subtitle || "").trim() || meta?.subtitle || "";
+    const listItems =
+      meta?.type === "list" && Array.isArray(meta.value) ? meta.value : [];
+
+    return (
+      <CardGridReflect
+        key={card.id}
+        span={span}
+        className={`${styles.statCard} ${className ?? ""}`.trim()}
+      >
+        <div className={styles.statHeader}>
+          {meta?.icon ?? <InsertChartOutlined className={styles.statIcon} />}
+          <div>
+            <div className={styles.statLabel}>{title}</div>
+            {subtitle ? <div className={styles.statHint}>{subtitle}</div> : null}
+          </div>
+        </div>
+        {meta ? (
+          meta.type === "list" ? (
+            listItems.length ? (
+              <div className={styles.districtChips}>
+                {listItems.map((item, index) => (
+                  <span
+                    key={`${card.id}-item-${index}`}
+                    className={styles.districtChip}
+                  >
+                    {item}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <div className={styles.statEmpty}>Sem dados de hoje.</div>
+            )
+          ) : (
+            <div className={styles.statValue}>{meta.value}</div>
+          )
+        ) : (
+          <div className={styles.statEmpty}>Selecione uma metrica.</div>
+        )}
+      </CardGridReflect>
+    );
   };
   async function onSubmitUser(data: FilterFormValues) {
     setFilters(mapFilterFormToState(data));
@@ -301,7 +416,12 @@ export default function ThemePreview({
         {showHero ? (
           <>
             <div>
-              <SlideComponent />
+              <SlideComponent
+                slides={slideItems}
+                badge={resolvedSettings.slideBadge}
+                mapTitle={resolvedSettings.slideMapTitle}
+                mapSubtitle={resolvedSettings.slideMapSubtitle}
+              />
             </div>
           </>
         ) : null}
@@ -360,93 +480,20 @@ export default function ThemePreview({
           </Typography>
         </div>
         <Box className={styles.statsRow}>
-          {resolvedMetricCards.map((card) => {
-            const meta = getMetricMeta(card.metric);
-            const title = (card.title || "").trim() || meta?.label || "Metrica";
-            const subtitle = (card.subtitle || "").trim() || meta?.subtitle || "";
-            const listItems =
-              meta?.type === "list" && Array.isArray(meta.value) ? meta.value : [];
+          {resolvedMetricCards.map((card) =>
+            renderMetricCard(card, metricCardSpan),
+          )}
 
-            return (
-              <CardGridReflect
-                key={card.id}
-                span={metricCardSpan}
-                className={styles.statCard}
-              >
-                <div className={styles.statHeader}>
-                  {meta?.icon ?? (
-                    <InsertChartOutlined className={styles.statIcon} />
-                  )}
-                  <div>
-                    <div className={styles.statLabel}>{title}</div>
-                    {subtitle ? (
-                      <div className={styles.statHint}>{subtitle}</div>
-                    ) : null}
-                  </div>
-                </div>
-                {meta ? (
-                  meta.type === "list" ? (
-                    listItems.length ? (
-                      <div className={styles.districtChips}>
-                        {listItems.map((item, index) => (
-                          <span
-                            key={`${card.id}-item-${index}`}
-                            className={styles.districtChip}
-                          >
-                            {item}
-                          </span>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className={styles.statEmpty}>Sem dados de hoje.</div>
-                    )
-                  ) : (
-                    <div className={styles.statValue}>{meta.value}</div>
-                  )
-                ) : (
-                  <div className={styles.statEmpty}>Selecione uma metrica.</div>
-                )}
-              </CardGridReflect>
-            );
-          })}
-
-          {/* Clima Geral */}
-          <CardGridReflect
-            span={12}
-            className={`${styles.statCard} ${styles.wideCard}`}
-          >
-            <Box className={styles.climaCard}>
-              <div className={styles.statHeader}>
-                <ThermostatOutlined className={styles.statIcon} />
-                <Box>
-                  <div className={styles.statLabel}>Clima geral</div>
-                  <div className={styles.statHint}>
-                    Distribuição das opiniões
-                  </div>
-                </Box>
-              </div>
-              <div className={styles.typeChips}>
-                {appliedGroupOpinions.map(({ id, tema, total }) => {
-                  const typeKey = normalizeText(tema) || "outro";
-                  return (
-                    <span
-                      key={typeKey || id}
-                      className={styles.typeChip}
-                      data-type={typeKey}
-                      aria-label={`${tema} (${total})`}
-                    >
-                      <span className={styles.typeIcon}>
-                        {renderTypeIcon(tema)}
-                      </span>
-                      <span>{tema}</span>
-                      <span className={styles.typeCount}>{total}</span>
-                    </span>
-                  );
-                })}
-              </div>
-              {error ? <div className={styles.statHint}>{error}</div> : null}
-            </Box>
-          </CardGridReflect>
+          {renderMetricCard(
+            climaCard ?? {
+              id: "clima-card",
+              metric: "by_type",
+              title: "Clima geral",
+              subtitle: "Distribuicao das opinioes",
+            },
+            12,
+            styles.wideCard,
+          )}
         </Box>
         {/* Componente de Filtro */}
         <CardGrid className={styles.searchCard} span={12}>

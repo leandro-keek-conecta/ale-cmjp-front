@@ -221,6 +221,8 @@ export default function Forms<TFieldValues extends FieldValues = FieldValues>({
                 if (input.type === "inputFile") {
                   return (
                     <InputFile
+                      label={input.title}
+                      placeholder={input.placeholder}
                       onChange={(event) => {
                         const files = event.target.files;
                         if (files) {
@@ -233,6 +235,8 @@ export default function Forms<TFieldValues extends FieldValues = FieldValues>({
                           );
                         }
                       }}
+                      error={Boolean(fieldError)}
+                      helperText={fieldError?.message as string}
                     />
                   );
                 }

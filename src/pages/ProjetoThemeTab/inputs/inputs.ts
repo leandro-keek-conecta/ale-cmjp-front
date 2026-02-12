@@ -85,6 +85,18 @@ export type ThemeFormValues = {
   highlight: string;
   highlightTone: "primary" | "accent" | "gradient";
   subtitle: string;
+  slideBadge: string;
+  slideMapTitle: string;
+  slideMapSubtitle: string;
+  slide1_title: string;
+  slide1_description: string;
+  slide1_image: string | FileList;
+  slide2_title: string;
+  slide2_description: string;
+  slide2_image: string | FileList;
+  slide3_title: string;
+  slide3_description: string;
+  slide3_image: string | FileList;
   cardsCount: number;
   card1_metric: PanoramaMetricKey | "";
   card1_title: string;
@@ -104,10 +116,9 @@ export type ThemeFormValues = {
   card6_metric: PanoramaMetricKey | "";
   card6_title: string;
   card6_subtitle: string;
-  climaReclamacao: number | string;
-  climaSugestao: number | string;
-  climaElogio: number | string;
-  climaOutro: number | string;
+  clima_metric: PanoramaMetricKey | "";
+  clima_title: string;
+  clima_subtitle: string;
 };
 
 type SlideInputsOptions = {
@@ -118,6 +129,7 @@ type SlideInputsOptions = {
 type ThemeInputsOptions = {
   selectedMetrics?: (PanoramaMetricKey | "")[];
   cardsCount?: number;
+  climaMetric?: PanoramaMetricKey | "";
 };
 
 const fontOptions = [
@@ -143,6 +155,21 @@ export const buildThemeDefaultValues = (): ThemeFormValues => ({
   highlightTone: "gradient",
   subtitle:
     "Veja o que as pessoas estao falando, explore temas e acompanhe como as opinioes evoluem.",
+  slideBadge: "Assistente virtual",
+  slideMapTitle: "Presenca ativa nos bairros",
+  slideMapSubtitle: "Participacao cidada descomplicada e eficiente",
+  slide1_title: "Pronta para responder",
+  slide1_description:
+    "Interface humanizada para tirar duvidas da populacao a qualquer hora.",
+  slide1_image: "https://s3.keekconecta.com.br/ale-cmjp/fotos/ale-1.jpg",
+  slide2_title: "Assistente presente nas ruas",
+  slide2_description:
+    "Registra solicitacoes diretamente dos bairros e agiliza o atendimento.",
+  slide2_image: "https://s3.keekconecta.com.br/ale-cmjp/fotos/ale-2.jpg",
+  slide3_title: "Conversas claras e objetivas",
+  slide3_description:
+    "Painel mostra o que esta acontecendo em tempo real, sem complicacao.",
+  slide3_image: "https://s3.keekconecta.com.br/ale-cmjp/fotos/ale-5.png",
   cardsCount: 3,
   card1_metric: "opinions_today",
   card1_title: "Opiniões de hoje",
@@ -162,10 +189,9 @@ export const buildThemeDefaultValues = (): ThemeFormValues => ({
   card6_metric: "",
   card6_title: "",
   card6_subtitle: "",
-  climaReclamacao: 45,
-  climaSugestao: 32,
-  climaElogio: 51,
-  climaOutro: 12,
+  clima_metric: "by_type",
+  clima_title: "Clima geral",
+  clima_subtitle: "Distribuicao das opinioes",
 });
 
 export const getSlideInputs = (
@@ -188,42 +214,100 @@ export const getSlideInputs = (
 
   const heroInputs: InputType<ThemeFormValues>[] = [
     {
-      name: "kicker",
-      title: "Kicker",
-      placeholder: "Texto pequeno acima do titulo",
+      name: "slideBadge",
+      title: "Badge do slide",
+      placeholder: "Assistente virtual",
+      type: "text",
+      colSpan: 12,
+      containerClassName: heroClassName,
+      sectionTitle: "Slide",
+    },
+    {
+      name: "slideMapTitle",
+      title: "Titulo do card do slide",
+      placeholder: "Presenca ativa nos bairros",
       type: "text",
       colSpan: 12,
       containerClassName: heroClassName,
     },
     {
-      name: "title",
-      title: "Titulo",
-      placeholder: "Parte principal do titulo",
+      name: "slideMapSubtitle",
+      title: "Subtitulo do card do slide",
+      placeholder: "Participacao cidada descomplicada e eficiente",
       type: "text",
-      colSpan: 8,
-      containerClassName: heroClassName,
-    },
-    {
-      name: "highlight",
-      title: "Highlight",
-      placeholder: "Parte colorida do titulo",
-      type: "text",
-      colSpan: 4,
-      containerClassName: heroClassName,
-    },
-    {
-      name: "highlightTone",
-      title: "Cor do highlight",
-      type: "Select",
-      selectOptions: highlightToneOptions,
       colSpan: 12,
       containerClassName: heroClassName,
     },
     {
-      name: "subtitle",
-      title: "Subtitle",
-      placeholder: "Texto de apoio",
-      type: "textarea",
+      name: "slide1_title",
+      title: "Titulo do slide 1",
+      placeholder: "Pronta para responder",
+      type: "text",
+      colSpan: 12,
+      containerClassName: heroClassName,
+      sectionTitle: "Slides",
+    },
+    {
+      name: "slide1_description",
+      title: "Descricao do slide 1",
+      placeholder: "Interface humanizada para tirar duvidas...",
+      type: "text",
+      colSpan: 12,
+      containerClassName: heroClassName,
+    },
+    {
+      name: "slide1_image",
+      title: "Imagem do slide 1",
+      placeholder: "Selecione uma imagem",
+      type: "inputFile",
+      colSpan: 12,
+      containerClassName: heroClassName,
+    },
+    {
+      name: "slide2_title",
+      title: "Titulo do slide 2",
+      placeholder: "Assistente presente nas ruas",
+      type: "text",
+      colSpan: 6,
+      containerClassName: heroClassName,
+    },
+    {
+      name: "slide2_description",
+      title: "Descricao do slide 2",
+      placeholder: "Registra solicitacoes diretamente...",
+      type: "text",
+      colSpan: 6,
+      containerClassName: heroClassName,
+    },
+    {
+      name: "slide2_image",
+      title: "Imagem do slide 2",
+      placeholder: "Selecione uma imagem",
+      type: "inputFile",
+      colSpan: 12,
+      containerClassName: heroClassName,
+    },
+    {
+      name: "slide3_title",
+      title: "Titulo do slide 3",
+      placeholder: "Conversas claras e objetivas",
+      type: "text",
+      colSpan: 6,
+      containerClassName: heroClassName,
+    },
+    {
+      name: "slide3_description",
+      title: "Descricao do slide 3",
+      placeholder: "Painel mostra o que esta acontecendo...",
+      type: "text",
+      colSpan: 6,
+      containerClassName: heroClassName,
+    },
+    {
+      name: "slide3_image",
+      title: "Imagem do slide 3",
+      placeholder: "Selecione uma imagem",
+      type: "inputFile",
       colSpan: 12,
       containerClassName: heroClassName,
     },
@@ -240,13 +324,24 @@ export const getThemeInputs = (
     Math.max(1, Math.round(options.cardsCount ?? 3)),
   );
   const selectedMetrics = options.selectedMetrics ?? [];
+  const climaMetric = options.climaMetric ?? "";
 
   const getMetricOptions = (index: number) => {
     const taken = new Set(
-      selectedMetrics.filter((value, idx) => idx !== index && value),
+      selectedMetrics
+        .filter((value, idx) => idx !== index && value)
+        .concat(climaMetric ? [climaMetric] : []),
     );
     return panoramaOptions.filter(
-      (option) => !taken.has(option.value) || option.value === selectedMetrics[index],
+      (option) =>
+        !taken.has(option.value) || option.value === selectedMetrics[index],
+    );
+  };
+
+  const getClimaMetricOptions = () => {
+    const taken = new Set(selectedMetrics.filter(Boolean));
+    return panoramaOptions.filter(
+      (option) => !taken.has(option.value) || option.value === climaMetric,
     );
   };
 
@@ -263,6 +358,42 @@ export const getThemeInputs = (
       title: "Fonte",
       type: "Select",
       selectOptions: fontOptions,
+      colSpan: 12,
+    },
+    {
+      name: "kicker",
+      title: "Kicker",
+      placeholder: "Texto pequeno acima do titulo",
+      type: "text",
+      colSpan: 12,
+      sectionTitle: "Hero",
+    },
+    {
+      name: "title",
+      title: "Titulo",
+      placeholder: "Parte principal do titulo",
+      type: "text",
+      colSpan: 8,
+    },
+    {
+      name: "highlight",
+      title: "Highlight",
+      placeholder: "Parte colorida do titulo",
+      type: "text",
+      colSpan: 4,
+    },
+    {
+      name: "highlightTone",
+      title: "Cor do highlight",
+      type: "Select",
+      selectOptions: highlightToneOptions,
+      colSpan: 12,
+    },
+    {
+      name: "subtitle",
+      title: "Subtitle",
+      placeholder: "Texto de apoio",
+      type: "textarea",
       colSpan: 12,
     },
     {
@@ -317,32 +448,26 @@ export const getThemeInputs = (
 
   const climaInputs: InputType<ThemeFormValues>[] = [
     {
-      name: "climaReclamacao",
-      title: "Clima - Reclamacao",
-      placeholder: "45",
-      type: "number",
-      colSpan: 3,
+      name: "clima_metric",
+      title: "Metrica",
+      type: "Select",
+      selectOptions: getClimaMetricOptions(),
+      colSpan: 12,
+      sectionTitle: "Clima geral",
     },
     {
-      name: "climaSugestao",
-      title: "Clima - Sugestao",
-      placeholder: "32",
-      type: "number",
-      colSpan: 3,
+      name: "clima_title",
+      title: "Titulo",
+      placeholder: "Clima geral",
+      type: "text",
+      colSpan: 6,
     },
     {
-      name: "climaElogio",
-      title: "Clima - Elogio",
-      placeholder: "51",
-      type: "number",
-      colSpan: 3,
-    },
-    {
-      name: "climaOutro",
-      title: "Clima - Outro",
-      placeholder: "12",
-      type: "number",
-      colSpan: 3,
+      name: "clima_subtitle",
+      title: "Subtitulo",
+      placeholder: "Distribuicao das opinioes",
+      type: "text",
+      colSpan: 6,
     },
   ];
 
