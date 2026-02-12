@@ -104,7 +104,6 @@ export default function ProjetoThemeTab() {
   const themeInputsList = useMemo(
     () =>
       getThemeInputs({
-        selectedMetrics,
         climaMetric,
         cardsCount,
       }),
@@ -286,8 +285,15 @@ export default function ProjetoThemeTab() {
     const isMetric = (value: unknown): value is PanoramaMetricKey =>
       typeof value === "string" && metricSet.has(value as PanoramaMetricKey);
 
-    const getText = (value: unknown, fallback: string) =>
-      typeof value === "string" && value.trim() ? value : fallback;
+    const getText = (value: unknown, fallback: unknown) => {
+      if (typeof value === "string" && value.trim()) {
+        return value;
+      }
+      if (typeof fallback === "string") {
+        return fallback;
+      }
+      return "";
+    };
 
     const loadProject = async () => {
       const projectId = getStoredProjectId();

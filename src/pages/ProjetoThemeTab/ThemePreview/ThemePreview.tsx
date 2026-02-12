@@ -89,7 +89,7 @@ export default function ThemePreview({
   const [, setFilters] = useState<FiltersState>(() =>
     mapFilterFormToState(buildFilternDefaultValues()),
   );
-  const [filterSelectOptions, setFilterSelectOptions] = useState<
+  const [filterSelectOptions] = useState<
     Partial<FilterSelectOptions>
   >({});
   const {
