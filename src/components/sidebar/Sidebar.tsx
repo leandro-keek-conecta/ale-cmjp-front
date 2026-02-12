@@ -49,6 +49,13 @@ export function Sidebar({
               estaAberta={estaAberta}
               isActive={isActive("/relatorio")}
             />
+            <ItemMenu
+              icone={<ChatIcon />}
+              rotulo="cadastro de tema"
+              para="/cadastro-thema"
+              estaAberta={estaAberta}
+              isActive={isActive("/cadastro-thema")}
+            />
           </Fragment>
         </ul>
     </nav>
