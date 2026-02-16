@@ -19,8 +19,9 @@ import { groupOpinionsByMonthOnly } from "@/utils/retornMonthInDate";
 import { isProjetoAccessLevel } from "@/utils/projectSelection";
 import { listAllProjects } from "@/services/projeto/ProjetoService";
 import type { ThemeChipDatum } from "./cardProject/chips";
+import SearchProjects from "./searchOfProjects";
 
-type ProjectCardData = {
+export type ProjectCardData = {
   id: number;
   name: string;
   actived: boolean;
@@ -494,9 +495,7 @@ export default function Projetos() {
       </CabecalhoEstilizado>
 
       <Box className={styles.content}>
-        <Typography component="h1" className={styles.title}>
-          Selecione um projeto
-        </Typography>
+          <SearchProjects projects={projects}/>
 
         {loadingProjects ? (
           <Box className={styles.emptyState}>Carregando projetos...</Box>

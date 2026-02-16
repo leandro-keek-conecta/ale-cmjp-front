@@ -1,0 +1,60 @@
+
+.page :global(.MuiTypography-root),
+.page :global(.MuiButtonBase-root),
+.page :global(.MuiButton-root),
+.page :global(.MuiChip-root),
+.page :global(.MuiMenuItem-root) {
+  font-family: "Inter", sans-serif;
+}
+
+
+.SearchContainer {
+  width: 100%;
+  min-height: 5rem;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.titleContent{
+  font-size: 1.5rem !important;
+  font-family: "Inter", sans-serif !important;
+  font-weight: 700 !important;
+} 
+
+.subtitleContent{
+  font-size: 1rem !important;
+  font-family: "Inter", sans-serif !important;
+  font-weight: 500 !important;
+} 
+
+.heightContent {
+  gap: 1rem;
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+}
+
+.searchComponent {
+  min-width: 20rem;
+}
+
+.searchButtom {
+  width: 9.5rem;
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: flex-end;
+  background-color: #1976d2;
+  border-radius: 8px !important;
+}
+
+.enterButton {
+  width: 100%;
+  text-transform: none !important;
+  font-weight: 600 !important;
+  color: white !important;
+}
+
+.searchButtom:hover{
+  cursor: pointer;
+}
