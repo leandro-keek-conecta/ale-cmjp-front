@@ -28,3 +28,8 @@ export function deleteProject(id: number) {
   const response = api.delete(`projeto/delete/${id}`);
   return response;
 }
+
+export async function listAllProjects(id: number) {
+  const response = await api.get(`projeto/list/${id}`);
+  return response.data?.data ?? [];
+}

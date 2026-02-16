@@ -4,6 +4,7 @@ import { api } from "../api/api";
 import axios from "axios";
 import type { UpdateUserDTO } from "@/types/IUpdateUserDTO";
 import type { ProjetoAccessLevel } from "@/types/IUserType";
+import type { RawUserProject } from "@/utils/projectSelection";
 
 interface CreateUserParams {
   email: string;
@@ -66,6 +67,27 @@ export async function deleteUser(id:number){
 export async function fetchUsers(): Promise<User[]> {
   const response = await api.get("/user/list");
   return response.data.data; // ? acessa corretamente o array de projetos
+}
+
+export async function fetchProjectsByUserId(
+  userId: number,
+): Promise<RawUserProject[]> {
+  const users = await fetchUsers();
+  const currentUser = users.find((user) => user?.id === userId);
+
+  if (!currentUser) {
+    return [];
+  }
+
+  if (Array.isArray(currentUser.projetos) && currentUser.projetos.length) {
+    return currentUser.projetos as unknown as RawUserProject[];
+  }
+
+  if (currentUser.projeto) {
+    return [currentUser.projeto as unknown as RawUserProject];
+  }
+
+  return [];
 }
 
 export async function updateUser(data: UpdateUserDTO): Promise<User[]> {

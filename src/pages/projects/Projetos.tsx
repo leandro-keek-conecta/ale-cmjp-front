@@ -1,17 +1,5 @@
-import { useCallback, useMemo } from "react";
-import {
-  AppBar,
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Chip,
-  IconButton,
-  Stack,
-  Toolbar,
-  Typography,
-  styled,
-} from "@mui/material";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { AppBar, Box, IconButton, Toolbar, Typography, styled } from "@mui/material";
 import { Menu } from "@mui/icons-material";
 import LogoutIcon from "@mui/icons-material/Logout";
 import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
@@ -23,21 +11,24 @@ import UserMenuMinimal from "@/components/SplitButton";
 import { logout } from "@/services/auth/authService";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
-import { ensureThemeColor } from "@/utils/project";
-import {
-  normalizeProjectFromUser,
-  type RawUserProject,
-} from "@/utils/projectSelection";
 import type { ProjetoAccessLevel } from "@/types/IUserType";
 import { useProjectSelection } from "@/hooks/useProjectSelection";
+import CardProject from "./cardProject";
+import type { ChartDatum } from "@/types/ChartDatum";
+import { groupOpinionsByMonthOnly } from "@/utils/retornMonthInDate";
+import { isProjetoAccessLevel } from "@/utils/projectSelection";
+import { listAllProjects } from "@/services/projeto/ProjetoService";
+import type { ThemeChipDatum } from "./cardProject/chips";
 
 type ProjectCardData = {
   id: number;
   name: string;
-  logoUrl?: string;
-  color: string;
+  actived: boolean;
   access: ProjetoAccessLevel;
-  hiddenTabsCount: number;
+  hiddenTabs: string[];
+  responsesLast7Days: number;
+  responsesByMonthLast12Months: ChartDatum[];
+  responsesByTheme: ThemeChipDatum[];
   payload: {
     id: number;
     name: string;
@@ -47,10 +38,208 @@ type ProjectCardData = {
   };
 };
 
-const ACCESS_LABEL: Record<ProjetoAccessLevel, string> = {
-  FULL_ACCESS: "Acesso total",
-  AUTOMATIONS_ONLY: "Somente automacoes",
-  DASH_ONLY: "Somente dashboards",
+type RawProjectMetrics = {
+  responsesLast7Days?: unknown;
+  responsesByMonthLast12Months?: unknown;
+  responsesByTheme?: unknown;
+};
+
+type RawProjectUser = {
+  id?: unknown;
+  access?: unknown;
+  hiddenTabs?: unknown;
+};
+
+type RawProjectSource = {
+  id?: unknown;
+  projetoId?: unknown;
+  name?: unknown;
+  nome?: unknown;
+  ativo?: unknown;
+  access?: unknown;
+  hiddenTabs?: unknown;
+  token?: unknown;
+  metrics?: unknown;
+  users?: unknown;
+};
+
+const toNumber = (value: unknown) => {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+  if (typeof value === "string" && value.trim()) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+  return 0;
+};
+
+const toSafeString = (value: unknown, fallback = "") => {
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    return trimmed || fallback;
+  }
+  return fallback;
+};
+
+const normalizeHiddenTabs = (value: unknown): string[] => {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .filter((tab): tab is string => typeof tab === "string")
+    .map((tab) => tab.trim())
+    .filter(Boolean);
+};
+
+const getMetricObject = (value: unknown): RawProjectMetrics => {
+  if (!value || typeof value !== "object") {
+    return {};
+  }
+  return value as RawProjectMetrics;
+};
+
+const normalizeMonthlyMetrics = (value: unknown): ChartDatum[] => {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  const normalizedForGrouping = value
+    .map((item) => {
+      if (!item || typeof item !== "object") {
+        return null;
+      }
+
+      const entry = item as Record<string, unknown>;
+      const labelOrDate =
+        entry.date ??
+        entry.label ??
+        entry.month ??
+        entry.mes ??
+        entry.monthLabel ??
+        entry.reference;
+      const rawValue =
+        entry.count ??
+        entry.value ??
+        entry.total ??
+        entry.responses ??
+        entry.quantidade ??
+        entry.quantity;
+
+      if (labelOrDate instanceof Date) {
+        return {
+          date: labelOrDate,
+          count: toNumber(rawValue),
+        };
+      }
+
+      if (typeof labelOrDate === "string") {
+        return {
+          label: labelOrDate,
+          value: toNumber(rawValue),
+        };
+      }
+
+      return null;
+    })
+    .filter(Boolean) as Array<
+      { label: string; value: number } | { date: string | Date; count: number }
+    >;
+
+  const grouped = groupOpinionsByMonthOnly(normalizedForGrouping);
+  if (grouped.length) {
+    return grouped;
+  }
+
+  return value
+    .map((item, index) => {
+      if (typeof item === "number") {
+        return { label: `M${index + 1}`, value: item };
+      }
+      if (typeof item === "string") {
+        return { label: `M${index + 1}`, value: toNumber(item) };
+      }
+      if (!item || typeof item !== "object") {
+        return null;
+      }
+
+      const entry = item as Record<string, unknown>;
+      const rawLabel =
+        entry.label ?? entry.month ?? entry.mes ?? entry.date ?? `M${index + 1}`;
+      const rawValue =
+        entry.value ??
+        entry.count ??
+        entry.total ??
+        entry.responses ??
+        entry.quantidade ??
+        entry.quantity;
+
+      return {
+        label: String(rawLabel),
+        value: toNumber(rawValue),
+      };
+    })
+    .filter((item): item is ChartDatum => item !== null);
+};
+
+const normalizeThemeKey = (value: string) =>
+  value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+
+const toTitleCase = (value: string) =>
+  value
+    .split(" ")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join(" ");
+
+const normalizeThemeMetrics = (value: unknown): ThemeChipDatum[] => {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  const grouped = new Map<string, ThemeChipDatum>();
+
+  value.forEach((item) => {
+    if (!item || typeof item !== "object") {
+      return;
+    }
+
+    const entry = item as Record<string, unknown>;
+    const rawLabel = entry.tema ?? entry.label ?? entry.theme ?? entry.name;
+    const label = toSafeString(rawLabel);
+    if (!label) {
+      return;
+    }
+
+    const rawValue =
+      entry.total ??
+      entry.value ??
+      entry.count ??
+      entry.responses ??
+      entry.quantidade;
+    const metricValue = toNumber(rawValue);
+    const key = normalizeThemeKey(label);
+    const current = grouped.get(key);
+
+    if (current) {
+      current.value += metricValue;
+      return;
+    }
+
+    grouped.set(key, {
+      label: toTitleCase(label),
+      value: metricValue,
+    });
+  });
+
+  return Array.from(grouped.values())
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 5);
 };
 
 const CabecalhoEstilizado = styled(AppBar)(({ theme }) => ({
@@ -64,10 +253,14 @@ export default function Projetos() {
   const { user, setUser } = useAuth();
   const { selectProject, resetProject } = useProjectSelection();
   const navigate = useNavigate();
+  const [loadingProjects, setLoadingProjects] = useState(true);
+  const [projectSources, setProjectSources] = useState<RawProjectSource[]>([]);
 
   const avatarFallback = useMemo(() => {
     if (!user) return "U";
-    if ((user as any).initials) return (user as any).initials;
+    if ((user as { initials?: string }).initials) {
+      return (user as { initials?: string }).initials ?? "U";
+    }
     if (user.name) {
       return (
         user.name
@@ -81,59 +274,121 @@ export default function Projetos() {
     return "U";
   }, [user]);
 
-  const projects = useMemo<ProjectCardData[]>(() => {
-    const sources =
+  useEffect(() => {
+    let mounted = true;
+
+    const fallbackSources =
       Array.isArray(user?.projetos) && user.projetos.length
-        ? user.projetos
+        ? (user.projetos as unknown as RawProjectSource[])
         : user?.projeto
-          ? [user.projeto]
+          ? ([user.projeto] as unknown as RawProjectSource[])
           : [];
 
-    const dedupe = new Set<number>();
-    const list: ProjectCardData[] = [];
-
-    sources.forEach((source) => {
-      const normalized = normalizeProjectFromUser(source as unknown as RawUserProject);
-      if (typeof normalized.id !== "number" || dedupe.has(normalized.id)) {
+    const loadProjects = async () => {
+      if (typeof user?.id !== "number") {
+        if (!mounted) return;
+        setProjectSources(fallbackSources);
+        setLoadingProjects(false);
         return;
       }
 
-      const projeto =
-        (source as any)?.projeto && typeof (source as any).projeto === "object"
-          ? (source as any).projeto
-          : source;
+      if (mounted) {
+        setLoadingProjects(true);
+      }
 
-      const name = normalized.name || projeto?.nome || projeto?.name || `Projeto ${normalized.id}`;
-      const logoUrl =
-        typeof projeto?.url === "string" && projeto.url.trim().length
-          ? projeto.url
-          : typeof projeto?.logoUrl === "string" && projeto.logoUrl.trim().length
-            ? projeto.logoUrl
-            : undefined;
+      try {
+        const freshProjects = await listAllProjects(user.id);
+
+        if (!mounted) return;
+        setProjectSources(
+          Array.isArray(freshProjects)
+            ? (freshProjects as RawProjectSource[])
+            : fallbackSources,
+        );
+      } catch (error) {
+        console.error("Erro ao atualizar projetos vinculados do usuario:", error);
+        if (!mounted) return;
+        setProjectSources(fallbackSources);
+      } finally {
+        if (mounted) {
+          setLoadingProjects(false);
+        }
+      }
+    };
+
+    void loadProjects();
+
+    return () => {
+      mounted = false;
+    };
+  }, [user?.id]);
+
+  const projects = useMemo<ProjectCardData[]>(() => {
+    const dedupe = new Set<number>();
+    const list: ProjectCardData[] = [];
+
+    projectSources.forEach((source) => {
+      const projectId =
+        typeof source?.id === "number"
+          ? source.id
+          : typeof source?.projetoId === "number"
+            ? source.projetoId
+            : null;
+
+      if (typeof projectId !== "number" || dedupe.has(projectId)) {
+        return;
+      }
+
+      const metrics = getMetricObject(source.metrics);
+      const users = Array.isArray(source.users)
+        ? (source.users as RawProjectUser[])
+        : [];
+
+      const userAccess = users.find((projectUser) => projectUser?.id === user?.id)?.access;
+      const rawAccess = userAccess ?? source.access;
+      const access = isProjetoAccessLevel(rawAccess)
+        ? rawAccess
+        : "FULL_ACCESS";
+
+      const hiddenTabs =
+        normalizeHiddenTabs(
+          users.find((projectUser) => projectUser?.id === user?.id)?.hiddenTabs,
+        ).length > 0
+          ? normalizeHiddenTabs(
+              users.find((projectUser) => projectUser?.id === user?.id)?.hiddenTabs,
+            )
+          : normalizeHiddenTabs(source.hiddenTabs);
+
+      const name =
+        toSafeString(source.name) ||
+        toSafeString(source.nome) ||
+        `Projeto ${projectId}`;
 
       list.push({
-        id: normalized.id,
+        id: projectId,
         name,
-        logoUrl,
-        color: ensureThemeColor(projeto?.corHex, "#0b5cff"),
-        access: normalized.access ?? "FULL_ACCESS",
-        hiddenTabsCount: normalized.hiddenTabs?.length ?? 0,
+        actived: typeof source.ativo === "boolean" ? source.ativo : true,
+        access,
+        hiddenTabs,
+        responsesLast7Days: toNumber(metrics.responsesLast7Days),
+        responsesByMonthLast12Months: normalizeMonthlyMetrics(
+          metrics.responsesByMonthLast12Months,
+        ),
+        responsesByTheme: normalizeThemeMetrics(metrics.responsesByTheme),
         payload: {
-          id: normalized.id,
+          id: projectId,
           name,
-          access: normalized.access ?? "FULL_ACCESS",
-          hiddenTabs: Array.isArray(normalized.hiddenTabs)
-            ? normalized.hiddenTabs
-            : [],
-          token: normalized.token ?? "",
+          access,
+          hiddenTabs,
+          token: toSafeString(source.token),
         },
       });
 
-      dedupe.add(normalized.id);
+      dedupe.add(projectId);
     });
 
     return list;
-  }, [user?.projeto, user?.projetos]);
+  }, [projectSources, user?.id]);
 
   const handleSelectProject = useCallback(
     (project: ProjectCardData) => {
@@ -232,7 +487,7 @@ export default function Projetos() {
           </Box>
 
           <UserMenuMinimal
-            avatar={{ src: (user as any)?.photoUrl, fallback: avatarFallback }}
+            avatar={{ src: (user as { photoUrl?: string } | null)?.photoUrl, fallback: avatarFallback }}
             options={menuOptions}
           />
         </Toolbar>
@@ -243,59 +498,20 @@ export default function Projetos() {
           Selecione um projeto
         </Typography>
 
-        {projects.length ? (
+        {loadingProjects ? (
+          <Box className={styles.emptyState}>Carregando projetos...</Box>
+        ) : projects.length ? (
           <Box className={styles.grid}>
             {projects.map((project) => (
-              <Card
+              <CardProject
                 key={project.id}
-                className={styles.card}
-                sx={{ borderTop: `4px solid ${project.color}` }}
-              >
-                <CardContent className={styles.cardContent}>
-                  <Box className={styles.cardHeader}>
-                    {project.logoUrl ? (
-                      <img
-                        src={project.logoUrl}
-                        alt={project.name}
-                        className={styles.projectLogo}
-                      />
-                    ) : (
-                      <Box
-                        className={styles.projectBadge}
-                        sx={{ backgroundColor: project.color }}
-                      >
-                        {project.name.slice(0, 1).toUpperCase()}
-                      </Box>
-                    )}
-
-                    <Box className={styles.cardTitleWrap}>
-                      <Typography className={styles.cardTitle}>
-                        {project.name}
-                      </Typography>
-                      <Typography className={styles.cardSubtitle}>
-                        Projeto #{project.id}
-                      </Typography>
-                    </Box>
-                  </Box>
-
-                  <Stack direction="row" spacing={1} flexWrap="wrap">
-                    <Chip label={ACCESS_LABEL[project.access]} size="small" />
-                    <Chip
-                      label={`${project.hiddenTabsCount} telas ocultas`}
-                      size="small"
-                      variant="outlined"
-                    />
-                  </Stack>
-
-                  <Button
-                    variant="contained"
-                    onClick={() => handleSelectProject(project)}
-                    className={styles.selectButton}
-                  >
-                    Entrar no projeto
-                  </Button>
-                </CardContent>
-              </Card>
+                title={project.name}
+                actived={project.actived}
+                responsesLast7Days={project.responsesLast7Days}
+                responsesByMonthLast12Months={project.responsesByMonthLast12Months}
+                responsesByTheme={project.responsesByTheme}
+                onSelect={() => handleSelectProject(project)}
+              />
             ))}
           </Box>
         ) : (
