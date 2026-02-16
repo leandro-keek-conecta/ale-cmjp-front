@@ -9,8 +9,6 @@ export type ProjectLike = {
   name?: string | null;
   corHex?: string | null;
   url?: string | null;
-  groupId?: string | null;
-  reportId?: string | null;
   hiddenTabs?: string[] | null;
   access?: unknown;
   projeto?: ProjectLike | null;

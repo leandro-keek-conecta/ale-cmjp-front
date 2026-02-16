@@ -47,8 +47,6 @@ export default interface Projeto {
   cliente?: string;
   descricaoCurta?: string;
   logoUrl?: string;
-  reportId?: string;
-  groupId?: string;
   corHex?: string;
   ativo: boolean;
   themeConfig?: ThemeConfig;
@@ -63,8 +61,6 @@ export interface ProjetoBasicFormValues {
   name: string;
   cliente?: string;
   descricaoCurta?: string;
-  reportId?: string;
-  groupId?: string;
   corHex?: string;
   logoUrl?: string;
   ativo: boolean;
