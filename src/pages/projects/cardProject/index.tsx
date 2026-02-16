@@ -3,6 +3,7 @@ import styles from "./card.module.css";
 import { BarChart } from "@/components/charts/bar/BarChart";
 import type { ChartDatum } from "@/types/ChartDatum";
 import ChipsCard, { type ThemeChipDatum } from "./chips";
+import { useEffect, useRef, useState } from "react";
 
 interface CardProjectProps {
   title: string;
@@ -25,6 +26,34 @@ export default function CardProject({
 }: CardProjectProps) {
   const statusText = actived ? "Ativo" : "Inativo";
   const avatarLetter = title?.trim()?.charAt(0)?.toUpperCase() || "P";
+  const bodyRef = useRef<HTMLDivElement | null>(null);
+  const [chartHeight, setChartHeight] = useState(180);
+
+  useEffect(() => {
+    const node = bodyRef.current;
+    if (!node) {
+      return;
+    }
+
+    const updateHeight = (height: number) => {
+      const next = Math.max(120, Math.floor(height - 8));
+      setChartHeight((prev) => (prev === next ? prev : next));
+    };
+
+    updateHeight(node.getBoundingClientRect().height);
+
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (!entry) return;
+      updateHeight(entry.contentRect.height);
+    });
+
+    observer.observe(node);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
 
   return (
     <Card className={styles.cardContainer}>
@@ -51,10 +80,10 @@ export default function CardProject({
         </Box>
       </Box>
 
-      <Box className={styles.bodyCard}>
+      <Box className={styles.bodyCard} ref={bodyRef}>
         <BarChart
           data={responsesByMonthLast12Months}
-          height={200}
+          height={chartHeight}
           loading={false}
         />
       </Box>
