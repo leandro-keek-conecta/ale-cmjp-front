@@ -30,6 +30,7 @@ import {
   getFilterInputs,
   type FilterSelectOptions,
 } from "./inputs/inputListFilter";
+import type { ChartDatum } from "@/types/ChartDatum";
 type ReportCards = {
   totalOpinions?: number | string;
   totalComplaints?: number | string;
@@ -44,10 +45,7 @@ type ReportCard = {
   subtitle: number;
 };
 
-type ChartDatum = {
-  label: string;
-  value: number;
-};
+
 
 const buildFilternDefaultValues = (): FilterFormValues => ({
   dataInicio: null,

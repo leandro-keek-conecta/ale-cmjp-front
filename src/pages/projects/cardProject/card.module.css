@@ -1,0 +1,130 @@
+.cardContainer {
+  width: 100%;
+  height: 20rem !important;
+  border-radius: 12px !important;
+  font-family: "Inter", sans-serif;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.headerCard {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.9rem;
+  border-bottom: 1px solid #d9d9d9;
+  flex: 0 0 auto;
+  min-height: 3rem;
+}
+
+.headerLeft {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.avatar {
+  width: 35px !important;
+  height: 35px !important;
+  font-size: 1.1rem !important;
+  font-weight: 700 !important;
+  background: #d9d9d9 !important;
+  color: #111111 !important;
+}
+
+.projectName {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.headerTitle {
+  font-size: 1rem;
+  font-weight: 650;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.headerSubtitle {
+  font-size: 0.7rem;
+  color: #8a8a8a;
+  line-height: 1;
+}
+
+.statusContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: 0.75rem;
+}
+
+.statusDot {
+  width: 15px;
+  height: 15px;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.statusActive {
+  color: #0a8f1f;
+}
+
+.statusInactive {
+  color: #c62828;
+}
+
+.statusText {
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.bodyCard {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 0.1rem 0.9rem;
+  border-bottom: 1px solid #d9d9d9;
+}
+
+.footerCard {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.2rem;
+  padding: 0.5rem 1rem 0.5rem 0.8rem;
+  width: 100%;
+  flex: 0 0 auto;
+}
+
+.leftFooter {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0;
+  gap: 0.6rem;
+}
+
+.footerTitle {
+  width: fit-content;
+  font-size: 0.85rem;
+  font-weight: 800 !important;
+  color: #0f3d66;
+}
+
+.rightFooter {
+  width: 9.5rem;
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: flex-end;
+  align-self: flex-end;
+}
+
+.enterButton {
+  width: 100%;
+  text-transform: none !important;
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+}

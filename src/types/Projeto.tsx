@@ -19,8 +19,6 @@ export interface ProjectDTO {
   id: number;
   name: string;
   logoUrl?: string | null;
-  reportId?: string | null;
-  groupId?: string | null;
   corHex?: string | null;
   createdAt?: string;
   updatedAt?: string;

@@ -44,8 +44,6 @@ export default function RegisterProject() {
     slug: "",
     cliente: "",
     descricaoCurta: "",
-    reportId: "",
-    groupId: "",
     corHex: "",
     logoUrl: "",
     ativo: true,
@@ -148,8 +146,6 @@ export default function RegisterProject() {
       slug: selected.slug ?? "",
       cliente: (selected as any)?.cliente ?? "",
       descricaoCurta: (selected as any)?.descricaoCurta ?? "",
-      reportId: (selected as any)?.reportId ?? "",
-      groupId: (selected as any)?.groupId ?? "",
       corHex: (selected as any)?.corHex ?? "",
       logoUrl: (selected as any)?.logoUrl ?? "",
       ativo:

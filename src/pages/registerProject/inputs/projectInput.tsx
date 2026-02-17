@@ -45,20 +45,6 @@ export const getProjetoBasicInputs = (
       colSpan: 4,
     },
     {
-      name: "reportId",
-      title: "Report ID (Dashboard)",
-      placeholder: "ID do relatório vinculado",
-      type: "text",
-      colSpan: 4,
-    },
-    {
-      name: "groupId",
-      title: "Group ID (Power BI)",
-      placeholder: "ID do workspace",
-      type: "text",
-      colSpan: 4,
-    },
-    {
       name: "corHex",
       title: "Cor Principal (Hex)",
       placeholder: "#0b5cff",

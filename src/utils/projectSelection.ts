@@ -6,8 +6,6 @@ export type RawUserProject = {
   nome?: string | null;
   name?: string | null;
   url?: string | null;
-  groupId?: string | null;
-  reportId?: string | null;
   token?: string | null;
   hiddenTabs?: string[] | null;
   access?: ProjetoAccessLevel | null;
@@ -17,8 +15,6 @@ export type RawUserProject = {
 export interface ProjectSelectionPayload {
   id?: number | null;
   name?: string | null;
-  groupId?: string | null;
-  reportId?: string | null;
   token?: string | null;
   hiddenTabs?: string[] | null;
   access?: ProjetoAccessLevel | null;
@@ -41,8 +37,6 @@ export const normalizeProjectFromUser = (
     return {
       id: null,
       name: "",
-      groupId: "",
-      reportId: "",
       hiddenTabs: [],
       access: "FULL_ACCESS",
     };
@@ -78,8 +72,6 @@ export const normalizeProjectFromUser = (
   return {
     id,
     name,
-    groupId: fallback?.groupId ?? project.groupId ?? "",
-    reportId: fallback?.reportId ?? project.reportId ?? "",
     access: isProjetoAccessLevel(
       project.access ?? nested?.access ?? fallback?.access,
     )
