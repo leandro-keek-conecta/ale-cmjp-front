@@ -1,5 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { AppBar, Box, IconButton, Toolbar, Typography, styled } from "@mui/material";
+import {
+  AppBar,
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  Toolbar,
+  styled,
+} from "@mui/material";
 import { Menu } from "@mui/icons-material";
 import LogoutIcon from "@mui/icons-material/Logout";
 import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
@@ -256,6 +267,11 @@ export default function Projetos() {
   const navigate = useNavigate();
   const [loadingProjects, setLoadingProjects] = useState(true);
   const [projectSources, setProjectSources] = useState<RawProjectSource[]>([]);
+  const [selectedProjectId, setSelectedProjectId] = useState<number | null>(
+    null,
+  );
+  const [createProjectModalOpen, setCreateProjectModalOpen] = useState(false);
+  const isSuperAdmin = user?.role === "SUPERADMIN";
 
   const avatarFallback = useMemo(() => {
     if (!user) return "U";
@@ -391,6 +407,26 @@ export default function Projetos() {
     return list;
   }, [projectSources, user?.id]);
 
+  useEffect(() => {
+    if (!projects.length) {
+      setSelectedProjectId(null);
+      return;
+    }
+
+    const exists = projects.some((project) => project.id === selectedProjectId);
+    if (!exists) {
+      setSelectedProjectId(projects[0].id);
+    }
+  }, [projects, selectedProjectId]);
+
+  const selectedProject = useMemo(
+    () =>
+      projects.find((project) => project.id === selectedProjectId) ??
+      projects[0] ??
+      null,
+    [projects, selectedProjectId],
+  );
+
   const handleSelectProject = useCallback(
     (project: ProjectCardData) => {
       selectProject(project.payload);
@@ -415,6 +451,15 @@ export default function Projetos() {
     setUser(null);
     navigate("/");
   }, [navigate, resetProject, setUser]);
+
+  const handleCreateProject = useCallback(() => {
+    if (isSuperAdmin) {
+      navigate("/cadastro-projeto");
+      return;
+    }
+
+    setCreateProjectModalOpen(true);
+  }, [isSuperAdmin, navigate]);
 
   const menuOptions = useMemo(() => {
     if (user?.role === "ADMIN" || user?.role === "SUPERADMIN") {
@@ -495,7 +540,12 @@ export default function Projetos() {
       </CabecalhoEstilizado>
 
       <Box className={styles.content}>
-          <SearchProjects projects={projects}/>
+        <SearchProjects
+          projects={projects}
+          selectedProject={selectedProject}
+          onProjectChange={(project) => setSelectedProjectId(project?.id ?? null)}
+          onCreateProject={handleCreateProject}
+        />
 
         {loadingProjects ? (
           <Box className={styles.emptyState}>Carregando projetos...</Box>
@@ -519,6 +569,23 @@ export default function Projetos() {
           </Box>
         )}
       </Box>
+
+      <Dialog
+        open={createProjectModalOpen}
+        onClose={() => setCreateProjectModalOpen(false)}
+        fullWidth
+        maxWidth="xs"
+      >
+        <DialogTitle>Novo projeto</DialogTitle>
+        <DialogContent>
+          Solicite ao administrador a criacao de um novo projeto.
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setCreateProjectModalOpen(false)} autoFocus>
+            Entendi
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
