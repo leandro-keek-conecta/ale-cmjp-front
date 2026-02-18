@@ -4,7 +4,7 @@ import { createTheme } from "@mui/material/styles";
 export const defaultTheme = createTheme({
   palette: {
     primary: {
-      main: "#FF7A01", // Cor padrão (verde keekInteligencia)
+      main: "#5070dd",
       light: "#5ba55e",
       dark: "#5070dd",
       contrastText: "#ffffff",

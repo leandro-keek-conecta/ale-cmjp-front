@@ -7,6 +7,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Drawer,
   IconButton,
   Toolbar,
   styled,
@@ -202,6 +203,13 @@ const normalizeThemeKey = (value: string) =>
     .toLowerCase()
     .trim();
 
+const normalizeSearch = (value: string) =>
+  value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+
 const toTitleCase = (value: string) =>
   value
     .split(" ")
@@ -270,6 +278,8 @@ export default function Projetos() {
   const [selectedProjectId, setSelectedProjectId] = useState<number | null>(
     null,
   );
+  const [searchTerm, setSearchTerm] = useState("");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [createProjectModalOpen, setCreateProjectModalOpen] = useState(false);
   const isSuperAdmin = user?.role === "SUPERADMIN";
 
@@ -414,18 +424,30 @@ export default function Projetos() {
     }
 
     const exists = projects.some((project) => project.id === selectedProjectId);
-    if (!exists) {
-      setSelectedProjectId(projects[0].id);
+    if (!exists && selectedProjectId !== null) {
+      setSelectedProjectId(null);
     }
   }, [projects, selectedProjectId]);
 
   const selectedProject = useMemo(
-    () =>
-      projects.find((project) => project.id === selectedProjectId) ??
-      projects[0] ??
-      null,
+    () => projects.find((project) => project.id === selectedProjectId) ?? null,
     [projects, selectedProjectId],
   );
+
+  const normalizedSearchTerm = useMemo(
+    () => normalizeSearch(searchTerm),
+    [searchTerm],
+  );
+
+  const filteredProjects = useMemo(() => {
+    if (normalizedSearchTerm.length < 3) {
+      return projects;
+    }
+
+    return projects.filter((project) =>
+      normalizeSearch(project.name).includes(normalizedSearchTerm),
+    );
+  }, [normalizedSearchTerm, projects]);
 
   const handleSelectProject = useCallback(
     (project: ProjectCardData) => {
@@ -519,7 +541,9 @@ export default function Projetos() {
           <IconButton
             edge="start"
             color="inherit"
+            onClick={() => setMobileMenuOpen(true)}
             sx={{ display: { xs: "block", md: "none" } }}
+            aria-label="Abrir menu"
           >
             <Menu />
           </IconButton>
@@ -543,15 +567,17 @@ export default function Projetos() {
         <SearchProjects
           projects={projects}
           selectedProject={selectedProject}
+          searchTerm={searchTerm}
           onProjectChange={(project) => setSelectedProjectId(project?.id ?? null)}
+          onSearchTermChange={setSearchTerm}
           onCreateProject={handleCreateProject}
         />
 
         {loadingProjects ? (
           <Box className={styles.emptyState}>Carregando projetos...</Box>
-        ) : projects.length ? (
+        ) : filteredProjects.length ? (
           <Box className={styles.grid}>
-            {projects.map((project) => (
+            {filteredProjects.map((project) => (
               <CardProject
                 key={project.id}
                 title={project.name}
@@ -565,10 +591,44 @@ export default function Projetos() {
           </Box>
         ) : (
           <Box className={styles.emptyState}>
-            Nenhum projeto disponivel para este usuario.
+            {normalizedSearchTerm.length >= 3
+              ? "Nenhum projeto encontrado para a busca."
+              : "Nenhum projeto disponivel para este usuario."}
           </Box>
         )}
       </Box>
+
+      <Drawer
+        anchor="left"
+        open={mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
+        sx={{ display: { xs: "block", md: "none" } }}
+      >
+        <Box sx={{ width: "75vw", maxWidth: 320, p: 1 }}>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 0.4 }}>
+            {menuOptions.map((option) => (
+              <Button
+                key={option.label}
+                startIcon={option.icone}
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  option.onClick();
+                }}
+                sx={{
+                  justifyContent: "flex-start",
+                  textTransform: "none",
+                  color: "#1f2937",
+                  fontWeight: 600,
+                  px: 1.2,
+                  py: 1,
+                }}
+              >
+                {option.label}
+              </Button>
+            ))}
+          </Box>
+        </Box>
+      </Drawer>
 
       <Dialog
         open={createProjectModalOpen}

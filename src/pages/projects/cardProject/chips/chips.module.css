@@ -38,6 +38,10 @@
   font-size: 0.8rem;
   font-weight: 700;
   color: #0f6ccd;
+  max-width: 6.4rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .value {

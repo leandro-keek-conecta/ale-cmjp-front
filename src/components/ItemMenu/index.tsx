@@ -23,7 +23,7 @@ export function ItemMenu({
   isActive = false,
 }: ItemMenuProps) {
   const theme = useTheme();
-  const color = "#ff7a01";
+  const color = "#2d80cf";
 
   const isPlaceholder = !para || para === "#";
   const menuItemClassName = `${styles.menuItem} ${
