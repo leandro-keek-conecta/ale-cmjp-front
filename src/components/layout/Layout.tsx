@@ -1,21 +1,13 @@
 import { useState } from "react";
 import { styled } from "@mui/material/styles";
-import LogoutIcon from "@mui/icons-material/Logout";
 import Logo from "../../assets/logo-horizontal-n.png";
 import icone from "../../assets/Keek-Icone.png";
-import ChatIcon from "@mui/icons-material/Chat";
 import { Box, Drawer, IconButton, Toolbar, Typography } from "@mui/material";
 import { ChevronLeft, Menu } from "@mui/icons-material";
 import { Sidebar } from "../sidebar/Sidebar";
-import SplitButton from "../SplitButton";
-import { useNavigate } from "react-router-dom";
-import { logout } from "../../services/auth/authService";
-import FolderSharedIcon from "@mui/icons-material/FolderShared";
-import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
-import AddBusinessIcon from "@mui/icons-material/AddBusiness";
 import { defaultTheme } from "../../theme";
 import { getActiveProject } from "../../utils/project";
-import CabecalhoEstilizado from "../CabecalhoEstilizado";
+import CabecalhoEstilizado, { CabecalhoMenuUsuario } from "../CabecalhoEstilizado";
 // Interface para propriedades do componente Layout
 interface PropriedadesLayout {
   children: React.ReactNode;
@@ -40,7 +32,6 @@ export function Layout({
 }: PropriedadesLayout) {
   const APPBAR_H = "3rem";
   const contentMinHeight = `calc(100vh - ${APPBAR_H})`;
-  const navigate = useNavigate();
   const [barraLateralAberta, setBarraLateralAberta] = useState(true);
   const [menuMobileAberto, setMenuMobileAberto] = useState(false);
   const userString = localStorage.getItem("user");
@@ -56,18 +47,6 @@ export function Layout({
 
   const activeProject = getActiveProject(user);
   const color = defaultTheme.palette.primary.main;
-  const isAdminOrMore = user?.role === "ADMIN" || user?.role === "SUPERADMIN";
-  const userName =
-    typeof user?.name === "string" && user.name.trim().length
-      ? user.name
-      : "Usuario";
-  const userInitials = userName.trim()
-    ? userName.trim().slice(0, 2).toUpperCase()
-    : "??";
-  const userPhoto =
-    typeof user?.photoUrl === "string" && user.photoUrl.trim().length
-      ? user.photoUrl
-      : undefined;
   const projectLogo =
     typeof activeProject?.url === "string" && activeProject.url.trim().length
       ? activeProject.url
@@ -318,60 +297,7 @@ export function Layout({
               </Box>
             )}
 
-            {isAdminOrMore ? (
-              <SplitButton
-                avatar={{ fallback: userInitials, alt: userName }}
-                options={[
-                  {
-                    label: "Todos os projetos",
-                    icone: <FolderSharedIcon />,
-                    onClick: () => navigate("/projetos"),
-                  },
-                  {
-                    label: "Cadastro de Usuário",
-                    icone: <PersonAddAlt1Icon />,
-                    onClick: () => navigate("/cadastro-usuario"),
-                  },
-                  {
-                    label: "Cadastro de projeto",
-                    icone: <AddBusinessIcon />,
-                    onClick: () => navigate("/cadastro-projeto"),
-                  },
-                  {
-                    label: "Cadastro de automações",
-                    icone: <ChatIcon />,
-                    onClick: () => navigate("/cadastro-automacoes"),
-                  },
-                  {
-                    label: "Sair",
-                    icone: <LogoutIcon />,
-                    onClick: () => {
-                      logout();
-                      navigate("/");
-                    },
-                  },
-                ]}
-              />
-            ) : (
-              <SplitButton
-                avatar={{ src: userPhoto, fallback: userInitials, alt: userName }}
-                options={[
-                  {
-                    label: "Todos os projetos",
-                    icone: <FolderSharedIcon />,
-                    onClick: () => navigate("/projetos"),
-                  },
-                  {
-                    label: "Sair",
-                    icone: <LogoutIcon />,
-                    onClick: () => {
-                      logout();
-                      navigate("/");
-                    },
-                  },
-                ]}
-              />
-            )}
+            <CabecalhoMenuUsuario menuMode="withProjects" />
           </Toolbar>
         </CabecalhoEstilizado>
         <Box
@@ -419,3 +345,4 @@ export function Layout({
     </Box>
   );
 }
+
