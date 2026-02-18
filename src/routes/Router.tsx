@@ -12,6 +12,7 @@ import RegisterUser from "@/pages/registerUser/RegisterUser";
 import RegisterProject from "@/pages/registerProject/RegisterProject";
 import ProjetoThemeTab from "@/pages/ProjetoThemeTab/ProjetoThemeTab";
 import Projetos from "@/pages/projects/Projetos";
+import FormConstructor from "@/pages/formConstructor/FormConstructor";
 
 const RoutesConfig = () => (
   <AuthProvider>
@@ -22,6 +23,7 @@ const RoutesConfig = () => (
       <Route path="/cadastro-projeto" element={<ProtectedRoute allowedRoles={["USER", "ADMIN", "SUPERADMIN"]}><RegisterProject /></ProtectedRoute>} />
       <Route path="/cadastro-thema" element={<ProtectedRoute allowedRoles={["USER", "ADMIN", "SUPERADMIN"]}><ProjetoThemeTab /></ProtectedRoute>} />
       <Route path="/projetos" element={<ProtectedRoute allowedRoles={["USER", "ADMIN", "SUPERADMIN"]}><Projetos /></ProtectedRoute>} />
+      <Route path="/forms-constructor" element={<ProtectedRoute allowedRoles={["USER", "ADMIN", "SUPERADMIN"]}><FormConstructor /></ProtectedRoute>} />
       <Route path="/dashboards/embed/:id" element={<EmbedDashboardPage />} />
       <Route path="/form-page" element={<FormsPage />} />
       <Route path="/form/:project/:slug" element={<DinamicFormsPage />} />

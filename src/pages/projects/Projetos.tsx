@@ -1,16 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  AppBar,
   Box,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  Drawer,
   IconButton,
   Toolbar,
-  styled,
 } from "@mui/material";
 import { Menu } from "@mui/icons-material";
 import LogoutIcon from "@mui/icons-material/Logout";
@@ -32,6 +29,7 @@ import { isProjetoAccessLevel } from "@/utils/projectSelection";
 import { listAllProjects } from "@/services/projeto/ProjetoService";
 import type { ThemeChipDatum } from "./cardProject/chips";
 import SearchProjects from "./searchOfProjects";
+import CabecalhoEstilizado from "@/components/CabecalhoEstilizado";
 
 export type ProjectCardData = {
   id: number;
@@ -262,13 +260,6 @@ const normalizeThemeMetrics = (value: unknown): ThemeChipDatum[] => {
     .slice(0, 5);
 };
 
-const CabecalhoEstilizado = styled(AppBar)(({ theme }) => ({
-  backgroundColor: "white",
-  color: "#333333",
-  boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-  zIndex: theme.zIndex.drawer + 1,
-}));
-
 export default function Projetos() {
   const { user, setUser } = useAuth();
   const { selectProject, resetProject } = useProjectSelection();
@@ -279,7 +270,6 @@ export default function Projetos() {
     null,
   );
   const [searchTerm, setSearchTerm] = useState("");
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [createProjectModalOpen, setCreateProjectModalOpen] = useState(false);
   const isSuperAdmin = user?.role === "SUPERADMIN";
 
@@ -541,9 +531,7 @@ export default function Projetos() {
           <IconButton
             edge="start"
             color="inherit"
-            onClick={() => setMobileMenuOpen(true)}
             sx={{ display: { xs: "block", md: "none" } }}
-            aria-label="Abrir menu"
           >
             <Menu />
           </IconButton>
@@ -597,38 +585,6 @@ export default function Projetos() {
           </Box>
         )}
       </Box>
-
-      <Drawer
-        anchor="left"
-        open={mobileMenuOpen}
-        onClose={() => setMobileMenuOpen(false)}
-        sx={{ display: { xs: "block", md: "none" } }}
-      >
-        <Box sx={{ width: "75vw", maxWidth: 320, p: 1 }}>
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 0.4 }}>
-            {menuOptions.map((option) => (
-              <Button
-                key={option.label}
-                startIcon={option.icone}
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  option.onClick();
-                }}
-                sx={{
-                  justifyContent: "flex-start",
-                  textTransform: "none",
-                  color: "#1f2937",
-                  fontWeight: 600,
-                  px: 1.2,
-                  py: 1,
-                }}
-              >
-                {option.label}
-              </Button>
-            ))}
-          </Box>
-        </Box>
-      </Drawer>
 
       <Dialog
         open={createProjectModalOpen}

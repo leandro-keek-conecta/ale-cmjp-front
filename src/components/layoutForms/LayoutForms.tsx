@@ -32,7 +32,7 @@ const BarraLateralEstilizada = styled(Box)(() => ({
   height: "100%",
 }));
 
-export function Layout({
+export function LayoutForms({
   children,
   titulo,
   mostrarSidebar = true,
