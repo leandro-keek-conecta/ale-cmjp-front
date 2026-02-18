@@ -1,22 +1,20 @@
 import { Fragment } from "react";
 import styles from "./sidebar.module.css";
-import EditDocumentIcon from '@mui/icons-material/EditDocument';
+import EditDocumentIcon from "@mui/icons-material/EditDocument";
 import { useLocation } from "react-router-dom";
 import { ItemMenu } from "../ItemMenu";
-import PageviewIcon from '@mui/icons-material/Pageview';
-import AssessmentIcon from '@mui/icons-material/Assessment';
+import PageviewIcon from "@mui/icons-material/Pageview";
+import AssessmentIcon from "@mui/icons-material/Assessment";
+
 interface PropriedadesSidebar {
   estaAberta: boolean;
   isMobile?: boolean;
   aoFechar?: () => void;
-  // opcional: se a página pai souber que NÃO há dashboard, pode passar true aqui e pulamos o skeleton
   noDashboard?: boolean;
 }
 
-export function Sidebar({ estaAberta }: PropriedadesSidebar) {
+export function Sidebar({ estaAberta, aoFechar }: PropriedadesSidebar) {
   const location = useLocation();
-
-  // se não houver reportInstance e também não vieram páginas após um tempo, ativa fallbac
 
   const isActive = (path: string) => {
     if (path === "/") return location.pathname === "/";
@@ -32,17 +30,19 @@ export function Sidebar({ estaAberta }: PropriedadesSidebar) {
           <ItemMenu rotulo="Menu" isTitle estaAberta={estaAberta} />
           <ItemMenu
             icone={<PageviewIcon />}
-            rotulo="Visão geral"
+            rotulo="Visao geral"
             para="/panorama"
             estaAberta={estaAberta}
             isActive={isActive("/panorama")}
+            onClick={aoFechar}
           />
           <ItemMenu
             icone={<AssessmentIcon />}
-            rotulo="⁠Relatórios"
+            rotulo="Relatorios"
             para="/relatorio"
             estaAberta={estaAberta}
             isActive={isActive("/relatorio")}
+            onClick={aoFechar}
           />
           <ItemMenu
             icone={<EditDocumentIcon />}
@@ -50,6 +50,7 @@ export function Sidebar({ estaAberta }: PropriedadesSidebar) {
             para="/cadastro-thema"
             estaAberta={estaAberta}
             isActive={isActive("/cadastro-thema")}
+            onClick={aoFechar}
           />
         </Fragment>
       </ul>

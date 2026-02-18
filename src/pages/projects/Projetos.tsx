@@ -7,6 +7,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Drawer,
   IconButton,
   Toolbar,
   styled,
@@ -278,6 +279,7 @@ export default function Projetos() {
     null,
   );
   const [searchTerm, setSearchTerm] = useState("");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [createProjectModalOpen, setCreateProjectModalOpen] = useState(false);
   const isSuperAdmin = user?.role === "SUPERADMIN";
 
@@ -539,7 +541,9 @@ export default function Projetos() {
           <IconButton
             edge="start"
             color="inherit"
+            onClick={() => setMobileMenuOpen(true)}
             sx={{ display: { xs: "block", md: "none" } }}
+            aria-label="Abrir menu"
           >
             <Menu />
           </IconButton>
@@ -593,6 +597,38 @@ export default function Projetos() {
           </Box>
         )}
       </Box>
+
+      <Drawer
+        anchor="left"
+        open={mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
+        sx={{ display: { xs: "block", md: "none" } }}
+      >
+        <Box sx={{ width: "75vw", maxWidth: 320, p: 1 }}>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 0.4 }}>
+            {menuOptions.map((option) => (
+              <Button
+                key={option.label}
+                startIcon={option.icone}
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  option.onClick();
+                }}
+                sx={{
+                  justifyContent: "flex-start",
+                  textTransform: "none",
+                  color: "#1f2937",
+                  fontWeight: 600,
+                  px: 1.2,
+                  py: 1,
+                }}
+              >
+                {option.label}
+              </Button>
+            ))}
+          </Box>
+        </Box>
+      </Drawer>
 
       <Dialog
         open={createProjectModalOpen}

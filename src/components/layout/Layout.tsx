@@ -12,7 +12,7 @@ import {
   Toolbar,
   Typography,
 } from "@mui/material";
-import { ChevronLeft } from "@mui/icons-material";
+import { ChevronLeft, Menu } from "@mui/icons-material";
 import { Sidebar } from "../sidebar/Sidebar";
 import SplitButton from "../SplitButton";
 import { useNavigate } from "react-router-dom";
@@ -21,7 +21,7 @@ import FolderSharedIcon from "@mui/icons-material/FolderShared";
 import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
 import AddBusinessIcon from "@mui/icons-material/AddBusiness";
 import { defaultTheme } from "../../theme";
-import { ensureThemeColor, getActiveProject } from "../../utils/project";
+import { getActiveProject } from "../../utils/project";
 // Interface para propriedades do componente Layout
 interface PropriedadesLayout {
   children: React.ReactNode;
@@ -68,10 +68,7 @@ export function Layout({
   }
 
   const activeProject = getActiveProject(user);
-  const color = ensureThemeColor(
-    activeProject?.corHex,
-    defaultTheme.palette.primary.main
-  );
+  const color = defaultTheme.palette.primary.main;
   const isAdminOrMore = user?.role === "ADMIN" || user?.role === "SUPERADMIN";
   const userName =
     typeof user?.name === "string" && user.name.trim().length
@@ -284,7 +281,18 @@ export function Layout({
             justifyContent: "center",
           }}
         >
-          <Toolbar sx={{ display: "flex", alignItems: "center" }}>
+          <Toolbar sx={{ display: "flex", alignItems: "center", width: "100%" }}>
+            <IconButton
+              color="inherit"
+              onClick={() => setMenuMobileAberto(true)}
+              sx={{
+                display: { xs: "inline-flex", md: "none" },
+                mr: 1,
+              }}
+              aria-label="Abrir menu"
+            >
+              <Menu />
+            </IconButton>
             {titulo && (
               <Box
                 sx={{
