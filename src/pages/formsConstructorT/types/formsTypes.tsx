@@ -72,7 +72,7 @@ export const FIELD_OPTIONS: FieldOption[] = [
   { id: "text", label: "Texto" },
   { id: "number", label: "Numero" },
   { id: "email", label: "E-mail" },
-  { id: "Select", label: "Selecao" },
+  { id: "Select", label: "Lista de Opções" },
   { id: "inputFile", label: "Arquivo" },
   { id: "textarea", label: "Area de texto" },
   { id: "switch", label: "Switch" },

@@ -10,7 +10,7 @@
 }
 
 .bodyContentWithPreview {
-  grid-template-columns: minmax(0, 3fr) minmax(0, 6fr) minmax(0, 6fr);
+  grid-template-columns: auto minmax(0, 6fr) minmax(0, 6fr);
 }
 
 .leftContent {
@@ -54,4 +54,17 @@
   box-shadow: rgba(0, 0, 0, 0.08) 0px 20px 24px 0px;
   overflow: hidden;
   padding: 1rem;
+}
+
+.previewToggleContent {
+  margin: 2rem 2rem 2rem 1rem;
+  display: flex;
+  align-items: flex-start;
+}
+
+.previewBackButton {
+  font-size: 0.8rem !important;
+  padding: 0.4rem 0.8rem !important;
+  background-color: #5070dd;
+  white-space: nowrap;
 }

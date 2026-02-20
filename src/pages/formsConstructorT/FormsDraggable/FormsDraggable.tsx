@@ -44,7 +44,7 @@ const FIELD_TYPE_LABELS: Record<FieldType, string> = {
   text: "Texto",
   number: "Numero",
   email: "E-mail",
-  Select: "Selecao",
+  Select: "Lista de Opções",
   inputFile: "Arquivo",
   textarea: "Area de texto",
   switch: "Switch",
@@ -54,7 +54,7 @@ const FIELD_APPEARANCE: Record<FieldType, string> = {
   text: "Exemplo de campo de texto",
   number: "Exemplo de campo numerico",
   email: "Exemplo de campo de e-mail",
-  Select: "Exemplo de campo de selecao",
+  Select: "Exemplo de campo de lista de opções",
   inputFile: "Exemplo de upload de arquivo",
   textarea: "Exemplo de area de texto",
   switch: "Exemplo de chave liga/desliga",
@@ -95,7 +95,7 @@ export function FormsDraggable({
   formSchema,
 }: FormsDraggableProps) {
   const [editingField, setEditingField] = useState<BuilderField | null>(null);
-  const [expanded, setExpanded] = useState(false)
+  const [expanded, setExpanded] = useState(false);
   const [draftLabel, setDraftLabel] = useState("");
   const [draftPlaceholder, setDraftPlaceholder] = useState("");
   const [draftRequired, setDraftRequired] = useState(false);
@@ -484,19 +484,15 @@ export function FormsDraggable({
         </Box>
       )}
       <ExpandableCard
-        title="Cadastro de Projetos"
+        title="JSON do formulario"
         expanded={expanded}
         onToggle={(next) => setExpanded(next)}
         className={styles.card}
       >
-      <Box className={styles.schemaPanel}>
-        <Typography className={styles.schemaTitle}>
-          JSON do formulario
-        </Typography>
+        {" "}
         <pre className={styles.schemaCode}>
           {JSON.stringify(formSchema, null, 2)}
         </pre>
-      </Box>
       </ExpandableCard>
 
       <Dialog

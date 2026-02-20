@@ -1,0 +1,19 @@
+.container {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.title {
+  font-size: 1.2rem !important;
+  font-weight: 700 !important;
+  color: #1f2440;
+  width: 100%;
+  text-align: center;
+  padding: 1rem;
+}
+
+.description {
+  font-size: 0.9rem !important;
+  color: #5c647f;
+}

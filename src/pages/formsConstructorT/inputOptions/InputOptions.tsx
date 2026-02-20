@@ -7,12 +7,23 @@ import { Draggable } from "@/components/Draggable/Draggable";
 import SelectButton from "@/components/selectButtom";
 import { useEffect, useState } from "react";
 import { listForms } from "@/services/forms/formsService";
+import Button from "@/components/Button";
+
+export type FormOptionItem = {
+  id?: number | string;
+  name?: string;
+  [key: string]: unknown;
+};
+
+type PrimitiveSelectValue = string | number | boolean;
 
 type InputOptionsProps = {
   titleForm: string;
   setTitleForm: (value: string) => void;
   descriptionForm: string;
   setDescriptionForm: (value: string) => void;
+  onTogglePreview: () => void;
+  onSelectForm: (form: FormOptionItem | null) => void;
 };
 
 export default function InputOptions({
@@ -20,21 +31,41 @@ export default function InputOptions({
   setTitleForm,
   descriptionForm,
   setDescriptionForm,
+  onTogglePreview,
+  onSelectForm,
 }: InputOptionsProps) {
-  const [formsOptions, setFormsOptions] = useState([]);
+  const [formsOptions, setFormsOptions] = useState<FormOptionItem[]>([]);
   const [selectedFormId, setSelectedFormId] = useState<number | null>(null);
 
-  const selectOptions = formsOptions.map((form: any) => ({
-    label: form.name,
-    value: form.id,
-  }));
+  const selectOptions = formsOptions
+    .map((form) => {
+      const label = typeof form.name === "string" ? form.name.trim() : "";
+      const value = form.id;
+      if (
+        !label ||
+        !(
+          typeof value === "string" ||
+          typeof value === "number" ||
+          typeof value === "boolean"
+        )
+      ) {
+        return null;
+      }
+      return {
+        label,
+        value: value as PrimitiveSelectValue,
+      };
+    })
+    .filter((option): option is { label: string; value: PrimitiveSelectValue } =>
+      Boolean(option),
+    );
+
   async function fetchOptions() {
     try {
-      const reponse: any = await listForms("ale-cmjp");
-
-      return setFormsOptions(reponse);
+      const response = await listForms("ale-cmjp");
+      setFormsOptions(response as FormOptionItem[]);
     } catch (error) {
-      console.log("Erro");
+      console.log("Erro ao carregar formularios", error);
     }
   }
 
@@ -42,17 +73,41 @@ export default function InputOptions({
     void fetchOptions();
   }, []);
 
+  const handleSelectForm = (value: number | string | null) => {
+
+    if (value === null || value === undefined || value === "") {
+      setSelectedFormId(null);
+      onSelectForm(null);
+      return;
+    }
+
+    const normalizedId = Number(value);
+    if (!Number.isFinite(normalizedId)) {
+      setSelectedFormId(null);
+      onSelectForm(null);
+      return;
+    }
+
+    setSelectedFormId(normalizedId);
+    const selected =
+      formsOptions.find((form) => Number(form.id) === normalizedId) ?? null;
+    onSelectForm(selected);
+  };
+
   return (
     <Box className={styles.containerBoxInputs}>
-      <Typography className={styles.tu}>Informacoes padrao do Forms</Typography>
+      <Box className={styles.headerRow}>
+        <Typography className={styles.tu}>Informacoes padrao do Forms</Typography>
+        <Button onClick={onTogglePreview} className={styles.previewButton}>
+          Preview
+        </Button>
+      </Box>
       <SelectButton
-        label="Formulários do projeto"
+        label="Formularios do projeto"
         options={selectOptions}
         value={selectedFormId}
-        onChange={(value) => setSelectedFormId(value as number | null)}
+        onChange={(value) => handleSelectForm(value as number | string | null)}
       />
-
-      <Typography className={styles.tu}>Informacoes padrao do Forms</Typography>
       <Box className={styles.formInfo}>
         <Box>
           <InputText

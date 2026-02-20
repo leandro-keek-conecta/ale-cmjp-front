@@ -11,10 +11,12 @@
 .header {
   display: grid;
   gap: 4px;
+  width: 100%;
+  text-align: center;
 }
 
 .title {
-  font-size: 1.25rem;
+  font-size: 1.2rem !important;
   font-weight: 700 !important;
   color: #0f172a;
 }
@@ -89,7 +91,7 @@
 }
 
 .fieldCard {
-  border: 1px solid #d7e2f1;
+  border: 1px solid #5070dd;
   border-radius: 12px;
   background: #ffffff;
   padding: 12px;

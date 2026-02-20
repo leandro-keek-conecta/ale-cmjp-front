@@ -2,7 +2,7 @@ import { Box } from "@mui/material";
 import styles from "./form.module.css";
 import CabecalhoEstilizado from "@/components/CabecalhoEstilizado";
 import { useMemo, useState } from "react";
-import InputOptions from "./inputOptions/InputOptions";
+import InputOptions, { type FormOptionItem } from "./inputOptions/InputOptions";
 import Button from "@/components/Button";
 import {
   createBuilderField,
@@ -15,6 +15,278 @@ import {
 } from "./types/formsTypes";
 import { FormsDraggable } from "./FormsDraggable/FormsDraggable";
 import { DragDropProvider } from "@dnd-kit/react";
+import FormPreview from "./FormsPreview/FormPreview";
+import getForms from "@/services/forms/formsService";
+
+const DEFAULT_PROJECT_SLUG = "ale-cmjp";
+
+function generateImportedFieldId(index: number) {
+  return `imported-${Date.now()}-${index}-${Math.random().toString(16).slice(2, 6)}`;
+}
+
+function toTrimmedString(value: unknown) {
+  if (typeof value !== "string") return "";
+  return value.trim();
+}
+
+function toOptionalNumber(value: unknown) {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+  if (typeof value === "string" && value.trim()) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : undefined;
+  }
+  return undefined;
+}
+
+function normalizeImportedType(field: Record<string, unknown>): FieldType {
+  const rawType = toTrimmedString(field.type).toLowerCase();
+
+  if (rawType === "number") return "number";
+  if (rawType === "email") return "email";
+  if (rawType === "textarea") return "textarea";
+  if (rawType === "switch" || rawType === "boolean") return "switch";
+  if (rawType === "inputfile" || rawType === "file") return "inputFile";
+
+  const options = field.options as Record<string, unknown> | undefined;
+  const hasSelectItems = Array.isArray(options?.items);
+  const hasSelectOptions = Array.isArray(options?.selectOptions);
+  if (rawType === "select" || hasSelectItems || hasSelectOptions) {
+    return "Select";
+  }
+
+  return "text";
+}
+
+function normalizeSelectItems(
+  field: Record<string, unknown>,
+  schemaRule?: Record<string, unknown>,
+) {
+  const options = field.options as Record<string, unknown> | undefined;
+  const schemaOptions = schemaRule?.options as Record<string, unknown> | undefined;
+  const rawItems = Array.isArray(options?.items)
+    ? options.items
+    : Array.isArray(options?.selectOptions)
+      ? options.selectOptions
+      : Array.isArray(schemaOptions?.items)
+        ? schemaOptions.items
+        : Array.isArray(schemaOptions?.selectOptions)
+          ? schemaOptions.selectOptions
+          : [];
+
+  return rawItems
+    .map((item) => {
+      if (typeof item === "string") return item.trim();
+      if (item && typeof item === "object") {
+        const value = (item as Record<string, unknown>).label ??
+          (item as Record<string, unknown>).value;
+        return toTrimmedString(value);
+      }
+      return "";
+    })
+    .filter(Boolean);
+}
+
+function mapImportedField(
+  field: Record<string, unknown>,
+  index: number,
+  schemaRule?: Record<string, unknown>,
+): BuilderField {
+  const fieldWithSchema: Record<string, unknown> = {
+    ...schemaRule,
+    ...field,
+  };
+  const fieldType = normalizeImportedType(fieldWithSchema);
+  const rawName = toTrimmedString(field.name);
+  const rawLabel = toTrimmedString(field.label);
+  const fallbackLabel = rawName || `Campo ${index + 1}`;
+
+  const options = field.options as Record<string, unknown> | undefined;
+  const schemaOptions = schemaRule?.options as Record<string, unknown> | undefined;
+
+  return {
+    id:
+      toTrimmedString(field.id) ||
+      toTrimmedString(field.name) ||
+      generateImportedFieldId(index),
+    name: rawName || `campo_${index + 1}`,
+    label: rawLabel || fallbackLabel,
+    type: fieldType,
+    required: Boolean(field.required ?? schemaRule?.required),
+    placeholder: toTrimmedString(field.placeholder) || undefined,
+    helpText:
+      toTrimmedString(field.helpText) ||
+      toTrimmedString(schemaRule?.helpText) ||
+      undefined,
+    helpStyle:
+      field.helpStyle === "highlight" || field.helpStyle === "default"
+        ? field.helpStyle
+        : schemaRule?.helpStyle === "highlight" || schemaRule?.helpStyle === "default"
+          ? (schemaRule.helpStyle as "default" | "highlight")
+          : "default",
+    min: toOptionalNumber(field.min ?? schemaRule?.min),
+    max: toOptionalNumber(field.max ?? schemaRule?.max),
+    rows: toOptionalNumber(field.rows ?? schemaRule?.rows),
+    options:
+      fieldType === "Select"
+        ? { items: normalizeSelectItems(field, schemaRule) }
+        : fieldType === "switch"
+          ? {
+              onLabel:
+                toTrimmedString(options?.onLabel) ||
+                toTrimmedString(schemaOptions?.onLabel) ||
+                "Ligado",
+              offLabel:
+                toTrimmedString(options?.offLabel) ||
+                toTrimmedString(schemaOptions?.offLabel) ||
+                "Desligado",
+              defaultOn: Boolean(options?.defaultOn ?? schemaOptions?.defaultOn),
+            }
+          : undefined,
+  };
+}
+
+function chunkFields(fields: BuilderField[], size = 3): BuilderFieldRow[] {
+  if (!fields.length) return [];
+  const chunks: BuilderFieldRow[] = [];
+  for (let index = 0; index < fields.length; index += size) {
+    chunks.push(fields.slice(index, index + size));
+  }
+  return chunks;
+}
+
+function mapImportedFieldsToRows(
+  importedFields: Record<string, unknown>[],
+  blocks: Record<string, unknown>[],
+  schemaRulesByName: Record<string, Record<string, unknown>>,
+): BuilderFieldRow[] {
+  const mappedFields = importedFields.map((field, index) => ({
+    builder: mapImportedField(
+      field,
+      index,
+      schemaRulesByName[toTrimmedString(field.name)],
+    ),
+    row: toOptionalNumber((field.layout as Record<string, unknown> | undefined)?.row),
+    column: toOptionalNumber((field.layout as Record<string, unknown> | undefined)?.column),
+    ordem: toOptionalNumber(field.ordem) ?? index + 1,
+  }));
+
+  const fieldsWithLayout = mappedFields.filter(
+    (field) => typeof field.row === "number",
+  );
+  if (fieldsWithLayout.length) {
+    const groupedByRow = new Map<number, typeof mappedFields>();
+    fieldsWithLayout
+      .sort((a, b) => {
+        const rowA = a.row ?? 0;
+        const rowB = b.row ?? 0;
+        if (rowA !== rowB) return rowA - rowB;
+        return (a.column ?? 0) - (b.column ?? 0);
+      })
+      .forEach((field) => {
+        const row = field.row ?? 1;
+        const current = groupedByRow.get(row) ?? [];
+        groupedByRow.set(row, [...current, field]);
+      });
+
+    const orderedRows = Array.from(groupedByRow.entries())
+      .sort((a, b) => a[0] - b[0])
+      .map(([, rowFields]) => rowFields.map((field) => field.builder));
+
+    const noLayoutFields = mappedFields
+      .filter((field) => typeof field.row !== "number")
+      .sort((a, b) => a.ordem - b.ordem)
+      .map((field) => field.builder);
+
+    return [...orderedRows, ...chunkFields(noLayoutFields)];
+  }
+
+  if (blocks.length) {
+    const fieldMap = new Map(mappedFields.map((field) => [field.builder.name, field.builder]));
+    const usedNames = new Set<string>();
+    const rowsFromBlocks: BuilderFieldRow[] = [];
+
+    blocks.forEach((block) => {
+      const names = Array.isArray(block.fields) ? block.fields : [];
+      const resolvedRow = names
+        .map((name) => {
+          if (typeof name !== "string") return null;
+          const field = fieldMap.get(name);
+          if (!field) return null;
+          usedNames.add(name);
+          return field;
+        })
+        .filter((field): field is BuilderField => Boolean(field));
+
+      if (resolvedRow.length) {
+        rowsFromBlocks.push(...chunkFields(resolvedRow));
+      }
+    });
+
+    const remaining = mappedFields
+      .filter((field) => !usedNames.has(field.builder.name))
+      .sort((a, b) => a.ordem - b.ordem)
+      .map((field) => field.builder);
+
+    return [...rowsFromBlocks, ...chunkFields(remaining)];
+  }
+
+  const ordered = mappedFields
+    .sort((a, b) => a.ordem - b.ordem)
+    .map((field) => field.builder);
+  return chunkFields(ordered);
+}
+
+function pickFirstText(...values: unknown[]) {
+  for (const value of values) {
+    const text = toTrimmedString(value);
+    if (text) return text;
+  }
+  return "";
+}
+
+function resolveFormSlug(form: FormOptionItem) {
+  return pickFirstText(
+    form.slug,
+    form.formSlug,
+    (form.form as Record<string, unknown> | undefined)?.slug,
+  );
+}
+
+function resolveProjectSlug(form: FormOptionItem) {
+  return (
+    pickFirstText(
+      form.projetoSlug,
+      form.projectSlug,
+      (form.projeto as Record<string, unknown> | undefined)?.slug,
+      (form.project as Record<string, unknown> | undefined)?.slug,
+    ) || DEFAULT_PROJECT_SLUG
+  );
+}
+
+function extractSchemaRulesByName(schema: Record<string, unknown>) {
+  return Object.entries(schema).reduce<Record<string, Record<string, unknown>>>(
+    (accumulator, [key, value]) => {
+      if (key === "blocks") return accumulator;
+      if (!value || typeof value !== "object") return accumulator;
+      accumulator[key] = value as Record<string, unknown>;
+      return accumulator;
+    },
+    {},
+  );
+}
+
+function resolveActiveVersion(form: FormOptionItem) {
+  if (form.activeVersion && typeof form.activeVersion === "object") {
+    return form.activeVersion as Record<string, unknown>;
+  }
+  const nestedForm = form.form as Record<string, unknown> | undefined;
+  if (nestedForm?.activeVersion && typeof nestedForm.activeVersion === "object") {
+    return nestedForm.activeVersion as Record<string, unknown>;
+  }
+  return null;
+}
 
 export default function ConstructorForm() {
   const [fieldRows, setFieldRows] = useState<BuilderFieldRow[]>([]);
@@ -130,6 +402,65 @@ export default function ConstructorForm() {
     });
   }
 
+  const handleSelectForm = async (selectedForm: FormOptionItem | null) => {
+    if (!selectedForm) {
+      return;
+    }
+
+    try {
+      let payload: Record<string, unknown> = selectedForm;
+      let activeVersion = resolveActiveVersion(selectedForm);
+
+      if (!activeVersion) {
+        const formSlug = resolveFormSlug(selectedForm);
+        if (!formSlug) {
+          console.warn("Formulario selecionado sem versao ativa e sem slug.");
+          return;
+        }
+        const projectSlug = resolveProjectSlug(selectedForm);
+        const response = await getForms(formSlug, projectSlug);
+        payload = (response?.data?.data ?? {}) as Record<string, unknown>;
+        activeVersion = (payload.activeVersion ??
+          null) as Record<string, unknown> | null;
+      }
+
+      if (!activeVersion) {
+        console.warn("Formulario sem versao ativa para edicao.");
+        return;
+      }
+
+      const schema =
+        (activeVersion.schema as Record<string, unknown> | undefined) ?? {};
+      const importedFields = Array.isArray(activeVersion.fields)
+        ? (activeVersion.fields as Record<string, unknown>[])
+        : [];
+      const blocks = Array.isArray(
+        schema.blocks,
+      )
+        ? (schema.blocks as Record<string, unknown>[])
+        : [];
+      const schemaRulesByName = extractSchemaRulesByName(schema);
+
+      setFieldRows(mapImportedFieldsToRows(importedFields, blocks, schemaRulesByName));
+
+      const loadedTitle = pickFirstText(
+        activeVersion.title,
+        payload.title,
+        payload.name,
+        selectedForm.name,
+      );
+      const loadedDescription = pickFirstText(
+        activeVersion.description,
+        payload.description,
+      );
+
+      setTitleForm(loadedTitle || "Titulo do Formulario");
+      setDescriptionForm(loadedDescription);
+    } catch (error) {
+      console.error("Erro ao carregar formulario selecionado", error);
+    }
+  };
+
   return (
     <Box className={styles.container}>
       <CabecalhoEstilizado
@@ -148,24 +479,29 @@ export default function ConstructorForm() {
             changeFormsDrop(event);
           }}
         >
-          <Box className={styles.leftContent}>
-            <Box className={styles.formContent}>
-              <InputOptions
-                titleForm={titleForm}
-                setTitleForm={setTitleForm}
-                descriptionForm={descriptionForm}
-                setDescriptionForm={setDescriptionForm}
-              />
-              <Box className={styles.buttomContent}>
-                <Button
-                  onClick={() => setPreview((prev) => !prev)}
-                  className={styles.buttom}
-                >
-                  {preview ? "Ocultar preview" : "Preview"}
-                </Button>
+          {preview ? (
+            <Box className={styles.previewToggleContent}>
+              <Button
+                className={styles.previewBackButton}
+                onClick={() => setPreview(false)}
+              >
+                Voltar
+              </Button>
+            </Box>
+          ) : (
+            <Box className={styles.leftContent}>
+              <Box className={styles.formContent}>
+                <InputOptions
+                  titleForm={titleForm}
+                  setTitleForm={setTitleForm}
+                  descriptionForm={descriptionForm}
+                  setDescriptionForm={setDescriptionForm}
+                  onTogglePreview={() => setPreview(true)}
+                  onSelectForm={handleSelectForm}
+                />
               </Box>
             </Box>
-          </Box>
+          )}
           <Box className={styles.hightContent}>
             <FormsDraggable
               rows={fieldRows}
@@ -178,7 +514,7 @@ export default function ConstructorForm() {
           </Box>
           {preview && (
             <Box className={styles.previewFormsContent}>
-              <div>Conteudo</div>
+              <FormPreview formSchema={formSchema} />
             </Box>
           )}
         </DragDropProvider>
