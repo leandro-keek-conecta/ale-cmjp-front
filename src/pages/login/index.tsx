@@ -102,7 +102,13 @@ export default function LoginPage() {
       }
 
       if (user.role === "ADMIN") {
-        navigate("/panorama");
+        navigate("/projetos");
+        return;
+      }
+
+      
+      if (user.role === "SUPERADMIN") {
+        navigate("/projetos");
         return;
       }
     

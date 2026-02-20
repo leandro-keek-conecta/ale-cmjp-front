@@ -1,0 +1,156 @@
+﻿.containerBoxInputs {
+  padding: 12px;
+  border-radius: 10px;
+  width: 100%;
+  display: grid;
+  gap: 12px;
+  max-height: calc(100vh - 5rem);
+  overflow: auto;
+}
+
+.section {
+  display: grid;
+  gap: 8px;
+}
+
+.formInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem ;
+}
+
+.tu {
+  font-size: 0.85rem;
+  font-weight: 700 !important;
+  color: #334155;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.sectionTitle {
+  font-size: 0.82rem;
+  font-weight: 700 !important;
+  color: #334155;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.subTitle {
+  font-size: 0.78rem;
+  font-weight: 700 !important;
+  color: #475569;
+}
+
+.fieldLabel {
+  font-size: 0.78rem;
+  color: #475569;
+  min-width: 120px;
+}
+
+.colorRow {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 8px;
+}
+
+.colorInput {
+  width: 34px;
+  height: 34px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.themePreview {
+  border: 1px solid;
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.chipsRow {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.listColumn {
+  display: grid;
+  gap: 8px;
+}
+
+.blockItem {
+  border: 1px solid #dbe4ef;
+  border-radius: 8px;
+  padding: 8px;
+  display: grid;
+  gap: 6px;
+}
+
+.blockLabel {
+  font-size: 0.8rem;
+  font-weight: 700 !important;
+  color: #1f2937;
+}
+
+.inlineButtons {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.optionRow {
+  display: grid;
+  gap: 6px;
+}
+
+.helperText {
+  font-size: 0.76rem;
+  color: #64748b;
+}
+
+.buttomOptions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  color: #111827;
+  font-family: "Inter", sans-serif;
+}
+
+.bottonsContent {
+  width: 100%;
+}
+
+.bottonsContent > button {
+  width: 100%;
+  display: block;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background-color: #5070dd;
+  color: #fff;
+  font-weight: 700;
+  transition: all 0.2s;
+}
+
+.menuItem:hover {
+  background-color: #6b88eb;
+}
+
+.label {
+  font-size: 0.85rem;
+  font-weight: 600;
+}

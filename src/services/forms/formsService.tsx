@@ -19,3 +19,9 @@ export async function createUSer(user: UserFormValues): Promise<Opinion[]> {
   const data = response?.data;
   return Array.isArray(data) ? data : []; // garante array mesmo quando a API não retornar lista
 }
+
+export async function listForms(slug: string) {
+  const response = await apiPublic.get(`/public/projetos/${slug}/forms`);
+  const data = response?.data?.data?.forms ?? response?.data?.forms;
+  return Array.isArray(data) ? data : [];
+}

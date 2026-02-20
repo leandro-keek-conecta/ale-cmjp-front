@@ -1,5 +1,5 @@
-import { Box, Typography } from "@mui/material";
-import InputTex from "../../../components/InputText";
+﻿import { Box, Typography } from "@mui/material";
+import InputText from "../../../components/InputText";
 import Button from "../../../components/Button";
 import styles from "./formLogin.module.css";
 import { useState } from "react";
@@ -29,7 +29,7 @@ export default function FormLogin() {
     const isEmailValid = validateEmail();
     const isPasswordValid = validatePassword();
     if (!isEmailValid) {
-      alert("Por favor, insira um email válido.");
+      alert("Por favor, insira um email vÃ¡lido.");
       return;
     }
     if (!isPasswordValid) {
@@ -39,14 +39,13 @@ export default function FormLogin() {
     alert("Login bem-sucedido!");
   }
 
-
   return (
     <Box component="form" className={styles.form} noValidate autoComplete="off">
       <Box className={styles.inputContainer}>
         <Typography variant="h5" gutterBottom className={styles.title}>
           Login
         </Typography>
-        <InputTex
+        <InputText
           label="Email"
           type="email"
           placeholder="Digite seu email"
@@ -54,7 +53,7 @@ export default function FormLogin() {
           onChange={handleEmailChange}
           className={styles.loginInput}
         />
-        <InputTex
+        <InputText
           label="Senha"
           type="password"
           placeholder="Digite sua senha"
@@ -68,7 +67,6 @@ export default function FormLogin() {
             color="primary"
             onClick={handleSubmit}
             className={styles.loginButton}
-            
           >
             Entrar
           </Button>

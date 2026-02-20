@@ -1,0 +1,165 @@
+.canvas {
+  display: grid;
+  gap: 16px;
+  background: #f8fafc;
+  min-height: calc(100vh - 5rem);
+  padding: 16px;
+  border-radius: 14px;
+  align-content: start;
+}
+
+.header {
+  display: grid;
+  gap: 4px;
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 700 !important;
+  color: #0f172a;
+}
+
+.description {
+  font-size: 0.92rem;
+  color: #475569;
+}
+
+.rowsContainer {
+  display: grid;
+  gap: 10px;
+}
+
+.rowWrapper {
+  display: grid;
+  gap: 8px;
+}
+
+.emptyState {
+  border: 2px dashed #bfdbfe;
+  border-radius: 12px;
+  padding: 24px;
+  background: #ffffff;
+  display: grid;
+  gap: 4px;
+}
+
+.emptyTitle {
+  font-size: 0.98rem;
+  font-weight: 700 !important;
+  color: #1e3a8a;
+}
+
+.emptyText {
+  font-size: 0.86rem;
+  color: #475569;
+}
+
+.dropZoneText {
+  font-size: 0.76rem;
+  color: #64748b;
+}
+
+.rowGrid {
+  display: grid;
+  gap: 12px;
+}
+
+.sideDropZone {
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  padding: 8px 10px;
+  background: #ffffff;
+}
+
+.belowDropZone {
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  padding: 8px 10px;
+  background: #ffffff;
+}
+
+.belowDropText {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.dropZoneActive {
+  border-color: #3b82f6 !important;
+  background: #eff6ff !important;
+}
+
+.fieldCard {
+  border: 1px solid #d7e2f1;
+  border-radius: 12px;
+  background: #ffffff;
+  padding: 12px;
+  display: grid;
+  gap: 10px;
+  min-height: 140px;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.actions {
+  display: flex;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.fieldTitle {
+  font-size: 0.95rem;
+  font-weight: 700 !important;
+  color: #0f172a;
+}
+
+.fieldType {
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.fakeInput {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  padding: 8px 10px;
+  color: #64748b;
+  font-size: 0.82rem;
+  background: #f8fafc;
+}
+
+.position {
+  font-size: 0.76rem;
+  color: #64748b;
+}
+
+.schemaPanel {
+  border: 1px solid #d7e2f1;
+  border-radius: 12px;
+  background: #ffffff;
+  padding: 12px;
+  display: grid;
+  gap: 8px;
+}
+
+.schemaTitle {
+  font-size: 0.86rem;
+  font-weight: 700 !important;
+  color: #1f2937;
+}
+
+.schemaCode {
+  margin: 0;
+  background: #0f172a;
+  color: #d8e4ff;
+  border-radius: 8px;
+  padding: 12px;
+  max-height: 300px;
+  overflow: auto;
+  font-size: 0.75rem;
+}

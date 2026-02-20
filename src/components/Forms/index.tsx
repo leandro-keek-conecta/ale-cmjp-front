@@ -1,4 +1,4 @@
-import styles from "./forms.module.css";
+﻿import styles from "./forms.module.css";
 import type {
   Control,
   FieldError,
@@ -9,7 +9,7 @@ import type {
 } from "react-hook-form";
 import { Controller } from "react-hook-form";
 import { Box, Typography } from "@mui/material";
-import InputTex from "../../components/InputText";
+import InputText from "../../components/InputText";
 import SelectButton from "../../components/selectButtom";
 import InputFile from "../InputFIle";
 import TextArea from "../TextArea";
@@ -95,8 +95,8 @@ export default function Forms<TFieldValues extends FieldValues = FieldValues>({
           (input.type === "Select" && input.selectProps?.isMulti
             ? []
             : input.type === "switch"
-            ? false
-            : undefined);
+              ? false
+              : undefined);
 
         const controllerDefaultValue =
           baseDefaultValue === undefined
@@ -138,7 +138,7 @@ export default function Forms<TFieldValues extends FieldValues = FieldValues>({
                   | FieldError
                   | undefined;
                 const isRequired = Boolean(
-                  (input.rules as { required?: unknown } | undefined)?.required
+                  (input.rules as { required?: unknown } | undefined)?.required,
                 );
 
                 if (input.type === "switch") {
@@ -160,10 +160,10 @@ export default function Forms<TFieldValues extends FieldValues = FieldValues>({
                 }
 
                 if (input.type === "Select") {
-                  // 🔹 Normaliza valor: converte automaticamente entre formatos [{id}] ⇄ [id]
+                  // ðŸ”¹ Normaliza valor: converte automaticamente entre formatos [{id}] â‡„ [id]
                   const normalizedValue = (() => {
                     if (Array.isArray(value)) {
-                      // Se o valor for [{id:1},{id:3}] → [1,3]
+                      // Se o valor for [{id:1},{id:3}] â†’ [1,3]
                       if (
                         value.length > 0 &&
                         typeof value[0] === "object" &&
@@ -205,8 +205,8 @@ export default function Forms<TFieldValues extends FieldValues = FieldValues>({
                             typeof selectedValue === "object" &&
                             selectedValue !== null
                               ? // garante que, se por acaso vier {id}, use apenas o id
-                                (selectedValue as any).id ?? selectedValue
-                              : selectedValue ?? null;
+                                ((selectedValue as any).id ?? selectedValue)
+                              : (selectedValue ?? null);
                         }
 
                         onChange(mappedValue);
@@ -231,7 +231,7 @@ export default function Forms<TFieldValues extends FieldValues = FieldValues>({
                             input.name,
                             Array.from(files)
                               .map((f) => f.name)
-                              .join(", ")
+                              .join(", "),
                           );
                         }
                       }}
@@ -259,7 +259,7 @@ export default function Forms<TFieldValues extends FieldValues = FieldValues>({
                 }
 
                 return (
-                  <InputTex
+                  <InputText
                     label={input.title}
                     placeholder={input.placeholder || ""}
                     type={input.type}
