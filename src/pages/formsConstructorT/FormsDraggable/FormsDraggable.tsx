@@ -1,4 +1,4 @@
-import { useDroppable } from "@dnd-kit/react";
+import { useDraggable, useDroppable } from "@dnd-kit/react";
 import { useState, type ReactNode } from "react";
 import {
   Box,
@@ -42,6 +42,11 @@ type DropZoneProps = {
   children: ReactNode;
 };
 
+type DraggableFieldProps = {
+  id: string;
+  children: (params: { setHandleRef: (element: Element | null) => void }) => ReactNode;
+};
+
 const FIELD_TYPE_LABELS: Record<FieldType, string> = {
   text: "Texto",
   number: "Numero",
@@ -71,6 +76,22 @@ function DropZone({ id, className, activeClassName, children }: DropZoneProps) {
       ref={ref}
     >
       {children}
+    </div>
+  );
+}
+
+function DraggableField({ id, children }: DraggableFieldProps) {
+  const { ref, handleRef, isDragging } = useDraggable({ id });
+
+  return (
+    <div
+      ref={ref}
+      className={`${styles.draggableField} ${
+        isDragging ? styles.draggableFieldDragging : ""
+      }`}
+      style={{ touchAction: "none" }}
+    >
+      {children({ setHandleRef: handleRef })}
     </div>
   );
 }
@@ -447,41 +468,53 @@ export function FormsDraggable({
                 }}
               >
                 {rowEntry.fields.map((field, columnIndex) => (
-                  <Box key={field.id} className={styles.fieldCard}>
-                    <Box className={styles.cardHeader}>
-                      <Box>
-                        <Typography className={styles.fieldTitle}>
-                          {field.label}
-                        </Typography>
-                        <Typography className={styles.fieldType}>
-                          {FIELD_TYPE_LABELS[field.type]}
-                        </Typography>
-                      </Box>
-                      <Box className={styles.actions}>
-                        <IconButton
-                          size="small"
-                          aria-label="Editar campo"
-                          onClick={() => openEditModal(field)}
-                        >
-                          <EditOutlinedIcon fontSize="small" />
-                        </IconButton>
-                        <IconButton
-                          size="small"
-                          aria-label="Excluir campo"
-                          onClick={() => onDeleteField(field.id)}
-                        >
-                          <DeleteOutlineIcon fontSize="small" />
-                        </IconButton>
-                      </Box>
-                    </Box>
+                  <DraggableField key={field.id} id={`field-${field.id}`}>
+                    {({ setHandleRef }) => (
+                      <Box className={styles.fieldCard}>
+                        <Box className={styles.cardHeader}>
+                          <Box
+                            ref={setHandleRef}
+                            className={styles.dragHandle}
+                            aria-label="Arrastar campo"
+                          >
+                            <Typography className={styles.fieldTitle}>
+                              {field.label}
+                            </Typography>
+                            <Typography className={styles.fieldType}>
+                              {FIELD_TYPE_LABELS[field.type]}
+                            </Typography>
+                          </Box>
+                          <Box
+                            className={styles.actions}
+                            onPointerDownCapture={(event) => event.stopPropagation()}
+                            onMouseDownCapture={(event) => event.stopPropagation()}
+                          >
+                            <IconButton
+                              size="small"
+                              aria-label="Editar campo"
+                              onClick={() => openEditModal(field)}
+                            >
+                              <EditOutlinedIcon fontSize="small" />
+                            </IconButton>
+                            <IconButton
+                              size="small"
+                              aria-label="Excluir campo"
+                              onClick={() => onDeleteField(field.id)}
+                            >
+                              <DeleteOutlineIcon fontSize="small" />
+                            </IconButton>
+                          </Box>
+                        </Box>
 
-                    <Box className={styles.fakeInput}>
-                      {FIELD_APPEARANCE[field.type]}
-                    </Box>
-                    <Typography className={styles.position}>
-                      Linha {rowEntry.rowIndex + 1} | Coluna {columnIndex + 1}
-                    </Typography>
-                  </Box>
+                        <Box className={styles.fakeInput}>
+                          {FIELD_APPEARANCE[field.type]}
+                        </Box>
+                        <Typography className={styles.position}>
+                          Linha {rowEntry.rowIndex + 1} | Coluna {columnIndex + 1}
+                        </Typography>
+                      </Box>
+                    )}
+                  </DraggableField>
                 ))}
               </Box>
 

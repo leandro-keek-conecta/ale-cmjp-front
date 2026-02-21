@@ -292,6 +292,7 @@ export default function InputOptions({
           ))}
         </Box>
       </ExpandableCard>
+      <Button>Cadastrar formulário</Button>
     </Box>
   );
 }

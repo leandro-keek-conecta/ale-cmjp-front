@@ -20,6 +20,12 @@ import FormPreview from "./FormsPreview/FormPreview";
 import getForms from "@/services/forms/formsService";
 
 const DEFAULT_PROJECT_SLUG = "ale-cmjp";
+const MAX_FIELDS_PER_ROW = 3;
+
+type DropPlacement =
+  | { type: "new-row" }
+  | { type: "side"; rowIndex: number }
+  | { type: "below"; rowIndex: number };
 
 function generateImportedFieldId(index: number) {
   return `imported-${Date.now()}-${index}-${Math.random().toString(16).slice(2, 6)}`;
@@ -405,6 +411,66 @@ function syncBlocksWithFieldNames(
   return nextBlocks;
 }
 
+function parseDropPlacement(dropTargetId: string): DropPlacement | null {
+  if (dropTargetId === "drop-new-row") {
+    return { type: "new-row" };
+  }
+
+  if (dropTargetId.startsWith("drop-side-")) {
+    const rowIndex = Number(dropTargetId.replace("drop-side-", ""));
+    if (!Number.isInteger(rowIndex) || rowIndex < 0) return null;
+    return { type: "side", rowIndex };
+  }
+
+  if (dropTargetId.startsWith("drop-below-")) {
+    const rowIndex = Number(dropTargetId.replace("drop-below-", ""));
+    if (!Number.isInteger(rowIndex) || rowIndex < 0) return null;
+    return { type: "below", rowIndex };
+  }
+
+  return null;
+}
+
+function applyFieldPlacement(
+  rows: BuilderFieldRow[],
+  field: BuilderField,
+  placement: DropPlacement,
+) {
+  const nextRows = rows.map((row) => [...row]);
+
+  if (placement.type === "new-row") {
+    nextRows.push([field]);
+    return nextRows;
+  }
+
+  if (placement.type === "side") {
+    if (placement.rowIndex >= nextRows.length) return null;
+    if (nextRows[placement.rowIndex].length < MAX_FIELDS_PER_ROW) {
+      nextRows[placement.rowIndex].push(field);
+      return nextRows;
+    }
+    const insertAt = Math.min(placement.rowIndex + 1, nextRows.length);
+    nextRows.splice(insertAt, 0, [field]);
+    return nextRows;
+  }
+
+  const insertAt = Math.min(placement.rowIndex + 1, nextRows.length);
+  nextRows.splice(insertAt, 0, [field]);
+  return nextRows;
+}
+
+function adjustPlacementAfterRowRemoval(
+  placement: DropPlacement,
+  removedRowIndex: number,
+  rowWasRemoved: boolean,
+) {
+  if (!rowWasRemoved || placement.type === "new-row") return placement;
+  if (placement.rowIndex > removedRowIndex) {
+    return { ...placement, rowIndex: placement.rowIndex - 1 };
+  }
+  return placement;
+}
+
 export default function ConstructorForm() {
   const [fieldRows, setFieldRows] = useState<BuilderFieldRow[]>([]);
   const [formBlocks, setFormBlocks] = useState<BuilderBlock[]>([]);
@@ -573,84 +639,87 @@ export default function ConstructorForm() {
 
     const dropTargetId = event.operation.target?.id;
     if (typeof dropTargetId !== "string") return;
+    const placement = parseDropPlacement(dropTargetId);
+    if (!placement) return;
 
     const sourceId = event.operation.source?.id;
     if (typeof sourceId !== "string") return;
-    if (!sourceId.startsWith("input-")) return;
 
-    const fieldType = sourceId.replace("input-", "") as FieldType;
-    const fieldOption = FIELD_OPTIONS.find((option) => option.id === fieldType);
-    if (!fieldOption) return;
+    if (sourceId.startsWith("input-")) {
+      const fieldType = sourceId.replace("input-", "") as FieldType;
+      const fieldOption = FIELD_OPTIONS.find((option) => option.id === fieldType);
+      if (!fieldOption) return;
 
-    const newField = createBuilderField(fieldType, fieldOption.label);
+      const newField = createBuilderField(fieldType, fieldOption.label);
 
-    setFormBlocks((previous) => {
-      if (!previous.length) {
-        return [
-          {
-            title: "Aba 1",
-            fields: [newField.name],
-          },
-        ];
-      }
+      setFormBlocks((previous) => {
+        if (!previous.length) {
+          return [
+            {
+              title: "Aba 1",
+              fields: [newField.name],
+            },
+          ];
+        }
 
-      const targetIndex = Math.min(
-        Math.max(selectedBlockIndex, 0),
-        previous.length - 1,
-      );
+        const targetIndex = Math.min(
+          Math.max(selectedBlockIndex, 0),
+          previous.length - 1,
+        );
 
-      const cleaned = previous.map((block) => ({
-        ...block,
-        fields: block.fields.filter((name) => name !== newField.name),
-      }));
-      const target = cleaned[targetIndex];
-      if (!target) return cleaned;
+        const cleaned = previous.map((block) => ({
+          ...block,
+          fields: block.fields.filter((name) => name !== newField.name),
+        }));
+        const target = cleaned[targetIndex];
+        if (!target) return cleaned;
 
-      cleaned[targetIndex] = {
-        ...target,
-        fields: [...target.fields, newField.name],
-      };
+        cleaned[targetIndex] = {
+          ...target,
+          fields: [...target.fields, newField.name],
+        };
 
-      return cleaned;
-    });
+        return cleaned;
+      });
+
+      setFieldRows((previous) => {
+        const placedRows = applyFieldPlacement(previous, newField, placement);
+        return placedRows ?? previous;
+      });
+      return;
+    }
+
+    if (!sourceId.startsWith("field-")) return;
+    const fieldId = sourceId.slice("field-".length);
+    if (!fieldId) return;
 
     setFieldRows((previous) => {
-      const rows = previous.map((row) => [...row]);
+      const sourceRowIndex = previous.findIndex((row) =>
+        row.some((field) => field.id === fieldId),
+      );
+      if (sourceRowIndex < 0) return previous;
 
-      if (dropTargetId === "drop-new-row") {
-        return [...rows, [newField]];
+      const sourceColumnIndex = previous[sourceRowIndex].findIndex(
+        (field) => field.id === fieldId,
+      );
+      if (sourceColumnIndex < 0) return previous;
+
+      const movingField = previous[sourceRowIndex][sourceColumnIndex];
+      const nextRows = previous.map((row) => [...row]);
+      nextRows[sourceRowIndex].splice(sourceColumnIndex, 1);
+
+      const rowWasRemoved = nextRows[sourceRowIndex].length === 0;
+      if (rowWasRemoved) {
+        nextRows.splice(sourceRowIndex, 1);
       }
 
-      if (dropTargetId.startsWith("drop-side-")) {
-        const rowIndex = Number(dropTargetId.replace("drop-side-", ""));
-        if (
-          !Number.isInteger(rowIndex) ||
-          rowIndex < 0 ||
-          rowIndex >= rows.length
-        ) {
-          return rows;
-        }
-
-        if (rows[rowIndex].length < 3) {
-          rows[rowIndex].push(newField);
-          return rows;
-        }
-
-        rows.splice(rowIndex + 1, 0, [newField]);
-        return rows;
-      }
-
-      if (dropTargetId.startsWith("drop-below-")) {
-        const rowIndex = Number(dropTargetId.replace("drop-below-", ""));
-        if (!Number.isInteger(rowIndex) || rowIndex < 0) {
-          return rows;
-        }
-        const insertAt = Math.min(rowIndex + 1, rows.length);
-        rows.splice(insertAt, 0, [newField]);
-        return rows;
-      }
-
-      return rows;
+      const adjustedPlacement = adjustPlacementAfterRowRemoval(
+        placement,
+        sourceRowIndex,
+        rowWasRemoved,
+      );
+      const placedRows = applyFieldPlacement(nextRows, movingField, adjustedPlacement);
+      return placedRows ?? previous;
     });
   }
 

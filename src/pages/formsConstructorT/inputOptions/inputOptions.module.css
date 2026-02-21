@@ -8,7 +8,9 @@
   display: grid;
   gap: 14px;
   max-height: calc(100vh - 5rem);
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-bottom: 20px;
   scrollbar-width: thin;
   scrollbar-color: #b8c6e6 transparent;
 }

@@ -164,6 +164,18 @@ function normalizeBlocks(blocks: BuilderBlock[]) {
     .filter((block) => block.fields.length > 0);
 }
 
+function mapFieldsToInputs(fields: BuilderFieldLayout[]) {
+  const rowSizes = fields.reduce<Record<number, number>>((accumulator, field) => {
+    const row = field.layout.row;
+    accumulator[row] = (accumulator[row] ?? 0) + 1;
+    return accumulator;
+  }, {});
+
+  return fields.map((field) =>
+    mapBuilderFieldToInput(field, rowSizes[field.layout.row] ?? 1),
+  );
+}
+
 export default function FormPreview({
   formSchema,
   activeBlockIndex = 0,
@@ -175,49 +187,39 @@ export default function FormPreview({
     [formSchema.fields],
   );
 
-  const rowSizes = useMemo(() => {
-    return fields.reduce<Record<number, number>>((accumulator, field) => {
-      const row = field.layout.row;
-      accumulator[row] = (accumulator[row] ?? 0) + 1;
-      return accumulator;
-    }, {});
-  }, [fields]);
-
-  const allInputs = useMemo<InputType<any>[]>(() => {
-    return fields.map((field) =>
-      mapBuilderFieldToInput(field, rowSizes[field.layout.row] ?? 1),
-    );
-  }, [fields, rowSizes]);
-
-  const inputMap = useMemo(() => {
-    return new Map(allInputs.map((input) => [String(input.name), input]));
-  }, [allInputs]);
-
   const pages = useMemo<PreviewPage[]>(() => {
+    const fieldMap = new Map(fields.map((field) => [field.name, field]));
     const blocks = normalizeBlocks(formSchema.blocks ?? []);
+
     if (blocks.length) {
       const blockPages = blocks
         .map((block) => ({
           title: block.title,
-          inputs: block.fields
-            .map((name) => inputMap.get(name))
-            .filter((input): input is InputType<any> => Boolean(input)),
+          fields: block.fields
+            .map((name) => fieldMap.get(name))
+            .filter((field): field is BuilderFieldLayout => Boolean(field)),
         }))
-        .filter((page) => page.inputs.length > 0);
+        .filter((page) => page.fields.length > 0)
+        .map((page) => ({
+          title: page.title,
+          inputs: mapFieldsToInputs(page.fields),
+        }));
 
       if (blockPages.length) {
         return blockPages;
       }
     }
 
-    if (!allInputs.length) return [];
+    if (!fields.length) return [];
     return [
       {
         title: "Formulario",
-        inputs: allInputs,
+        inputs: mapFieldsToInputs(fields),
       },
     ];
-  }, [allInputs, formSchema.blocks, inputMap]);
+  }, [fields, formSchema.blocks]);
+
+  const hasInputs = pages.some((page) => page.inputs.length > 0);
 
   const defaultValues = useMemo(() => buildDefaultValues(fields), [fields]);
 
@@ -280,7 +282,7 @@ export default function FormPreview({
         </Typography>
       ) : null}
 
-      {!allInputs.length ? (
+      {!hasInputs ? (
         <Alert severity="info">
           Adicione campos no construtor para visualizar o preview.
         </Alert>

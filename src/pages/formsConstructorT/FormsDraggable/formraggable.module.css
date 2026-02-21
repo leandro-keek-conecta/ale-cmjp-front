@@ -113,6 +113,15 @@
   background: #eff6ff !important;
 }
 
+.draggableField {
+  width: 100%;
+  transition: opacity 0.12s ease;
+}
+
+.draggableFieldDragging {
+  opacity: 0.62;
+}
+
 .fieldCard {
   border: 1px solid #5070dd;
   border-radius: 12px;
@@ -127,6 +136,12 @@
   display: flex;
   justify-content: space-between;
   gap: 8px;
+}
+
+.dragHandle {
+  display: grid;
+  gap: 2px;
+  cursor: grab;
 }
 
 .actions {
