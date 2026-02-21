@@ -58,9 +58,10 @@
 }
 
 .expanded {
-  max-height: 1200px;
+  max-height: 5000px;
   opacity: 1;
   transform: translateY(0);
+  overflow: visible;
 }
 
 .content {

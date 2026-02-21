@@ -1,8 +1,11 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Alert, Box, Typography } from "@mui/material";
 import { useForm } from "react-hook-form";
 import Forms, { type InputType } from "@/components/Forms";
+import Button from "@/components/Button";
+import HorizontalLinearAlternativeLabelStepper from "@/components/stepper";
 import type {
+  BuilderBlock,
   BuilderFieldLayout,
   BuilderSchema,
 } from "../types/formsTypes";
@@ -12,6 +15,12 @@ type PreviewValues = Record<string, unknown>;
 
 type FormPreviewProps = {
   formSchema: BuilderSchema;
+  activeBlockIndex?: number;
+};
+
+type PreviewPage = {
+  title: string;
+  inputs: InputType<any>[];
 };
 
 function sortFields(a: BuilderFieldLayout, b: BuilderFieldLayout) {
@@ -144,7 +153,23 @@ function buildDefaultValues(fields: BuilderFieldLayout[]) {
   }, {});
 }
 
-export default function FormPreview({ formSchema }: FormPreviewProps) {
+function normalizeBlocks(blocks: BuilderBlock[]) {
+  return blocks
+    .map((block, index) => ({
+      title: block.title?.trim() || `Aba ${index + 1}`,
+      fields: (Array.isArray(block.fields) ? block.fields : [])
+        .map((name) => name.trim())
+        .filter(Boolean),
+    }))
+    .filter((block) => block.fields.length > 0);
+}
+
+export default function FormPreview({
+  formSchema,
+  activeBlockIndex = 0,
+}: FormPreviewProps) {
+  const [currentStep, setCurrentStep] = useState(0);
+
   const fields = useMemo(
     () => [...formSchema.fields].sort(sortFields),
     [formSchema.fields],
@@ -158,11 +183,41 @@ export default function FormPreview({ formSchema }: FormPreviewProps) {
     }, {});
   }, [fields]);
 
-  const inputs = useMemo<InputType<any>[]>(() => {
+  const allInputs = useMemo<InputType<any>[]>(() => {
     return fields.map((field) =>
       mapBuilderFieldToInput(field, rowSizes[field.layout.row] ?? 1),
     );
   }, [fields, rowSizes]);
+
+  const inputMap = useMemo(() => {
+    return new Map(allInputs.map((input) => [String(input.name), input]));
+  }, [allInputs]);
+
+  const pages = useMemo<PreviewPage[]>(() => {
+    const blocks = normalizeBlocks(formSchema.blocks ?? []);
+    if (blocks.length) {
+      const blockPages = blocks
+        .map((block) => ({
+          title: block.title,
+          inputs: block.fields
+            .map((name) => inputMap.get(name))
+            .filter((input): input is InputType<any> => Boolean(input)),
+        }))
+        .filter((page) => page.inputs.length > 0);
+
+      if (blockPages.length) {
+        return blockPages;
+      }
+    }
+
+    if (!allInputs.length) return [];
+    return [
+      {
+        title: "Formulario",
+        inputs: allInputs,
+      },
+    ];
+  }, [allInputs, formSchema.blocks, inputMap]);
 
   const defaultValues = useMemo(() => buildDefaultValues(fields), [fields]);
 
@@ -178,6 +233,42 @@ export default function FormPreview({ formSchema }: FormPreviewProps) {
     reset(defaultValues);
   }, [defaultValues, reset]);
 
+  useEffect(() => {
+    setCurrentStep(0);
+  }, [pages.length, formSchema.title]);
+
+  useEffect(() => {
+    if (!pages.length) {
+      setCurrentStep(0);
+      return;
+    }
+    const nextStep = Math.min(
+      Math.max(activeBlockIndex, 0),
+      Math.max(pages.length - 1, 0),
+    );
+    setCurrentStep(nextStep);
+  }, [activeBlockIndex, pages.length]);
+
+  const steps = useMemo(() => {
+    if (!pages.length) return [];
+    return [...pages.map((page) => page.title), "Concluido"];
+  }, [pages]);
+
+  const isCompleted = pages.length > 0 && currentStep >= pages.length;
+  const currentPage = !isCompleted ? pages[currentStep] : null;
+
+  const handleNext = () => {
+    if (isCompleted) {
+      setCurrentStep(0);
+      return;
+    }
+    setCurrentStep((prev) => Math.min(prev + 1, pages.length));
+  };
+
+  const handleBack = () => {
+    setCurrentStep((prev) => Math.max(prev - 1, 0));
+  };
+
   return (
     <Box className={styles.container}>
       <Typography className={styles.title}>
@@ -189,12 +280,59 @@ export default function FormPreview({ formSchema }: FormPreviewProps) {
         </Typography>
       ) : null}
 
-      {!inputs.length ? (
+      {!allInputs.length ? (
         <Alert severity="info">
           Adicione campos no construtor para visualizar o preview.
         </Alert>
       ) : (
-        <Forms<any> inputsList={inputs} control={control} errors={errors} />
+        <>
+          {steps.length > 1 ? (
+            <Box className={styles.stepperBox}>
+              <HorizontalLinearAlternativeLabelStepper
+                step={steps}
+                activeNumberStep={currentStep}
+              />
+            </Box>
+          ) : null}
+
+          {isCompleted ? (
+            <Alert severity="success">
+              Fluxo de abas concluido no preview.
+            </Alert>
+          ) : (
+            <>
+              {currentPage?.title ? (
+                <Typography className={styles.blockTitle}>
+                  {currentPage.title}
+                </Typography>
+              ) : null}
+              <Forms<any>
+                inputsList={currentPage?.inputs ?? []}
+                control={control}
+                errors={errors}
+              />
+            </>
+          )}
+
+          {pages.length > 0 ? (
+            <Box className={styles.actions}>
+              <Button
+                onClick={handleBack}
+                className={styles.navButton}
+                disabled={currentStep === 0}
+              >
+                Voltar
+              </Button>
+              <Button onClick={handleNext} className={styles.navButton}>
+                {isCompleted
+                  ? "Reiniciar"
+                  : currentStep === pages.length - 1
+                    ? "Concluir"
+                    : "Proximo"}
+              </Button>
+            </Box>
+          ) : null}
+        </>
       )}
     </Box>
   );

@@ -12,18 +12,41 @@
   display: grid;
   gap: 4px;
   width: 100%;
-  text-align: center;
+}
+
+.headerTop {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 28px;
 }
 
 .title {
   font-size: 1.2rem !important;
   font-weight: 700 !important;
   color: #0f172a;
+  text-align: center;
+}
+
+.activeBlockLabel {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.82rem !important;
+  font-weight: 700 !important;
+  color: #1d4ed8;
+  max-width: 40%;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .description {
   font-size: 0.92rem;
   color: #475569;
+  text-align: center;
 }
 
 .rowsContainer {
@@ -93,7 +116,7 @@
 .fieldCard {
   border: 1px solid #5070dd;
   border-radius: 12px;
-  background: #ffffff;
+  background: linear-gradient(180deg, #f8fbff 0%, #eef4ff 100%);
   padding: 12px;
   display: grid;
   gap: 10px;
@@ -132,7 +155,7 @@
   padding: 8px 10px;
   color: #64748b;
   font-size: 0.82rem;
-  background: #f8fafc;
+  background: #ffffff;
 }
 
 .position {

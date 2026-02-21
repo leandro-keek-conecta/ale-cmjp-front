@@ -26,6 +26,8 @@ import ExpandableCard from "@/components/expandable-card";
 
 type FormsDraggableProps = {
   rows: BuilderFieldRow[];
+  visibleFieldNames?: string[];
+  activeBlockTitle?: string;
   titleForm: string;
   descriptionForm?: string;
   onDeleteField: (fieldId: string) => void;
@@ -88,6 +90,8 @@ function parseOptionalNumber(value: string) {
 
 export function FormsDraggable({
   rows,
+  visibleFieldNames,
+  activeBlockTitle,
   titleForm = "Titulo do Formulario",
   descriptionForm,
   onDeleteField,
@@ -383,12 +387,35 @@ export function FormsDraggable({
     }
   };
 
+  const visibleNamesSet = new Set(visibleFieldNames ?? []);
+  const hasBlockFilter = Array.isArray(visibleFieldNames);
+  const rowsToRender = hasBlockFilter
+    ? rows
+        .map((row, rowIndex) => ({
+          rowIndex,
+          originalLength: row.length,
+          fields: row.filter((field) => visibleNamesSet.has(field.name)),
+        }))
+        .filter((row) => row.fields.length > 0)
+    : rows.map((row, rowIndex) => ({
+        rowIndex,
+        originalLength: row.length,
+        fields: row,
+      }));
+
   return (
     <Box className={styles.canvas}>
       <Box className={styles.header}>
-        <Typography className={styles.title}>
-          {titleForm || "Formulario sem titulo"}
-        </Typography>
+        <Box className={styles.headerTop}>
+          <Typography className={styles.title}>
+            {titleForm || "Formulario sem titulo"}
+          </Typography>
+          {activeBlockTitle ? (
+            <Typography className={styles.activeBlockLabel}>
+              Aba ativa: {activeBlockTitle}
+            </Typography>
+          ) : null}
+        </Box>
         {descriptionForm ? (
           <Typography className={styles.description}>
             {descriptionForm}
@@ -396,7 +423,7 @@ export function FormsDraggable({
         ) : null}
       </Box>
 
-      {!rows.length ? (
+      {!rowsToRender.length ? (
         <DropZone
           id="drop-new-row"
           className={styles.emptyState}
@@ -411,15 +438,15 @@ export function FormsDraggable({
         </DropZone>
       ) : (
         <Box className={styles.rowsContainer}>
-          {rows.map((row, rowIndex) => (
-            <Box key={`row-${rowIndex}`} className={styles.rowWrapper}>
+          {rowsToRender.map((rowEntry) => (
+            <Box key={`row-${rowEntry.rowIndex}`} className={styles.rowWrapper}>
               <Box
                 className={styles.rowGrid}
                 style={{
-                  gridTemplateColumns: `repeat(${Math.max(row.length, 1)}, minmax(0, 1fr))`,
+                  gridTemplateColumns: `repeat(${Math.max(rowEntry.fields.length, 1)}, minmax(0, 1fr))`,
                 }}
               >
-                {row.map((field, columnIndex) => (
+                {rowEntry.fields.map((field, columnIndex) => (
                   <Box key={field.id} className={styles.fieldCard}>
                     <Box className={styles.cardHeader}>
                       <Box>
@@ -452,15 +479,15 @@ export function FormsDraggable({
                       {FIELD_APPEARANCE[field.type]}
                     </Box>
                     <Typography className={styles.position}>
-                      Linha {rowIndex + 1} | Coluna {columnIndex + 1}
+                      Linha {rowEntry.rowIndex + 1} | Coluna {columnIndex + 1}
                     </Typography>
                   </Box>
                 ))}
               </Box>
 
-              {row.length < 3 ? (
+              {rowEntry.originalLength < 3 ? (
                 <DropZone
-                  id={`drop-side-${rowIndex}`}
+                  id={`drop-side-${rowEntry.rowIndex}`}
                   className={styles.sideDropZone}
                   activeClassName={styles.dropZoneActive}
                 >
@@ -471,7 +498,7 @@ export function FormsDraggable({
               ) : null}
 
               <DropZone
-                id={`drop-below-${rowIndex}`}
+                id={`drop-below-${rowEntry.rowIndex}`}
                 className={styles.belowDropZone}
                 activeClassName={styles.dropZoneActive}
               >

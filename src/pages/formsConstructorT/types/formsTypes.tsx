@@ -37,6 +37,11 @@ export type BuilderField = {
 
 export type BuilderFieldRow = BuilderField[];
 
+export type BuilderBlock = {
+  title: string;
+  fields: string[];
+};
+
 export type BuilderFieldLayout = BuilderField & {
   ordem: number;
   layout: {
@@ -65,7 +70,8 @@ export type BuilderSchema = {
   title: string;
   description: string;
   fields: BuilderFieldLayout[];
-  schema: Record<string, GeneratedFieldRule>;
+  blocks: BuilderBlock[];
+  schema: Record<string, GeneratedFieldRule | BuilderBlock[]>;
 };
 
 export const FIELD_OPTIONS: FieldOption[] = [
@@ -95,10 +101,14 @@ export function createBuilderField(type: FieldType, label: string): BuilderField
   const id = createFieldId();
   const normalizedLabel = normalizeFieldName(label);
   const fallbackName = normalizeFieldName(type) || "campo";
+  const uniqueSuffix = id
+    .replace(/[^a-z0-9]/gi, "")
+    .toLowerCase()
+    .slice(-10);
 
   return {
     id,
-    name: `${normalizedLabel || fallbackName}_${id.slice(0, 6)}`,
+    name: `${normalizedLabel || fallbackName}_${uniqueSuffix}`,
     type,
     label,
     placeholder: `Campo ${label.toLowerCase()}`,

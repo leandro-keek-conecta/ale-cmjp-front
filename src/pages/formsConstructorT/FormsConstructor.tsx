@@ -1,10 +1,11 @@
 import { Box } from "@mui/material";
 import styles from "./form.module.css";
 import CabecalhoEstilizado from "@/components/CabecalhoEstilizado";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import InputOptions, { type FormOptionItem } from "./inputOptions/InputOptions";
 import Button from "@/components/Button";
 import {
+  type BuilderBlock,
   createBuilderField,
   FIELD_OPTIONS,
   generateSchemaFromBuilder,
@@ -278,18 +279,136 @@ function extractSchemaRulesByName(schema: Record<string, unknown>) {
 }
 
 function resolveActiveVersion(form: FormOptionItem) {
+  if (Array.isArray((form as Record<string, unknown>).fields)) {
+    return form as Record<string, unknown>;
+  }
+
   if (form.activeVersion && typeof form.activeVersion === "object") {
     return form.activeVersion as Record<string, unknown>;
   }
+
+  if (
+    (form as Record<string, unknown>).active_version &&
+    typeof (form as Record<string, unknown>).active_version === "object"
+  ) {
+    return (form as Record<string, unknown>).active_version as Record<
+      string,
+      unknown
+    >;
+  }
+
+  if (
+    (form as Record<string, unknown>).currentVersion &&
+    typeof (form as Record<string, unknown>).currentVersion === "object"
+  ) {
+    return (form as Record<string, unknown>).currentVersion as Record<
+      string,
+      unknown
+    >;
+  }
+
+  if (
+    (form as Record<string, unknown>).latestVersion &&
+    typeof (form as Record<string, unknown>).latestVersion === "object"
+  ) {
+    return (form as Record<string, unknown>).latestVersion as Record<
+      string,
+      unknown
+    >;
+  }
+
   const nestedForm = form.form as Record<string, unknown> | undefined;
   if (nestedForm?.activeVersion && typeof nestedForm.activeVersion === "object") {
     return nestedForm.activeVersion as Record<string, unknown>;
   }
+
+  if (
+    nestedForm?.active_version &&
+    typeof nestedForm.active_version === "object"
+  ) {
+    return nestedForm.active_version as Record<string, unknown>;
+  }
+
+  if (nestedForm && Array.isArray(nestedForm.fields)) {
+    return nestedForm;
+  }
+
   return null;
+}
+
+function mapImportedBlocks(blocks: Record<string, unknown>[]): BuilderBlock[] {
+  return blocks
+    .map((block, index) => {
+      const title = toTrimmedString(block.title) || `Aba ${index + 1}`;
+      const names = (Array.isArray(block.fields) ? block.fields : [])
+        .filter((name): name is string => typeof name === "string")
+        .map((name) => name.trim())
+        .filter(Boolean);
+
+      return {
+        title,
+        fields: names,
+      };
+    })
+    .filter((block) => block.fields.length > 0);
+}
+
+function buildDefaultBlock(fieldNames: string[]): BuilderBlock[] {
+  if (!fieldNames.length) return [];
+  return [
+    {
+      title: "Aba 1",
+      fields: fieldNames,
+    },
+  ];
+}
+
+function syncBlocksWithFieldNames(
+  previousBlocks: BuilderBlock[],
+  fieldNames: string[],
+) {
+  if (!fieldNames.length) {
+    return previousBlocks.map((block, index) => ({
+      title: toTrimmedString(block.title) || `Aba ${index + 1}`,
+      fields: [],
+    }));
+  }
+  if (!previousBlocks.length) return buildDefaultBlock(fieldNames);
+
+  const availableNames = new Set(fieldNames);
+  const seenNames = new Set<string>();
+  const nextBlocks = previousBlocks.map((block, index) => ({
+      title: toTrimmedString(block.title) || `Aba ${index + 1}`,
+      fields: block.fields.filter((name) => {
+        if (!availableNames.has(name)) return false;
+        if (seenNames.has(name)) return false;
+        seenNames.add(name);
+        return true;
+      }),
+    }));
+
+  if (!nextBlocks.length) {
+    return buildDefaultBlock(fieldNames);
+  }
+
+  const unassignedNames = fieldNames.filter((name) => !seenNames.has(name));
+
+  if (unassignedNames.length) {
+    const firstFilledBlockIndex = nextBlocks.findIndex((block) => block.fields.length > 0);
+    const targetIndex = firstFilledBlockIndex >= 0 ? firstFilledBlockIndex : 0;
+    nextBlocks[targetIndex] = {
+      ...nextBlocks[targetIndex],
+      fields: [...nextBlocks[targetIndex].fields, ...unassignedNames],
+    };
+  }
+
+  return nextBlocks;
 }
 
 export default function ConstructorForm() {
   const [fieldRows, setFieldRows] = useState<BuilderFieldRow[]>([]);
+  const [formBlocks, setFormBlocks] = useState<BuilderBlock[]>([]);
+  const [selectedBlockIndex, setSelectedBlockIndex] = useState(0);
   const [titleForm, setTitleForm] = useState("Titulo do Formulario");
   const [descriptionForm, setDescriptionForm] = useState("");
   const [preview, setPreview] = useState(false);
@@ -312,13 +431,116 @@ export default function ConstructorForm() {
       ordem: index + 1,
     }));
 
+    const fieldNames = layoutFields.map((field) => field.name);
+    const normalizedBlocks = syncBlocksWithFieldNames(formBlocks, fieldNames);
+    const generatedSchema = generateSchemaFromBuilder(layoutFields);
+
     return {
       title: titleForm,
       description: descriptionForm,
       fields: layoutFields,
-      schema: generateSchemaFromBuilder(layoutFields),
+      blocks: normalizedBlocks,
+      schema: {
+        ...generatedSchema,
+        blocks: normalizedBlocks,
+      },
     };
-  }, [descriptionForm, fieldRows, titleForm]);
+  }, [descriptionForm, fieldRows, formBlocks, titleForm]);
+
+  useEffect(() => {
+    const fieldNames = fieldRows.flatMap((row) => row.map((field) => field.name));
+    setFormBlocks((previous) => syncBlocksWithFieldNames(previous, fieldNames));
+  }, [fieldRows]);
+
+  useEffect(() => {
+    if (!formBlocks.length) {
+      setSelectedBlockIndex(0);
+      return;
+    }
+    setSelectedBlockIndex((previous) =>
+      Math.min(Math.max(previous, 0), formBlocks.length - 1),
+    );
+  }, [formBlocks.length]);
+
+  const handleAddBlock = () => {
+    setFormBlocks((previous) => {
+      const nextIndex = previous.length + 1;
+      return [
+        ...previous,
+        {
+          title: `Aba ${nextIndex}`,
+          fields: [],
+        },
+      ];
+    });
+    setSelectedBlockIndex(formBlocks.length);
+  };
+
+  const handleRenameBlock = (blockIndex: number, title: string) => {
+    setFormBlocks((previous) =>
+      previous.map((block, index) =>
+        index === blockIndex
+          ? {
+              ...block,
+              title,
+            }
+          : block,
+      ),
+    );
+  };
+
+  const handleRemoveBlock = (blockIndex: number) => {
+    setSelectedBlockIndex((previousSelected) => {
+      if (formBlocks.length <= 1) return previousSelected;
+      if (previousSelected === blockIndex) {
+        return Math.max(0, blockIndex - 1);
+      }
+      if (previousSelected > blockIndex) {
+        return previousSelected - 1;
+      }
+      return previousSelected;
+    });
+
+    setFormBlocks((previous) => {
+      if (previous.length <= 1) return previous;
+
+      const removedBlock = previous[blockIndex];
+      const nextBlocks = previous.filter((_, index) => index !== blockIndex);
+      if (!removedBlock) return nextBlocks;
+
+      const targetIndex = Math.min(blockIndex, nextBlocks.length - 1);
+      const target = nextBlocks[targetIndex];
+      if (!target) return nextBlocks;
+
+      nextBlocks[targetIndex] = {
+        ...target,
+        fields: [...target.fields, ...removedBlock.fields],
+      };
+
+      return nextBlocks;
+    });
+  };
+
+  const handleAssignFieldToBlock = (fieldName: string, blockIndex: number) => {
+    setFormBlocks((previous) => {
+      if (!previous.length) return previous;
+      if (blockIndex < 0 || blockIndex >= previous.length) return previous;
+
+      const withoutField = previous.map((block) => ({
+        ...block,
+        fields: block.fields.filter((name) => name !== fieldName),
+      }));
+
+      const target = withoutField[blockIndex];
+      if (!target) return withoutField;
+
+      withoutField[blockIndex] = {
+        ...target,
+        fields: [...target.fields, fieldName],
+      };
+      return withoutField;
+    });
+  };
 
   const handleDeleteField = (fieldId: string) => {
     setFieldRows((previous) =>
@@ -361,6 +583,36 @@ export default function ConstructorForm() {
     if (!fieldOption) return;
 
     const newField = createBuilderField(fieldType, fieldOption.label);
+
+    setFormBlocks((previous) => {
+      if (!previous.length) {
+        return [
+          {
+            title: "Aba 1",
+            fields: [newField.name],
+          },
+        ];
+      }
+
+      const targetIndex = Math.min(
+        Math.max(selectedBlockIndex, 0),
+        previous.length - 1,
+      );
+
+      const cleaned = previous.map((block) => ({
+        ...block,
+        fields: block.fields.filter((name) => name !== newField.name),
+      }));
+      const target = cleaned[targetIndex];
+      if (!target) return cleaned;
+
+      cleaned[targetIndex] = {
+        ...target,
+        fields: [...target.fields, newField.name],
+      };
+
+      return cleaned;
+    });
 
     setFieldRows((previous) => {
       const rows = previous.map((row) => [...row]);
@@ -441,6 +693,8 @@ export default function ConstructorForm() {
         : [];
       const schemaRulesByName = extractSchemaRulesByName(schema);
 
+      setFormBlocks(mapImportedBlocks(blocks));
+      setSelectedBlockIndex(0);
       setFieldRows(mapImportedFieldsToRows(importedFields, blocks, schemaRulesByName));
 
       const loadedTitle = pickFirstText(
@@ -459,6 +713,10 @@ export default function ConstructorForm() {
     } catch (error) {
       console.error("Erro ao carregar formulario selecionado", error);
     }
+  };
+
+  const handleDetachSelectedForm = () => {
+    // Mantem os dados atuais no construtor e apenas remove o vinculo com o item selecionado.
   };
 
   return (
@@ -496,6 +754,17 @@ export default function ConstructorForm() {
                   setTitleForm={setTitleForm}
                   descriptionForm={descriptionForm}
                   setDescriptionForm={setDescriptionForm}
+                  blocks={formBlocks}
+                  selectedBlockIndex={selectedBlockIndex}
+                  availableFieldNames={fieldRows.flatMap((row) =>
+                    row.map((field) => field.name),
+                  )}
+                  onSelectBlock={setSelectedBlockIndex}
+                  onAddBlock={handleAddBlock}
+                  onRenameBlock={handleRenameBlock}
+                  onRemoveBlock={handleRemoveBlock}
+                  onAssignFieldToBlock={handleAssignFieldToBlock}
+                  onDetachSelectedForm={handleDetachSelectedForm}
                   onTogglePreview={() => setPreview(true)}
                   onSelectForm={handleSelectForm}
                 />
@@ -505,6 +774,8 @@ export default function ConstructorForm() {
           <Box className={styles.hightContent}>
             <FormsDraggable
               rows={fieldRows}
+              activeBlockTitle={formBlocks[selectedBlockIndex]?.title}
+              visibleFieldNames={formBlocks[selectedBlockIndex]?.fields}
               titleForm={titleForm}
               descriptionForm={descriptionForm}
               onDeleteField={handleDeleteField}
@@ -514,7 +785,10 @@ export default function ConstructorForm() {
           </Box>
           {preview && (
             <Box className={styles.previewFormsContent}>
-              <FormPreview formSchema={formSchema} />
+              <FormPreview
+                formSchema={formSchema}
+                activeBlockIndex={selectedBlockIndex}
+              />
             </Box>
           )}
         </DragDropProvider>
