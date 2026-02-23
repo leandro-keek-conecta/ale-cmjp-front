@@ -1,7 +1,12 @@
 .canvas {
+  --canvas-bg: #f8fafc;
+  --canvas-border: #dbe4ef;
+  --canvas-title: #0f172a;
+  --canvas-description: #475569;
   display: grid;
   gap: 16px;
-  background: #f8fafc;
+  background: var(--canvas-bg);
+  border: 1px solid var(--canvas-border);
   min-height: calc(100vh - 5rem);
   padding: 16px;
   border-radius: 14px;
@@ -25,7 +30,7 @@
 .title {
   font-size: 1.2rem !important;
   font-weight: 700 !important;
-  color: #0f172a;
+  color: var(--canvas-title);
   text-align: center;
 }
 
@@ -45,7 +50,7 @@
 
 .description {
   font-size: 0.92rem;
-  color: #475569;
+  color: var(--canvas-description);
   text-align: center;
 }
 

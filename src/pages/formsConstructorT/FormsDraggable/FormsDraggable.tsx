@@ -1,5 +1,5 @@
 import { useDraggable, useDroppable } from "@dnd-kit/react";
-import { useState, type ReactNode } from "react";
+import { useState, type CSSProperties, type ReactNode } from "react";
 import {
   Box,
   Button,
@@ -21,6 +21,7 @@ import type {
   BuilderFieldRow,
   BuilderSchema,
   FieldType,
+  FormStyleOptions,
 } from "../types/formsTypes";
 import ExpandableCard from "@/components/expandable-card";
 
@@ -30,6 +31,7 @@ type FormsDraggableProps = {
   activeBlockTitle?: string;
   titleForm: string;
   descriptionForm?: string;
+  formStyles: FormStyleOptions;
   onDeleteField: (fieldId: string) => void;
   onEditField: (fieldId: string, updates: Partial<BuilderField>) => void;
   formSchema: BuilderSchema;
@@ -115,6 +117,7 @@ export function FormsDraggable({
   activeBlockTitle,
   titleForm = "Titulo do Formulario",
   descriptionForm,
+  formStyles,
   onDeleteField,
   onEditField,
   formSchema,
@@ -424,8 +427,15 @@ export function FormsDraggable({
         fields: row,
       }));
 
+  const themeStyle = {
+    "--canvas-bg": formStyles.formBackgroundColor,
+    "--canvas-border": formStyles.formBorderColor,
+    "--canvas-title": formStyles.titleColor,
+    "--canvas-description": formStyles.descriptionColor,
+  } as CSSProperties;
+
   return (
-    <Box className={styles.canvas}>
+    <Box className={styles.canvas} style={themeStyle}>
       <Box className={styles.header}>
         <Box className={styles.headerTop}>
           <Typography className={styles.title}>

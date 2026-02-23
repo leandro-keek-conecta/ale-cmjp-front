@@ -52,6 +52,14 @@ export function Sidebar({ estaAberta, aoFechar }: PropriedadesSidebar) {
             isActive={isActive("/cadastro-thema")}
             onClick={aoFechar}
           />
+          <ItemMenu
+            icone={<EditDocumentIcon />}
+            rotulo="cadastro de formulário"
+            para="/constructor-forms"
+            estaAberta={estaAberta}
+            isActive={isActive("/constructor-forms")}
+            onClick={aoFechar}
+          />
         </Fragment>
       </ul>
     </nav>

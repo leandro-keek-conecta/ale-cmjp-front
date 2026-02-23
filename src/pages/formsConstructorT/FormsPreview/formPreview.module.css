@@ -1,13 +1,22 @@
 .container {
+  --preview-bg: #f8fafc;
+  --preview-border: #dbe4ef;
+  --preview-title: #1f2440;
+  --preview-description: #5c647f;
+  --preview-button-bg: #5070dd;
+  --preview-button-text: #ffffff;
   display: grid;
   gap: 1rem;
   padding: 1rem;
+  border-radius: 12px;
+  border: 1px solid var(--preview-border);
+  background: var(--preview-bg);
 }
 
 .title {
   font-size: 1.2rem !important;
   font-weight: 700 !important;
-  color: #1f2440;
+  color: var(--preview-title);
   width: 100%;
   text-align: center;
   padding: 1rem;
@@ -15,7 +24,7 @@
 
 .description {
   font-size: 0.9rem !important;
-  color: #5c647f;
+  color: var(--preview-description);
 }
 
 .stepperBox {
@@ -26,7 +35,7 @@
 .blockTitle {
   font-size: 1.1rem !important;
   font-weight: 700 !important;
-  color: #1f2440;
+  color: var(--preview-title);
   margin-bottom: 0.5rem !important;
 }
 
@@ -39,5 +48,6 @@
 .navButton {
   font-size: 0.8rem !important;
   padding: 0.45rem 0.9rem !important;
-  background-color: #5070dd;
+  background-color: var(--preview-button-bg) !important;
+  color: var(--preview-button-text) !important;
 }

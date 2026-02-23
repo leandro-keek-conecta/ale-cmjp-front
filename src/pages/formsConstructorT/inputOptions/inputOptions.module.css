@@ -1,5 +1,5 @@
 
-  
+
 
 .containerBoxInputs {
   padding: 14px;
@@ -7,7 +7,6 @@
   width: 100%;
   display: grid;
   gap: 14px;
-  max-height: calc(100vh - 5rem);
   overflow-y: auto;
   overflow-x: hidden;
   padding-bottom: 20px;
@@ -121,11 +120,41 @@
 }
 
 .colorInput {
-  width: 34px;
-  height: 34px;
-  border: 0;
+  width: 38px;
+  height: 30px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
   background: transparent;
   cursor: pointer;
+  padding: 0;
+}
+
+.layoutOptions {
+  display: grid;
+  gap: 10px;
+}
+
+.styleGrid {
+  display: grid;
+  gap: 8px;
+}
+
+.styleItem {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 8px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.colorValue {
+  font-size: 0.76rem !important;
+  color: #475569;
+  min-width: 64px;
+  text-align: right;
+  font-family: monospace;
 }
 
 .themePreview {

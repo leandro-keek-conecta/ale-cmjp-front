@@ -3,13 +3,19 @@ import InputText from "@/components/InputText";
 import TextArea from "@/components/TextArea";
 import { Box, IconButton, TextField, Typography } from "@mui/material";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
-import { FIELD_OPTIONS, type BuilderBlock } from "../types/formsTypes";
+import {
+  DEFAULT_FORM_STYLE_OPTIONS,
+  FIELD_OPTIONS,
+  type BuilderBlock,
+  type FormStyleOptions,
+} from "../types/formsTypes";
 import { Draggable } from "@/components/Draggable/Draggable";
 import SelectButton from "@/components/selectButtom";
 import { useEffect, useMemo, useState } from "react";
-import { listForms } from "@/services/forms/formsService";
 import Button from "@/components/Button";
 import ExpandableCard from "@/components/expandable-card";
+import { getStoredProjectId } from "@/utils/project";
+import { getFormsById } from "@/services/forms/formsService";
 
 export type FormOptionItem = {
   id?: number | string;
@@ -18,6 +24,18 @@ export type FormOptionItem = {
 };
 
 type PrimitiveSelectValue = string | number | boolean;
+
+const STYLE_INPUTS: Array<{
+  key: keyof FormStyleOptions;
+  label: string;
+}> = [
+  { key: "formBackgroundColor", label: "Fundo do formulario" },
+  { key: "formBorderColor", label: "Borda do formulario" },
+  { key: "titleColor", label: "Titulo" },
+  { key: "descriptionColor", label: "Descricao" },
+  { key: "buttonBackgroundColor", label: "Fundo do botao" },
+  { key: "buttonTextColor", label: "Texto do botao" },
+];
 
 function resolveFormOptionMeta(form: FormOptionItem) {
   const nestedForm =
@@ -40,6 +58,8 @@ type InputOptionsProps = {
   setTitleForm: (value: string) => void;
   descriptionForm: string;
   setDescriptionForm: (value: string) => void;
+  formStyles: FormStyleOptions;
+  setFormStyles: (value: FormStyleOptions) => void;
   blocks: BuilderBlock[];
   selectedBlockIndex: number;
   availableFieldNames: string[];
@@ -51,6 +71,9 @@ type InputOptionsProps = {
   onDetachSelectedForm: () => void;
   onTogglePreview: () => void;
   onSelectForm: (form: FormOptionItem | null) => void;
+  onSubmitForm: () => void;
+  isSavingForm: boolean;
+  isEditingForm: boolean;
 };
 
 export default function InputOptions({
@@ -58,6 +81,8 @@ export default function InputOptions({
   setTitleForm,
   descriptionForm,
   setDescriptionForm,
+  formStyles,
+  setFormStyles,
   blocks,
   selectedBlockIndex,
   availableFieldNames,
@@ -69,13 +94,18 @@ export default function InputOptions({
   onDetachSelectedForm,
   onTogglePreview,
   onSelectForm,
+  onSubmitForm,
+  isSavingForm,
+  isEditingForm,
 }: InputOptionsProps) {
   const [formsOptions, setFormsOptions] = useState<FormOptionItem[]>([]);
   const [selectedFormId, setSelectedFormId] = useState<number | null>(null);
   const [expanded, setExpanded] = useState(false);
-  const [expandedTabs, setExpandedTabs] = useState(true);
+  const [expandedLayout, setExpandedLayout] = useState(false);
+  const [expandedTabs, setExpandedTabs] = useState(false);
+  const projectId = getStoredProjectId();
 
-  const selectOptions = formsOptions
+  const selectOptions = (Array.isArray(formsOptions) ? formsOptions : [])
     .map((form) => {
       const { label, idNumber } = resolveFormOptionMeta(form);
       if (!label || idNumber === null) {
@@ -93,16 +123,23 @@ export default function InputOptions({
 
   async function fetchOptions() {
     try {
-      const response = await listForms("ale-cmjp");
-      setFormsOptions(response as FormOptionItem[]);
+      const parsedProjectId = Number(projectId);
+      if (!Number.isFinite(parsedProjectId) || parsedProjectId <= 0) {
+        setFormsOptions([]);
+        return;
+      }
+
+      const response = await getFormsById(parsedProjectId);
+      setFormsOptions(Array.isArray(response) ? response : []);
     } catch (error) {
       console.log("Erro ao carregar formularios", error);
+      setFormsOptions([]);
     }
   }
 
   useEffect(() => {
     void fetchOptions();
-  }, []);
+  }, [projectId]);
 
   const blockSelectOptions = useMemo(
     () =>
@@ -145,13 +182,18 @@ export default function InputOptions({
     onSelectForm(selected);
   };
 
+  const handleUpdateStyle = (key: keyof FormStyleOptions, value: string) => {
+    setFormStyles({
+      ...formStyles,
+      [key]: value,
+    });
+  };
+
   return (
     <Box className={styles.containerBoxInputs}>
       <Box className={styles.headerRow}>
         <Box className={styles.headerText}>
-          <Typography className={styles.tu}>
-            Informacoes padrao do Forms
-          </Typography>
+          <Typography className={styles.tu}>Informacoes padrao do Forms</Typography>
           <Typography className={styles.sectionHint}>
             Configure metadados, abas e campos do formulario.
           </Typography>
@@ -166,9 +208,7 @@ export default function InputOptions({
           label="Formularios do projeto"
           options={selectOptions}
           value={selectedFormId}
-          onChange={(value) =>
-            handleSelectForm(value as number | string | null)
-          }
+          onChange={(value) => handleSelectForm(value as number | string | null)}
         />
         <Box className={styles.formInfo}>
           <Box>
@@ -243,13 +283,8 @@ export default function InputOptions({
         {fieldsFromSelectedBlock.length ? (
           <Box className={styles.fieldTabsGrid}>
             {fieldsFromSelectedBlock.map((fieldName) => (
-              <Box
-                key={`field-tab-${fieldName}`}
-                className={styles.fieldTabRow}
-              >
-                <Typography className={styles.fieldName}>
-                  {fieldName}
-                </Typography>
+              <Box key={`field-tab-${fieldName}`} className={styles.fieldTabRow}>
+                <Typography className={styles.fieldName}>{fieldName}</Typography>
                 <SelectButton
                   label="Aba"
                   options={blockSelectOptions}
@@ -264,25 +299,19 @@ export default function InputOptions({
             ))}
           </Box>
         ) : (
-          <Typography className={styles.helperText}>
-            Nenhum campo nesta aba.
-          </Typography>
+          <Typography className={styles.helperText}>Nenhum campo nesta aba.</Typography>
         )}
       </ExpandableCard>
 
       <ExpandableCard
-        title="Opções do Formulario"
+        title="Opcoes do Formulario"
         expanded={expanded}
         onToggle={(next) => setExpanded(next)}
         className={styles.card}
       >
         <Box className={styles.buttomOptions}>
           {FIELD_OPTIONS.map((input) => (
-            <Box
-              component="li"
-              key={input.id}
-              className={styles.bottonsContent}
-            >
+            <Box component="li" key={input.id} className={styles.bottonsContent}>
               <Draggable id={`input-${input.id}`}>
                 <Box className={styles.menuItem}>
                   <span className={styles.label}>{input.label}</span>
@@ -292,7 +321,51 @@ export default function InputOptions({
           ))}
         </Box>
       </ExpandableCard>
-      <Button>Cadastrar formulário</Button>
+
+      <ExpandableCard
+        title="Opcoes de estilizacao"
+        expanded={expandedLayout}
+        onToggle={(next) => setExpandedLayout(next)}
+        className={styles.card}
+      >
+        <Box className={styles.layoutOptions}>
+          <Typography className={styles.sectionHint}>
+            As cores sao aplicadas no canvas e no preview.
+          </Typography>
+          <Box className={styles.styleGrid}>
+            {STYLE_INPUTS.map((styleInput) => (
+              <Box key={styleInput.key} className={styles.styleItem}>
+                <Typography className={styles.fieldName}>
+                  {styleInput.label}
+                </Typography>
+                <input
+                  type="color"
+                  value={formStyles[styleInput.key]}
+                  onChange={(event) =>
+                    handleUpdateStyle(styleInput.key, event.target.value)
+                  }
+                  className={styles.colorInput}
+                  aria-label={styleInput.label}
+                />
+                <Typography className={styles.colorValue}>
+                  {formStyles[styleInput.key]}
+                </Typography>
+              </Box>
+            ))}
+          </Box>
+          <Button
+            variant="secondary"
+            onClick={() =>
+              setFormStyles({ ...DEFAULT_FORM_STYLE_OPTIONS })
+            }
+          >
+            Restaurar cores padrao
+          </Button>
+        </Box>
+      </ExpandableCard>
+      <Button onClick={onSubmitForm} isLoading={isSavingForm}>
+        {isEditingForm ? "Atualizar formulario" : "Cadastrar formulario"}
+      </Button>
     </Box>
   );
 }

@@ -42,6 +42,24 @@ export type BuilderBlock = {
   fields: string[];
 };
 
+export type FormStyleOptions = {
+  formBackgroundColor: string;
+  formBorderColor: string;
+  titleColor: string;
+  descriptionColor: string;
+  buttonBackgroundColor: string;
+  buttonTextColor: string;
+};
+
+export const DEFAULT_FORM_STYLE_OPTIONS: FormStyleOptions = {
+  formBackgroundColor: "#f8fafc",
+  formBorderColor: "#dbe4ef",
+  titleColor: "#0f172a",
+  descriptionColor: "#475569",
+  buttonBackgroundColor: "#5070dd",
+  buttonTextColor: "#ffffff",
+};
+
 export type BuilderFieldLayout = BuilderField & {
   ordem: number;
   layout: {
@@ -71,7 +89,8 @@ export type BuilderSchema = {
   description: string;
   fields: BuilderFieldLayout[];
   blocks: BuilderBlock[];
-  schema: Record<string, GeneratedFieldRule | BuilderBlock[]>;
+  styles: FormStyleOptions;
+  schema: Record<string, GeneratedFieldRule | BuilderBlock[] | FormStyleOptions>;
 };
 
 export const FIELD_OPTIONS: FieldOption[] = [

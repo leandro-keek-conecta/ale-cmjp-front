@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { Alert, Box, Typography } from "@mui/material";
 import { useForm } from "react-hook-form";
 import Forms, { type InputType } from "@/components/Forms";
@@ -8,6 +8,7 @@ import type {
   BuilderBlock,
   BuilderFieldLayout,
   BuilderSchema,
+  FormStyleOptions,
 } from "../types/formsTypes";
 import styles from "./formPreview.module.css";
 
@@ -16,6 +17,7 @@ type PreviewValues = Record<string, unknown>;
 type FormPreviewProps = {
   formSchema: BuilderSchema;
   activeBlockIndex?: number;
+  formStyles: FormStyleOptions;
 };
 
 type PreviewPage = {
@@ -179,6 +181,7 @@ function mapFieldsToInputs(fields: BuilderFieldLayout[]) {
 export default function FormPreview({
   formSchema,
   activeBlockIndex = 0,
+  formStyles,
 }: FormPreviewProps) {
   const [currentStep, setCurrentStep] = useState(0);
 
@@ -271,8 +274,17 @@ export default function FormPreview({
     setCurrentStep((prev) => Math.max(prev - 1, 0));
   };
 
+  const themeStyle = {
+    "--preview-bg": formStyles.formBackgroundColor,
+    "--preview-border": formStyles.formBorderColor,
+    "--preview-title": formStyles.titleColor,
+    "--preview-description": formStyles.descriptionColor,
+    "--preview-button-bg": formStyles.buttonBackgroundColor,
+    "--preview-button-text": formStyles.buttonTextColor,
+  } as CSSProperties;
+
   return (
-    <Box className={styles.container}>
+    <Box className={styles.container} style={themeStyle}>
       <Typography className={styles.title}>
         {formSchema.title || "Formulario sem titulo"}
       </Typography>

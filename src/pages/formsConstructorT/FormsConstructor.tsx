@@ -7,17 +7,20 @@ import Button from "@/components/Button";
 import {
   type BuilderBlock,
   createBuilderField,
+  DEFAULT_FORM_STYLE_OPTIONS,
   FIELD_OPTIONS,
   generateSchemaFromBuilder,
   type BuilderField,
   type BuilderFieldRow,
   type BuilderSchema,
   type FieldType,
+  type FormStyleOptions,
 } from "./types/formsTypes";
 import { FormsDraggable } from "./FormsDraggable/FormsDraggable";
 import { DragDropProvider } from "@dnd-kit/react";
 import FormPreview from "./FormsPreview/FormPreview";
-import getForms from "@/services/forms/formsService";
+import getForms, { createForm, updateFormById } from "@/services/forms/formsService";
+import { triggerAlert } from "@/services/alert/alertService";
 
 const DEFAULT_PROJECT_SLUG = "ale-cmjp";
 const MAX_FIELDS_PER_ROW = 3;
@@ -34,6 +37,42 @@ function generateImportedFieldId(index: number) {
 function toTrimmedString(value: unknown) {
   if (typeof value !== "string") return "";
   return value.trim();
+}
+
+function resolveRequestErrorMessage(error: unknown, fallback: string) {
+  if (error instanceof Error) {
+    const message = toTrimmedString(error.message);
+    if (message) return message;
+  }
+
+  if (error && typeof error === "object") {
+    const response = (
+      error as { response?: { data?: Record<string, unknown> | string } }
+    ).response;
+    const data = response?.data;
+
+    if (typeof data === "string") {
+      const message = toTrimmedString(data);
+      if (message) return message;
+    }
+
+    if (data && typeof data === "object") {
+      const payload = data as Record<string, unknown>;
+      const message = toTrimmedString(payload.message);
+      if (message) return message;
+      const errorMessage = toTrimmedString(payload.error);
+      if (errorMessage) return errorMessage;
+    }
+  }
+
+  return fallback;
+}
+
+function toIdentifierString(value: unknown) {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return String(value);
+  }
+  return toTrimmedString(value);
 }
 
 function toOptionalNumber(value: unknown) {
@@ -114,27 +153,33 @@ function mapImportedField(
 
   return {
     id:
-      toTrimmedString(field.id) ||
+      toIdentifierString(field.id) ||
       toTrimmedString(field.name) ||
       generateImportedFieldId(index),
     name: rawName || `campo_${index + 1}`,
     label: rawLabel || fallbackLabel,
     type: fieldType,
     required: Boolean(field.required ?? schemaRule?.required),
-    placeholder: toTrimmedString(field.placeholder) || undefined,
+    placeholder:
+      toTrimmedString(field.placeholder) ||
+      toTrimmedString(options?.placeholder) ||
+      undefined,
     helpText:
       toTrimmedString(field.helpText) ||
+      toTrimmedString(options?.helpText) ||
       toTrimmedString(schemaRule?.helpText) ||
       undefined,
     helpStyle:
       field.helpStyle === "highlight" || field.helpStyle === "default"
         ? field.helpStyle
+        : options?.helpStyle === "highlight" || options?.helpStyle === "default"
+          ? (options.helpStyle as "default" | "highlight")
         : schemaRule?.helpStyle === "highlight" || schemaRule?.helpStyle === "default"
           ? (schemaRule.helpStyle as "default" | "highlight")
           : "default",
-    min: toOptionalNumber(field.min ?? schemaRule?.min),
-    max: toOptionalNumber(field.max ?? schemaRule?.max),
-    rows: toOptionalNumber(field.rows ?? schemaRule?.rows),
+    min: toOptionalNumber(field.min ?? options?.min ?? schemaRule?.min),
+    max: toOptionalNumber(field.max ?? options?.max ?? schemaRule?.max),
+    rows: toOptionalNumber(field.rows ?? options?.rows ?? schemaRule?.rows),
     options:
       fieldType === "Select"
         ? { items: normalizeSelectItems(field, schemaRule) }
@@ -174,8 +219,22 @@ function mapImportedFieldsToRows(
       index,
       schemaRulesByName[toTrimmedString(field.name)],
     ),
-    row: toOptionalNumber((field.layout as Record<string, unknown> | undefined)?.row),
-    column: toOptionalNumber((field.layout as Record<string, unknown> | undefined)?.column),
+    row: toOptionalNumber(
+      (field.layout as Record<string, unknown> | undefined)?.row ??
+        (
+          (field.options as Record<string, unknown> | undefined)?.layout as
+            | Record<string, unknown>
+            | undefined
+        )?.row,
+    ),
+    column: toOptionalNumber(
+      (field.layout as Record<string, unknown> | undefined)?.column ??
+        (
+          (field.options as Record<string, unknown> | undefined)?.layout as
+            | Record<string, unknown>
+            | undefined
+        )?.column,
+    ),
     ordem: toOptionalNumber(field.ordem) ?? index + 1,
   }));
 
@@ -272,10 +331,83 @@ function resolveProjectSlug(form: FormOptionItem) {
   );
 }
 
+function toOptionalId(value: unknown) {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string" && value.trim()) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  return null;
+}
+
+function resolveFormId(source: Record<string, unknown> | null | undefined) {
+  if (!source) return null;
+  const nestedForm =
+    (source.form as Record<string, unknown> | undefined) ?? undefined;
+  return (
+    toOptionalId(source.id) ??
+    toOptionalId(source.formId) ??
+    toOptionalId(source.form_id) ??
+    toOptionalId(nestedForm?.id) ??
+    toOptionalId(nestedForm?.formId) ??
+    null
+  );
+}
+
+function resolveVersionId(source: Record<string, unknown> | null | undefined) {
+  if (!source) return null;
+  return (
+    toOptionalId(source.id) ??
+    toOptionalId(source.versionId) ??
+    toOptionalId(source.formVersionId) ??
+    null
+  );
+}
+
+function mapFieldIdByName(source: Record<string, unknown> | null | undefined) {
+  if (!source) return {};
+
+  const fields = Array.isArray(source.fields)
+    ? (source.fields as Record<string, unknown>[])
+    : [];
+
+  return fields.reduce<Record<string, number>>((accumulator, field) => {
+    const name = toTrimmedString(field.name);
+    const id = toOptionalId(field.id);
+    if (name && id !== null) {
+      accumulator[name] = id;
+    }
+    return accumulator;
+  }, {});
+}
+
+function extractPersistedFormId(
+  response: unknown,
+  fallback: number | null,
+) {
+  const payload =
+    (response as { data?: Record<string, unknown> } | undefined)?.data ?? {};
+  const data =
+    (payload as { data?: Record<string, unknown> | null }).data ?? null;
+  const nestedForm =
+    (data as Record<string, unknown> | null)?.form as
+      | Record<string, unknown>
+      | undefined;
+
+  return (
+    toOptionalId((data as Record<string, unknown> | null)?.id) ??
+    toOptionalId((data as Record<string, unknown> | null)?.formId) ??
+    toOptionalId(nestedForm?.id) ??
+    toOptionalId(payload.id) ??
+    toOptionalId(payload.formId) ??
+    fallback
+  );
+}
+
 function extractSchemaRulesByName(schema: Record<string, unknown>) {
   return Object.entries(schema).reduce<Record<string, Record<string, unknown>>>(
     (accumulator, [key, value]) => {
-      if (key === "blocks") return accumulator;
+      if (key === "blocks" || key === "styles") return accumulator;
       if (!value || typeof value !== "object") return accumulator;
       accumulator[key] = value as Record<string, unknown>;
       return accumulator;
@@ -284,7 +416,82 @@ function extractSchemaRulesByName(schema: Record<string, unknown>) {
   );
 }
 
+function normalizeHexColor(value: unknown, fallback: string) {
+  const normalized = toTrimmedString(value);
+  if (/^#[0-9a-f]{6}$/i.test(normalized)) {
+    return normalized;
+  }
+  return fallback;
+}
+
+function normalizeFormStyles(value: unknown): FormStyleOptions {
+  const source = (value && typeof value === "object"
+    ? value
+    : {}) as Record<string, unknown>;
+
+  return {
+    formBackgroundColor: normalizeHexColor(
+      source.formBackgroundColor,
+      DEFAULT_FORM_STYLE_OPTIONS.formBackgroundColor,
+    ),
+    formBorderColor: normalizeHexColor(
+      source.formBorderColor,
+      DEFAULT_FORM_STYLE_OPTIONS.formBorderColor,
+    ),
+    titleColor: normalizeHexColor(
+      source.titleColor,
+      DEFAULT_FORM_STYLE_OPTIONS.titleColor,
+    ),
+    descriptionColor: normalizeHexColor(
+      source.descriptionColor,
+      DEFAULT_FORM_STYLE_OPTIONS.descriptionColor,
+    ),
+    buttonBackgroundColor: normalizeHexColor(
+      source.buttonBackgroundColor,
+      DEFAULT_FORM_STYLE_OPTIONS.buttonBackgroundColor,
+    ),
+    buttonTextColor: normalizeHexColor(
+      source.buttonTextColor,
+      DEFAULT_FORM_STYLE_OPTIONS.buttonTextColor,
+    ),
+  };
+}
+
 function resolveActiveVersion(form: FormOptionItem) {
+  const pickVersionFromList = (versions: unknown) => {
+    if (!Array.isArray(versions)) return null;
+
+    const normalized = versions.filter(
+      (version): version is Record<string, unknown> =>
+        Boolean(version) && typeof version === "object",
+    );
+    if (!normalized.length) return null;
+
+    const activeVersions = normalized.filter((version) => version.isActive === true);
+    const candidates = activeVersions.length ? activeVersions : normalized;
+
+    const toVersionNumber = (value: unknown) => toOptionalNumber(value) ?? -1;
+    const toTimestamp = (value: unknown) => {
+      if (typeof value === "string" && value.trim()) {
+        const timestamp = Date.parse(value);
+        return Number.isFinite(timestamp) ? timestamp : 0;
+      }
+      return 0;
+    };
+
+    return [...candidates].sort((left, right) => {
+      const versionDiff =
+        toVersionNumber(right.version) - toVersionNumber(left.version);
+      if (versionDiff !== 0) return versionDiff;
+
+      const timeDiff =
+        toTimestamp(right.createdAt) - toTimestamp(left.createdAt);
+      if (timeDiff !== 0) return timeDiff;
+
+      return (toOptionalId(right.id) ?? 0) - (toOptionalId(left.id) ?? 0);
+    })[0];
+  };
+
   if (Array.isArray((form as Record<string, unknown>).fields)) {
     return form as Record<string, unknown>;
   }
@@ -323,6 +530,13 @@ function resolveActiveVersion(form: FormOptionItem) {
     >;
   }
 
+  const rootVersion = pickVersionFromList(
+    (form as Record<string, unknown>).versions,
+  );
+  if (rootVersion) {
+    return rootVersion;
+  }
+
   const nestedForm = form.form as Record<string, unknown> | undefined;
   if (nestedForm?.activeVersion && typeof nestedForm.activeVersion === "object") {
     return nestedForm.activeVersion as Record<string, unknown>;
@@ -337,6 +551,11 @@ function resolveActiveVersion(form: FormOptionItem) {
 
   if (nestedForm && Array.isArray(nestedForm.fields)) {
     return nestedForm;
+  }
+
+  const nestedVersion = pickVersionFromList(nestedForm?.versions);
+  if (nestedVersion) {
+    return nestedVersion;
   }
 
   return null;
@@ -475,8 +694,19 @@ export default function ConstructorForm() {
   const [fieldRows, setFieldRows] = useState<BuilderFieldRow[]>([]);
   const [formBlocks, setFormBlocks] = useState<BuilderBlock[]>([]);
   const [selectedBlockIndex, setSelectedBlockIndex] = useState(0);
+  const [selectedFormId, setSelectedFormId] = useState<number | null>(null);
+  const [selectedFormVersionId, setSelectedFormVersionId] = useState<number | null>(
+    null,
+  );
+  const [selectedFieldIdByName, setSelectedFieldIdByName] = useState<
+    Record<string, number>
+  >({});
+  const [isSavingForm, setIsSavingForm] = useState(false);
   const [titleForm, setTitleForm] = useState("Titulo do Formulario");
   const [descriptionForm, setDescriptionForm] = useState("");
+  const [formStyles, setFormStyles] = useState<FormStyleOptions>(() => ({
+    ...DEFAULT_FORM_STYLE_OPTIONS,
+  }));
   const [preview, setPreview] = useState(false);
   const contentClassName = `${styles.bodyContent} ${
     preview ? styles.bodyContentWithPreview : ""
@@ -506,12 +736,14 @@ export default function ConstructorForm() {
       description: descriptionForm,
       fields: layoutFields,
       blocks: normalizedBlocks,
+      styles: formStyles,
       schema: {
         ...generatedSchema,
         blocks: normalizedBlocks,
+        styles: formStyles,
       },
     };
-  }, [descriptionForm, fieldRows, formBlocks, titleForm]);
+  }, [descriptionForm, fieldRows, formBlocks, formStyles, titleForm]);
 
   useEffect(() => {
     const fieldNames = fieldRows.flatMap((row) => row.map((field) => field.name));
@@ -723,10 +955,74 @@ export default function ConstructorForm() {
     });
   }
 
-  const handleSelectForm = async (selectedForm: FormOptionItem | null) => {
-    if (!selectedForm) {
+  const handleSubmitForm = async () => {
+    const normalizedTitle = titleForm.trim();
+    if (!normalizedTitle) {
+      console.warn("Titulo do formulario e obrigatorio.");
+      triggerAlert({
+        category: "warning",
+        title: "Titulo do formulario e obrigatorio.",
+      });
       return;
     }
+
+    const payload: Record<string, unknown> = {
+      name: normalizedTitle,
+      title: normalizedTitle,
+      description: descriptionForm.trim(),
+      blocks: formSchema.blocks,
+      schema: formSchema.schema,
+      fields: formSchema.fields,
+      activeVersion: {
+        id: selectedFormVersionId,
+        schema: formSchema.schema,
+        fields: formSchema.fields,
+      },
+      versionId: selectedFormVersionId,
+      fieldIdByName: selectedFieldIdByName,
+    };
+
+    try {
+      setIsSavingForm(true);
+      const isUpdating = selectedFormId !== null;
+      const response =
+        isUpdating
+          ? await updateFormById(selectedFormId, payload)
+          : await createForm(payload);
+      const persistedId = extractPersistedFormId(response, selectedFormId);
+      setSelectedFormId(persistedId);
+      triggerAlert({
+        category: "success",
+        title: isUpdating
+          ? "Formulario atualizado com sucesso."
+          : "Formulario criado com sucesso.",
+      });
+    } catch (error) {
+      console.error("Erro ao salvar formulario", error);
+      triggerAlert({
+        category: "error",
+        title: resolveRequestErrorMessage(
+          error,
+          selectedFormId !== null
+            ? "Erro ao atualizar formulario."
+            : "Erro ao cadastrar formulario.",
+        ),
+      });
+    } finally {
+      setIsSavingForm(false);
+    }
+  };
+
+  const handleSelectForm = async (selectedForm: FormOptionItem | null) => {
+    if (!selectedForm) {
+      setSelectedFormId(null);
+      setSelectedFormVersionId(null);
+      setSelectedFieldIdByName({});
+      return;
+    }
+
+    const selectedId = resolveFormId(selectedForm);
+    setSelectedFormId(selectedId);
 
     try {
       let payload: Record<string, unknown> = selectedForm;
@@ -741,14 +1037,18 @@ export default function ConstructorForm() {
         const projectSlug = resolveProjectSlug(selectedForm);
         const response = await getForms(formSlug, projectSlug);
         payload = (response?.data?.data ?? {}) as Record<string, unknown>;
-        activeVersion = (payload.activeVersion ??
-          null) as Record<string, unknown> | null;
+        activeVersion = resolveActiveVersion(payload as FormOptionItem);
       }
 
       if (!activeVersion) {
         console.warn("Formulario sem versao ativa para edicao.");
+        setSelectedFormVersionId(null);
+        setSelectedFieldIdByName({});
         return;
       }
+
+      setSelectedFormVersionId(resolveVersionId(activeVersion));
+      setSelectedFieldIdByName(mapFieldIdByName(activeVersion));
 
       const schema =
         (activeVersion.schema as Record<string, unknown> | undefined) ?? {};
@@ -765,6 +1065,7 @@ export default function ConstructorForm() {
       setFormBlocks(mapImportedBlocks(blocks));
       setSelectedBlockIndex(0);
       setFieldRows(mapImportedFieldsToRows(importedFields, blocks, schemaRulesByName));
+      setFormStyles(normalizeFormStyles(schema.styles));
 
       const loadedTitle = pickFirstText(
         activeVersion.title,
@@ -779,13 +1080,16 @@ export default function ConstructorForm() {
 
       setTitleForm(loadedTitle || "Titulo do Formulario");
       setDescriptionForm(loadedDescription);
+      setSelectedFormId(resolveFormId(payload) ?? selectedId);
     } catch (error) {
       console.error("Erro ao carregar formulario selecionado", error);
     }
   };
 
   const handleDetachSelectedForm = () => {
-    // Mantem os dados atuais no construtor e apenas remove o vinculo com o item selecionado.
+    setSelectedFormId(null);
+    setSelectedFormVersionId(null);
+    setSelectedFieldIdByName({});
   };
 
   return (
@@ -823,6 +1127,8 @@ export default function ConstructorForm() {
                   setTitleForm={setTitleForm}
                   descriptionForm={descriptionForm}
                   setDescriptionForm={setDescriptionForm}
+                  formStyles={formStyles}
+                  setFormStyles={setFormStyles}
                   blocks={formBlocks}
                   selectedBlockIndex={selectedBlockIndex}
                   availableFieldNames={fieldRows.flatMap((row) =>
@@ -836,6 +1142,9 @@ export default function ConstructorForm() {
                   onDetachSelectedForm={handleDetachSelectedForm}
                   onTogglePreview={() => setPreview(true)}
                   onSelectForm={handleSelectForm}
+                  onSubmitForm={handleSubmitForm}
+                  isSavingForm={isSavingForm}
+                  isEditingForm={selectedFormId !== null}
                 />
               </Box>
             </Box>
@@ -847,6 +1156,7 @@ export default function ConstructorForm() {
               visibleFieldNames={formBlocks[selectedBlockIndex]?.fields}
               titleForm={titleForm}
               descriptionForm={descriptionForm}
+              formStyles={formStyles}
               onDeleteField={handleDeleteField}
               onEditField={handleEditField}
               formSchema={formSchema}
@@ -857,6 +1167,7 @@ export default function ConstructorForm() {
               <FormPreview
                 formSchema={formSchema}
                 activeBlockIndex={selectedBlockIndex}
+                formStyles={formStyles}
               />
             </Box>
           )}
