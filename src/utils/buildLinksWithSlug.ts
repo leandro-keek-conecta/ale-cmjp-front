@@ -8,5 +8,5 @@ export default function buildLink(formName: string, slug: string) {
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-");
 
-  return `https://ale-cmjp.keekconecta.com.br/form/${slug}/${nameFormatted}`;
+  return `http://localhost:5173/form/${slug}/${nameFormatted}`;
 }

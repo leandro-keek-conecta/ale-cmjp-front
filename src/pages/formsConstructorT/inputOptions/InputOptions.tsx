@@ -4,6 +4,7 @@ import TextArea from "@/components/TextArea";
 import { Box, IconButton, TextField, Typography } from "@mui/material";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import IntegrationInstructionsIcon from "@mui/icons-material/IntegrationInstructions";
 import {
   DEFAULT_FORM_STYLE_OPTIONS,
   FIELD_OPTIONS,
@@ -27,6 +28,23 @@ export type FormOptionItem = {
 
 type PrimitiveSelectValue = string | number | boolean;
 const DEFAULT_PROJECT_SLUG = "ale-cmjp";
+
+type N8nBasePayload = {
+  formVersionId: number;
+  projetoId: number;
+  status: "COMPLETED";
+  submittedAt: string;
+  fields: Record<string, string>;
+  source: "n8n";
+  channel: "automation";
+};
+
+type FormLinkItem = {
+  id: number;
+  formName: string;
+  href: string;
+  n8nPayload: N8nBasePayload;
+};
 
 const STYLE_INPUTS: Array<{
   key: keyof FormStyleOptions;
@@ -89,6 +107,127 @@ function resolveProjectSlug(form: FormOptionItem) {
   return "";
 }
 
+function toOptionalNumber(value: unknown) {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string" && value.trim()) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  return null;
+}
+
+function resolveActiveVersionSource(form: FormOptionItem) {
+  const asRecord = form as Record<string, unknown>;
+  const nestedForm =
+    (asRecord.form as Record<string, unknown> | undefined) ?? undefined;
+
+  const directCandidates = [
+    asRecord.activeVersion,
+    asRecord.active_version,
+    asRecord.currentVersion,
+    asRecord.latestVersion,
+    nestedForm?.activeVersion,
+    nestedForm?.active_version,
+    nestedForm?.currentVersion,
+    nestedForm?.latestVersion,
+  ];
+
+  for (const candidate of directCandidates) {
+    if (candidate && typeof candidate === "object") {
+      return candidate as Record<string, unknown>;
+    }
+  }
+
+  if (Array.isArray(asRecord.fields)) {
+    return asRecord;
+  }
+
+  if (nestedForm && Array.isArray(nestedForm.fields)) {
+    return nestedForm;
+  }
+
+  const versions =
+    (Array.isArray(asRecord.versions)
+      ? asRecord.versions
+      : Array.isArray(nestedForm?.versions)
+        ? nestedForm.versions
+        : []) ?? [];
+  const normalizedVersions = versions.filter(
+    (version): version is Record<string, unknown> =>
+      Boolean(version) && typeof version === "object",
+  );
+
+  if (!normalizedVersions.length) return null;
+
+  return (
+    normalizedVersions.find((version) => version.isActive === true) ??
+    normalizedVersions[0]
+  );
+}
+
+function resolveFormVersionId(form: FormOptionItem) {
+  const source = resolveActiveVersionSource(form);
+  if (!source) return null;
+
+  return (
+    toOptionalNumber(source.id) ??
+    toOptionalNumber(source.formVersionId) ??
+    toOptionalNumber((form as Record<string, unknown>).formVersionId) ??
+    null
+  );
+}
+
+function resolveProjectIdFromForm(form: FormOptionItem) {
+  const asRecord = form as Record<string, unknown>;
+  const nestedForm =
+    (asRecord.form as Record<string, unknown> | undefined) ?? undefined;
+  const projeto =
+    (asRecord.projeto as Record<string, unknown> | undefined) ?? undefined;
+
+  return (
+    toOptionalNumber(asRecord.projetoId) ??
+    toOptionalNumber(asRecord.projectId) ??
+    toOptionalNumber(nestedForm?.projetoId) ??
+    toOptionalNumber(nestedForm?.projectId) ??
+    toOptionalNumber(projeto?.id) ??
+    null
+  );
+}
+
+function resolveFieldDefinitionsForForm(form: FormOptionItem) {
+  const source = resolveActiveVersionSource(form);
+  if (!source) return [];
+
+  const fields = Array.isArray(source.fields)
+    ? (source.fields as Record<string, unknown>[])
+    : [];
+
+  return fields
+    .map((field) => {
+      const name =
+        typeof field?.name === "string" ? field.name.trim() : "";
+      if (!name) return null;
+
+      const label =
+        typeof field?.label === "string" && field.label.trim()
+          ? field.label.trim()
+          : name;
+
+      return {
+        name,
+        label,
+      };
+    })
+    .filter(
+      (
+        field,
+      ): field is {
+        name: string;
+        label: string;
+      } => Boolean(field),
+    );
+}
+
 type InputOptionsProps = {
   titleForm: string;
   setTitleForm: (value: string) => void;
@@ -136,7 +275,7 @@ export default function InputOptions({
 }: InputOptionsProps) {
   const [formsOptions, setFormsOptions] = useState<FormOptionItem[]>([]);
   const [selectedFormId, setSelectedFormId] = useState<number | null>(null);
-  const [copiedLink, setCopiedLink] = useState<string | null>(null);
+  const [copiedItemKey, setCopiedItemKey] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(false);
   const [expandedLayout, setExpandedLayout] = useState(false);
   const [expandedLinks, setExpandedLinks] = useState(false);
@@ -189,25 +328,48 @@ export default function InputOptions({
   );
 
   const selectedBlock = blocks[selectedBlockIndex] ?? null;
-  const formLinks = useMemo(
-    () =>
-      formsOptions
-        .map((form) => {
-          const { label } = resolveFormOptionMeta(form);
-          const formName = label;
-          if (!formName) return null;
+  const formLinks = useMemo<FormLinkItem[]>(() => {
+    return formsOptions.reduce<FormLinkItem[]>((accumulator, form) => {
+      const { label, idNumber } = resolveFormOptionMeta(form);
+      const formName = label;
+      if (!formName || idNumber === null) return accumulator;
 
-          const resolvedProjectSlug =
-            resolveProjectSlug(form) || DEFAULT_PROJECT_SLUG;
-          const href = buildLink(formName, resolvedProjectSlug);
+      const resolvedProjectSlug = resolveProjectSlug(form) || DEFAULT_PROJECT_SLUG;
+      const href = buildLink(formName, resolvedProjectSlug);
+      const formVersionId = resolveFormVersionId(form) ?? 0;
+      const resolvedProjectId =
+        resolveProjectIdFromForm(form) ??
+        toOptionalNumber(projectId) ??
+        0;
+      const fieldDefinitions = resolveFieldDefinitionsForForm(form);
+      const fields = fieldDefinitions.reduce<Record<string, string>>(
+        (fieldsAccumulator, field) => {
+          fieldsAccumulator[field.name] = field.label;
+          return fieldsAccumulator;
+        },
+        {},
+      );
 
-          return { formName, href };
-        })
-        .filter(
-          (item): item is { formName: string; href: string } => Boolean(item),
-        ),
-    [formsOptions],
-  );
+      const n8nPayload: N8nBasePayload = {
+        formVersionId,
+        projetoId: resolvedProjectId,
+        status: "COMPLETED",
+        submittedAt: new Date().toISOString(),
+        fields,
+        source: "n8n",
+        channel: "automation",
+      };
+
+      accumulator.push({
+        id: idNumber,
+        formName,
+        href,
+        n8nPayload,
+      });
+
+      return accumulator;
+    }, []);
+  }, [formsOptions, projectId]);
 
   const selectedBlockFieldNames = selectedBlock?.fields ?? [];
   const fieldsFromSelectedBlock = availableFieldNames.filter((name) =>
@@ -252,13 +414,16 @@ export default function InputOptions({
     onDetachSelectedForm();
   };
 
-  const handleCopyLink = async (link: string) => {
+  const handleCopyValue = async (value: string, key: string) => {
     try {
-      await navigator.clipboard.writeText(link);
-      setCopiedLink(link);
-      setTimeout(() => setCopiedLink((current) => (current === link ? null : current)), 1800);
+      await navigator.clipboard.writeText(value);
+      setCopiedItemKey(key);
+      setTimeout(
+        () => setCopiedItemKey((current) => (current === key ? null : current)),
+        1800,
+      );
     } catch (error) {
-      console.error("Erro ao copiar link", error);
+      console.error("Erro ao copiar item", error);
     }
   };
 
@@ -327,7 +492,7 @@ export default function InputOptions({
         {formLinks.length ? (
           <Box className={styles.linksList}>
             {formLinks.map((formLink) => (
-              <Box key={formLink.href} className={styles.linkItem}>
+              <Box key={formLink.id} className={styles.linkItem}>
                 <Typography className={styles.fieldName}>
                   {formLink.formName}
                 </Typography>
@@ -343,15 +508,37 @@ export default function InputOptions({
                   <IconButton
                     size="small"
                     aria-label={`Copiar link ${formLink.formName}`}
-                    onClick={() => void handleCopyLink(formLink.href)}
+                    onClick={() =>
+                      void handleCopyValue(formLink.href, `link-${formLink.id}`)
+                    }
                     className={styles.copyButton}
                   >
                     <ContentCopyIcon fontSize="small" />
                   </IconButton>
                 </Box>
-                {copiedLink === formLink.href ? (
+                <Box className={styles.linkActions}>
+                  <button
+                    type="button"
+                    className={styles.n8nButton}
+                    onClick={() =>
+                      void handleCopyValue(
+                        JSON.stringify(formLink.n8nPayload, null, 2),
+                        `n8n-${formLink.id}`,
+                      )
+                    }
+                  >
+                    <IntegrationInstructionsIcon fontSize="small" />
+                    Copiar objeto base n8n
+                  </button>
+                </Box>
+                {copiedItemKey === `link-${formLink.id}` ? (
                   <Typography className={styles.copyFeedback}>
                     Link copiado
+                  </Typography>
+                ) : null}
+                {copiedItemKey === `n8n-${formLink.id}` ? (
+                  <Typography className={styles.copyFeedback}>
+                    Objeto n8n copiado
                   </Typography>
                 ) : null}
               </Box>
@@ -508,7 +695,8 @@ export default function InputOptions({
           </Button>
         </Box>
       </ExpandableCard>
-      <Button onClick={onSubmitForm} isLoading={isSavingForm}>
+      <Button onClick={onSubmitForm} isLoading={isSavingForm} 
+              className={styles.previewButtonMain}>
         {isEditingForm ? "Atualizar formulario" : "Cadastrar formulario"}
       </Button>
     </Box>
