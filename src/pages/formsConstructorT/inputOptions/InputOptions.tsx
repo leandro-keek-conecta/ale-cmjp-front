@@ -3,6 +3,7 @@ import InputText from "@/components/InputText";
 import TextArea from "@/components/TextArea";
 import { Box, IconButton, TextField, Typography } from "@mui/material";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import {
   DEFAULT_FORM_STYLE_OPTIONS,
   FIELD_OPTIONS,
@@ -16,6 +17,7 @@ import Button from "@/components/Button";
 import ExpandableCard from "@/components/expandable-card";
 import { getStoredProjectId } from "@/utils/project";
 import { getFormsById } from "@/services/forms/formsService";
+import buildLink from "@/utils/buildLinksWithSlug.ts";
 
 export type FormOptionItem = {
   id?: number | string;
@@ -24,6 +26,7 @@ export type FormOptionItem = {
 };
 
 type PrimitiveSelectValue = string | number | boolean;
+const DEFAULT_PROJECT_SLUG = "ale-cmjp";
 
 const STYLE_INPUTS: Array<{
   key: keyof FormStyleOptions;
@@ -51,6 +54,39 @@ function resolveFormOptionMeta(form: FormOptionItem) {
     label,
     idNumber: Number.isFinite(idNumber) ? idNumber : null,
   };
+}
+
+function resolveProjectSlug(form: FormOptionItem) {
+  const nestedForm =
+    (form.form as Record<string, unknown> | undefined) ?? undefined;
+  const projeto =
+    (form.projeto as Record<string, unknown> | undefined) ?? undefined;
+  const project =
+    (form.project as Record<string, unknown> | undefined) ?? undefined;
+  const rawProjectSlug =
+    form.projetoSlug ??
+    form.projectSlug ??
+    form.projetoUrl ??
+    form.projectUrl ??
+    form.url ??
+    projeto?.slug ??
+    projeto?.url ??
+    project?.slug ??
+    project?.url ??
+    nestedForm?.projetoSlug ??
+    nestedForm?.projectSlug ??
+    nestedForm?.projetoUrl ??
+    nestedForm?.projectUrl;
+
+  if (typeof rawProjectSlug === "string") {
+    const cleaned = rawProjectSlug
+      .trim()
+      .replace(/^https?:\/\/[^/]+\/form\//i, "")
+      .replace(/^\/+|\/+$/g, "");
+    if (cleaned) return cleaned;
+  }
+
+  return "";
 }
 
 type InputOptionsProps = {
@@ -100,8 +136,10 @@ export default function InputOptions({
 }: InputOptionsProps) {
   const [formsOptions, setFormsOptions] = useState<FormOptionItem[]>([]);
   const [selectedFormId, setSelectedFormId] = useState<number | null>(null);
+  const [copiedLink, setCopiedLink] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(false);
   const [expandedLayout, setExpandedLayout] = useState(false);
+  const [expandedLinks, setExpandedLinks] = useState(false);
   const [expandedTabs, setExpandedTabs] = useState(false);
   const projectId = getStoredProjectId();
 
@@ -151,6 +189,26 @@ export default function InputOptions({
   );
 
   const selectedBlock = blocks[selectedBlockIndex] ?? null;
+  const formLinks = useMemo(
+    () =>
+      formsOptions
+        .map((form) => {
+          const { label } = resolveFormOptionMeta(form);
+          const formName = label;
+          if (!formName) return null;
+
+          const resolvedProjectSlug =
+            resolveProjectSlug(form) || DEFAULT_PROJECT_SLUG;
+          const href = buildLink(formName, resolvedProjectSlug);
+
+          return { formName, href };
+        })
+        .filter(
+          (item): item is { formName: string; href: string } => Boolean(item),
+        ),
+    [formsOptions],
+  );
+
   const selectedBlockFieldNames = selectedBlock?.fields ?? [];
   const fieldsFromSelectedBlock = availableFieldNames.filter((name) =>
     selectedBlockFieldNames.includes(name),
@@ -189,11 +247,28 @@ export default function InputOptions({
     });
   };
 
+  const handleClearSelectedForm = () => {
+    setSelectedFormId(null);
+    onDetachSelectedForm();
+  };
+
+  const handleCopyLink = async (link: string) => {
+    try {
+      await navigator.clipboard.writeText(link);
+      setCopiedLink(link);
+      setTimeout(() => setCopiedLink((current) => (current === link ? null : current)), 1800);
+    } catch (error) {
+      console.error("Erro ao copiar link", error);
+    }
+  };
+
   return (
     <Box className={styles.containerBoxInputs}>
       <Box className={styles.headerRow}>
         <Box className={styles.headerText}>
-          <Typography className={styles.tu}>Informacoes padrao do Forms</Typography>
+          <Typography className={styles.tu}>
+            Informacoes padrao do Forms
+          </Typography>
           <Typography className={styles.sectionHint}>
             Configure metadados, abas e campos do formulario.
           </Typography>
@@ -208,8 +283,23 @@ export default function InputOptions({
           label="Formularios do projeto"
           options={selectOptions}
           value={selectedFormId}
-          onChange={(value) => handleSelectForm(value as number | string | null)}
+          onChange={(value) =>
+            handleSelectForm(value as number | string | null)
+          }
         />
+        {isEditingForm ? (
+          <Box className={styles.selectedFormActions}>
+            <Typography className={styles.sectionHint}>
+              Modo edicao ativo. Limpe a selecao para criar um novo formulario.
+            </Typography>
+            <Button
+              onClick={handleClearSelectedForm}
+              className={styles.previewButton}
+            >
+              Desmarcar
+            </Button>
+          </Box>
+        ) : null}
         <Box className={styles.formInfo}>
           <Box>
             <InputText
@@ -227,6 +317,52 @@ export default function InputOptions({
           </Box>
         </Box>
       </Box>
+
+      <ExpandableCard
+        title="Links dos formularios"
+        expanded={expandedLinks}
+        onToggle={(next) => setExpandedLinks(next)}
+        className={styles.card}
+      >
+        {formLinks.length ? (
+          <Box className={styles.linksList}>
+            {formLinks.map((formLink) => (
+              <Box key={formLink.href} className={styles.linkItem}>
+                <Typography className={styles.fieldName}>
+                  {formLink.formName}
+                </Typography>
+                <Box className={styles.linkRow}>
+                  <a
+                    href={formLink.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={styles.formLink}
+                  >
+                    {formLink.href}
+                  </a>
+                  <IconButton
+                    size="small"
+                    aria-label={`Copiar link ${formLink.formName}`}
+                    onClick={() => void handleCopyLink(formLink.href)}
+                    className={styles.copyButton}
+                  >
+                    <ContentCopyIcon fontSize="small" />
+                  </IconButton>
+                </Box>
+                {copiedLink === formLink.href ? (
+                  <Typography className={styles.copyFeedback}>
+                    Link copiado
+                  </Typography>
+                ) : null}
+              </Box>
+            ))}
+          </Box>
+        ) : (
+          <Typography className={styles.helperText}>
+            Nenhum formulario disponivel para gerar link.
+          </Typography>
+        )}
+      </ExpandableCard>
 
       <ExpandableCard
         title="Abas do Formulario"
@@ -283,8 +419,13 @@ export default function InputOptions({
         {fieldsFromSelectedBlock.length ? (
           <Box className={styles.fieldTabsGrid}>
             {fieldsFromSelectedBlock.map((fieldName) => (
-              <Box key={`field-tab-${fieldName}`} className={styles.fieldTabRow}>
-                <Typography className={styles.fieldName}>{fieldName}</Typography>
+              <Box
+                key={`field-tab-${fieldName}`}
+                className={styles.fieldTabRow}
+              >
+                <Typography className={styles.fieldName}>
+                  {fieldName}
+                </Typography>
                 <SelectButton
                   label="Aba"
                   options={blockSelectOptions}
@@ -299,7 +440,9 @@ export default function InputOptions({
             ))}
           </Box>
         ) : (
-          <Typography className={styles.helperText}>Nenhum campo nesta aba.</Typography>
+          <Typography className={styles.helperText}>
+            Nenhum campo nesta aba.
+          </Typography>
         )}
       </ExpandableCard>
 
@@ -311,7 +454,11 @@ export default function InputOptions({
       >
         <Box className={styles.buttomOptions}>
           {FIELD_OPTIONS.map((input) => (
-            <Box component="li" key={input.id} className={styles.bottonsContent}>
+            <Box
+              component="li"
+              key={input.id}
+              className={styles.bottonsContent}
+            >
               <Draggable id={`input-${input.id}`}>
                 <Box className={styles.menuItem}>
                   <span className={styles.label}>{input.label}</span>
@@ -355,9 +502,7 @@ export default function InputOptions({
           </Box>
           <Button
             variant="secondary"
-            onClick={() =>
-              setFormStyles({ ...DEFAULT_FORM_STYLE_OPTIONS })
-            }
+            onClick={() => setFormStyles({ ...DEFAULT_FORM_STYLE_OPTIONS })}
           >
             Restaurar cores padrao
           </Button>

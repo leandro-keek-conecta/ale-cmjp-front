@@ -1013,11 +1013,22 @@ export default function ConstructorForm() {
     }
   };
 
+  const handleDetachSelectedForm = () => {
+    setSelectedFormId(null);
+    setSelectedFormVersionId(null);
+    setSelectedFieldIdByName({});
+    setSelectedBlockIndex(0);
+    setFieldRows([]);
+    setFormBlocks([]);
+    setTitleForm("Titulo do Formulario");
+    setDescriptionForm("");
+    setFormStyles({ ...DEFAULT_FORM_STYLE_OPTIONS });
+    setPreview(false);
+  };
+
   const handleSelectForm = async (selectedForm: FormOptionItem | null) => {
     if (!selectedForm) {
-      setSelectedFormId(null);
-      setSelectedFormVersionId(null);
-      setSelectedFieldIdByName({});
+      handleDetachSelectedForm();
       return;
     }
 
@@ -1084,12 +1095,6 @@ export default function ConstructorForm() {
     } catch (error) {
       console.error("Erro ao carregar formulario selecionado", error);
     }
-  };
-
-  const handleDetachSelectedForm = () => {
-    setSelectedFormId(null);
-    setSelectedFormVersionId(null);
-    setSelectedFieldIdByName({});
   };
 
   return (

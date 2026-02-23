@@ -76,6 +76,17 @@
   padding: 10px;
 }
 
+.selectedFormActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  padding: 8px;
+  background: #f8fafc;
+}
+
 .previewOnlyContent {
   width: 100%;
   display: flex;
@@ -276,19 +287,57 @@
 }
 
 .tabItem {
-  border: 1px solid #dbe4ef;
+  border: 1px solid #3d8cec;
   border-radius: 10px;
   padding: 10px;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto auto;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   background: #f8fbff;
 }
 
 .fieldTabsGrid {
   display: grid;
   gap: 8px;
+}
+
+.linksList {
+  display: grid;
+  gap: 8px;
+}
+
+.linkItem {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 8px;
+  display: grid;
+  gap: 4px;
+  background: #ffffff;
+}
+
+.formLink {
+  font-size: 0.78rem;
+  color: #1d4ed8;
+  text-decoration: underline;
+  word-break: break-all;
+}
+
+.linkRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 4px;
+}
+
+.copyButton {
+  color: #475569 !important;
+}
+
+.copyFeedback {
+  font-size: 0.72rem !important;
+  color: #15803d;
+  padding: 0;
 }
 
 .fieldTabRow {
