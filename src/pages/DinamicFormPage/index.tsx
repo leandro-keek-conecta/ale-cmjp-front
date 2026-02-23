@@ -261,22 +261,22 @@ export default function DinamicFormsPage() {
       if (!createdId) {
         setUserAlert({
           severity: "error",
-          message: "N\u00e3o foi poss\u00edvel recuperar o ID da resposta.",
+          message: "Não foi possível recuperar o ID da resposta.",
         });
         return;
       }
       setResponseId(createdId);
       setUserAlert({
         severity: "success",
-        message: "Usu\u00e1rio cadastrado com sucesso.",
+        message: "Usuário cadastrado com sucesso.",
       });
       setCurrentStep((prev) => Math.min(prev + 1, pages.length));
     } catch (error) {
-      console.error("Erro ao cadastrar usu\u00e1rio:", error);
+      console.error("Erro ao cadastrar usuário:", error);
       setUserAlert({
         severity: "error",
         message:
-          "N\u00e3o foi poss\u00edvel cadastrar o usu\u00e1rio. Tente novamente.",
+          "Não foi possível cadastrar o usuário. Tente novamente.",
       });
     }
   }

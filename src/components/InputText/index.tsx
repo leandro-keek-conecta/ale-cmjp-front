@@ -1,7 +1,7 @@
 import { TextField } from "@mui/material";
 import { useMediaQuery } from "@mui/material"; // Importa o hook
 
-interface InputTexProps {
+interface InputTextProps {
   label: string;
   placeholder?: string;
   type?: "text" | "number" | "email" | "password" | "Date" | "inputFile"; // Tipos de input
@@ -13,7 +13,7 @@ interface InputTexProps {
   required?: boolean;
 }
 
-export default function InputTex({
+export default function InputText({
   label,
   placeholder = "",
   type = "text",
@@ -23,7 +23,7 @@ export default function InputTex({
   helperText = "",
   className,
   required = false,
-}: InputTexProps) {
+}: InputTextProps) {
   const isMobile = useMediaQuery("(max-width:768px)");
   const size = isMobile ? "2.6rem" : "2.6rem";
   return (

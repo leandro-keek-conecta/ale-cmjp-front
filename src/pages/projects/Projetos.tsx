@@ -1,26 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  AppBar,
   Box,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  Drawer,
-  IconButton,
-  Toolbar,
-  styled,
 } from "@mui/material";
-import { Menu } from "@mui/icons-material";
-import LogoutIcon from "@mui/icons-material/Logout";
-import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
-import AddBusinessIcon from "@mui/icons-material/AddBusiness";
-import ChatIcon from "@mui/icons-material/Chat";
-import Logo from "../../assets/logo-horizontal-n.png";
 import styles from "./projetos.module.css";
-import UserMenuMinimal from "@/components/SplitButton";
-import { logout } from "@/services/auth/authService";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import type { ProjetoAccessLevel } from "@/types/IUserType";
@@ -32,6 +19,7 @@ import { isProjetoAccessLevel } from "@/utils/projectSelection";
 import { listAllProjects } from "@/services/projeto/ProjetoService";
 import type { ThemeChipDatum } from "./cardProject/chips";
 import SearchProjects from "./searchOfProjects";
+import CabecalhoEstilizado from "@/components/CabecalhoEstilizado";
 
 export type ProjectCardData = {
   id: number;
@@ -262,16 +250,9 @@ const normalizeThemeMetrics = (value: unknown): ThemeChipDatum[] => {
     .slice(0, 5);
 };
 
-const CabecalhoEstilizado = styled(AppBar)(({ theme }) => ({
-  backgroundColor: "white",
-  color: "#333333",
-  boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-  zIndex: theme.zIndex.drawer + 1,
-}));
-
 export default function Projetos() {
   const { user, setUser } = useAuth();
-  const { selectProject, resetProject } = useProjectSelection();
+  const { selectProject } = useProjectSelection();
   const navigate = useNavigate();
   const [loadingProjects, setLoadingProjects] = useState(true);
   const [projectSources, setProjectSources] = useState<RawProjectSource[]>([]);
@@ -279,27 +260,8 @@ export default function Projetos() {
     null,
   );
   const [searchTerm, setSearchTerm] = useState("");
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [createProjectModalOpen, setCreateProjectModalOpen] = useState(false);
   const isSuperAdmin = user?.role === "SUPERADMIN";
-
-  const avatarFallback = useMemo(() => {
-    if (!user) return "U";
-    if ((user as { initials?: string }).initials) {
-      return (user as { initials?: string }).initials ?? "U";
-    }
-    if (user.name) {
-      return (
-        user.name
-          .split(" ")
-          .filter(Boolean)
-          .slice(0, 2)
-          .map((part: string) => part[0]?.toUpperCase() ?? "")
-          .join("") || "U"
-      );
-    }
-    return "U";
-  }, [user]);
 
   useEffect(() => {
     let mounted = true;
@@ -467,13 +429,6 @@ export default function Projetos() {
     [navigate, selectProject, setUser],
   );
 
-  const handleLogout = useCallback(() => {
-    resetProject();
-    logout();
-    setUser(null);
-    navigate("/");
-  }, [navigate, resetProject, setUser]);
-
   const handleCreateProject = useCallback(() => {
     if (isSuperAdmin) {
       navigate("/cadastro-projeto");
@@ -482,41 +437,6 @@ export default function Projetos() {
 
     setCreateProjectModalOpen(true);
   }, [isSuperAdmin, navigate]);
-
-  const menuOptions = useMemo(() => {
-    if (user?.role === "ADMIN" || user?.role === "SUPERADMIN") {
-      return [
-        {
-          label: "Cadastro de Usuario",
-          icone: <PersonAddAlt1Icon />,
-          onClick: () => navigate("/cadastro-usuario"),
-        },
-        {
-          label: "Cadastro de projeto",
-          icone: <AddBusinessIcon />,
-          onClick: () => navigate("/cadastro-projeto"),
-        },
-        {
-          label: "Cadastro de automacoes",
-          icone: <ChatIcon />,
-          onClick: () => navigate("/cadastro-automacoes"),
-        },
-        {
-          label: "Sair",
-          icone: <LogoutIcon />,
-          onClick: handleLogout,
-        },
-      ];
-    }
-
-    return [
-      {
-        label: "Sair",
-        icone: <LogoutIcon />,
-        onClick: handleLogout,
-      },
-    ];
-  }, [handleLogout, navigate, user?.role]);
 
   return (
     <Box className={styles.page}>
@@ -528,40 +448,7 @@ export default function Projetos() {
           display: "flex",
           justifyContent: "center",
         }}
-      >
-        <Toolbar
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            width: "100%",
-            gap: 2,
-          }}
-        >
-          <IconButton
-            edge="start"
-            color="inherit"
-            onClick={() => setMobileMenuOpen(true)}
-            sx={{ display: { xs: "block", md: "none" } }}
-            aria-label="Abrir menu"
-          >
-            <Menu />
-          </IconButton>
-
-          <Box sx={{ display: "flex", alignItems: "center", flexGrow: 1 }}>
-            <img
-              src={Logo}
-              alt="keekInteligencia"
-              style={{ height: "2.5rem", width: "auto" }}
-            />
-          </Box>
-
-          <UserMenuMinimal
-            avatar={{ src: (user as { photoUrl?: string } | null)?.photoUrl, fallback: avatarFallback }}
-            options={menuOptions}
-          />
-        </Toolbar>
-      </CabecalhoEstilizado>
+      />
 
       <Box className={styles.content}>
         <SearchProjects
@@ -597,38 +484,6 @@ export default function Projetos() {
           </Box>
         )}
       </Box>
-
-      <Drawer
-        anchor="left"
-        open={mobileMenuOpen}
-        onClose={() => setMobileMenuOpen(false)}
-        sx={{ display: { xs: "block", md: "none" } }}
-      >
-        <Box sx={{ width: "75vw", maxWidth: 320, p: 1 }}>
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 0.4 }}>
-            {menuOptions.map((option) => (
-              <Button
-                key={option.label}
-                startIcon={option.icone}
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  option.onClick();
-                }}
-                sx={{
-                  justifyContent: "flex-start",
-                  textTransform: "none",
-                  color: "#1f2937",
-                  fontWeight: 600,
-                  px: 1.2,
-                  py: 1,
-                }}
-              >
-                {option.label}
-              </Button>
-            ))}
-          </Box>
-        </Box>
-      </Drawer>
 
       <Dialog
         open={createProjectModalOpen}

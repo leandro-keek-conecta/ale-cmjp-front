@@ -1,12 +1,15 @@
-﻿.card {
+.card {
   background-color: var(--card-strong);
   border-radius: 16px;
   border: 1px solid var(--border);
   box-shadow: var(--shadow-soft);
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding: 1rem;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  gap: 14px !important;
+  padding: 1rem !important;
+  overflow: visible !important;
 }
 
 .header {
@@ -58,9 +61,10 @@
 }
 
 .expanded {
-  max-height: 1200px;
+  max-height: 5000px;
   opacity: 1;
   transform: translateY(0);
+  overflow: visible;
 }
 
 .content {
