@@ -18,7 +18,6 @@ import {
   DialogContentText,
 } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
-import { updateFormResponse } from "../../services/formResponse/formResponseService";
 import getForms from "@/services/forms/formsService";
 import { submitOpiniionTest } from "@/services/opiniao/opiniaoService";
 import { useAuth } from "@/context/AuthContext";
@@ -158,6 +157,151 @@ const coerceValueForInput = (input: InputType<any>, value: unknown) => {
   }
 };
 
+function toTrimmedString(value: unknown) {
+  if (typeof value !== "string") return "";
+  return value.trim();
+}
+
+function toOptionalNumber(value: unknown) {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+  if (typeof value === "string" && value.trim()) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : undefined;
+  }
+  return undefined;
+}
+
+function getFieldOptions(source: unknown) {
+  return (source && typeof source === "object"
+    ? (source as Record<string, unknown>).options
+    : undefined) as Record<string, unknown> | undefined;
+}
+
+function resolveFieldInputType(
+  field: Record<string, unknown>,
+  schemaRule?: Record<string, unknown>,
+): InputType<any>["type"] {
+  const mergedField = {
+    ...(schemaRule ?? {}),
+    ...field,
+  };
+  const rawType = toTrimmedString(mergedField.type).toLowerCase();
+  const options = getFieldOptions(mergedField);
+  const hasSelectItems = Array.isArray(options?.items);
+  const hasSelectOptions = Array.isArray(options?.selectOptions);
+  const rows = toOptionalNumber(mergedField.rows ?? options?.rows);
+
+  if (rawType === "number") return "number";
+  if (rawType === "email") return "email";
+  if (rawType === "password") return "password";
+  if (rawType === "date") return "Date";
+  if (rawType === "textarea" || (rawType === "text" && (rows ?? 0) > 1)) {
+    return "textarea";
+  }
+  if (rawType === "switch" || rawType === "boolean") return "switch";
+  if (rawType === "inputfile" || rawType === "file") return "inputFile";
+  if (rawType === "select" || hasSelectItems || hasSelectOptions) {
+    return "Select";
+  }
+
+  return "text";
+}
+
+function normalizeSelectOptions(
+  field: Record<string, unknown>,
+  schemaRule?: Record<string, unknown>,
+) {
+  const fieldOptions = getFieldOptions(field);
+  const schemaOptions = getFieldOptions(schemaRule);
+
+  const rawItems = Array.isArray(fieldOptions?.items)
+    ? fieldOptions.items
+    : Array.isArray(fieldOptions?.selectOptions)
+      ? fieldOptions.selectOptions
+      : Array.isArray(schemaOptions?.items)
+        ? schemaOptions.items
+        : Array.isArray(schemaOptions?.selectOptions)
+          ? schemaOptions.selectOptions
+          : [];
+
+  return rawItems
+    .map((item) => {
+      if (typeof item === "string") {
+        const label = item.trim();
+        return label ? { label, value: label } : null;
+      }
+
+      if (item && typeof item === "object") {
+        const option = item as Record<string, unknown>;
+        const rawLabel = option.label ?? option.value ?? option.id;
+        const rawValue = option.value ?? option.label ?? option.id;
+
+        const label = toTrimmedString(rawLabel);
+        if (!label) return null;
+
+        if (
+          typeof rawValue === "string" ||
+          typeof rawValue === "number" ||
+          typeof rawValue === "boolean"
+        ) {
+          return { label, value: rawValue };
+        }
+
+        return { label, value: label };
+      }
+
+      return null;
+    })
+    .filter(Boolean) as { label: string; value: string | number | boolean }[];
+}
+
+function isRuleObject(value: unknown): value is Record<string, unknown> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const rule = value as Record<string, unknown>;
+  return (
+    "type" in rule ||
+    "required" in rule ||
+    "options" in rule ||
+    "rows" in rule ||
+    "min" in rule ||
+    "max" in rule
+  );
+}
+
+function extractSchemaRulesByName(schema: unknown) {
+  const result: Record<string, Record<string, unknown>> = {};
+
+  const collectRules = (source: unknown) => {
+    if (!source || typeof source !== "object" || Array.isArray(source)) return;
+    const sourceObject = source as Record<string, unknown>;
+
+    Object.entries(sourceObject).forEach(([key, value]) => {
+      if (
+        key === "blocks" ||
+        key === "styles" ||
+        key === "title" ||
+        key === "description" ||
+        key === "fields" ||
+        key === "schema"
+      ) {
+        return;
+      }
+      if (!isRuleObject(value)) return;
+      result[key] = value;
+    });
+  };
+
+  if (schema && typeof schema === "object" && !Array.isArray(schema)) {
+    const schemaObject = schema as Record<string, unknown>;
+    collectRules(schemaObject.schema);
+    collectRules(schemaObject);
+  }
+
+  return result;
+}
+
 export default function DinamicFormsPage() {
   const [currentStep, setCurrentStep] = useState(0);
   const [pages, setPages] = useState<FormPage[]>([]);
@@ -165,7 +309,6 @@ export default function DinamicFormsPage() {
     DEFAULT_FORM_VERSION_ID,
   );
   const [projectId, setProjectId] = useState<number>(DEFAULT_PROJECT_ID);
-  const [responseId, setResponseId] = useState<number | string | null>(null);
   const steps = useMemo(() => {
     const labels = pages.map((p) => p.title);
     return labels.length ? [...labels, "Concluído"] : [];
@@ -230,53 +373,24 @@ export default function DinamicFormsPage() {
     );
   };
 
-  const resolveResponseId = (payload: any) => {
-    if (!payload) return null;
-    return (
-      payload?.data?.id ??
-      payload?.id ??
-      payload?.data?.responseId ??
-      payload?.responseId ??
-      null
-    );
-  };
-
-  async function onSubmitUser(
-    values: Record<string, any>,
-    inputs: InputType<any>[],
-  ) {
+  async function onSubmitUser(values: Record<string, any>) {
     setUserAlert(null);
     try {
-      const fields = buildFieldsPayloadForInputs(values, inputs);
-      const response = await submitOpiniionTest({
-        formVersionId,
-        projetoId: projectId,
-        status: "STARTED",
-        fields,
-        userId: user?.id,
-        ...responseContext,
-      });
-      console.log("Resposta do submitOpiniionTest:", response);
-      const createdId = resolveResponseId(response);
-      if (!createdId) {
-        setUserAlert({
-          severity: "error",
-          message: "Não foi possível recuperar o ID da resposta.",
-        });
-        return;
-      }
-      setResponseId(createdId);
+      const fields = buildFieldsPayloadForInputs(
+        values,
+        pages.flatMap((pageItem) => pageItem.inputs),
+      );
+      console.log("Payload parcial acumulado para envio final:", fields);
       setUserAlert({
         severity: "success",
-        message: "Usuário cadastrado com sucesso.",
+        message: "Dados do usuário validados com sucesso.",
       });
       setCurrentStep((prev) => Math.min(prev + 1, pages.length));
     } catch (error) {
-      console.error("Erro ao cadastrar usuário:", error);
+      console.error("Erro ao validar dados do usuário:", error);
       setUserAlert({
         severity: "error",
-        message:
-          "Não foi possível cadastrar o usuário. Tente novamente.",
+        message: "Não foi possível validar os dados do usuário. Tente novamente.",
       });
     }
   }
@@ -284,20 +398,14 @@ export default function DinamicFormsPage() {
   async function onSubmitOpinion(values: Record<string, any>) {
     setOpinionAlert(null);
     try {
-      if (!responseId) {
-        setOpinionAlert({
-          severity: "error",
-          message: "Cadastro do usuário não encontrado para atualização.",
-        });
-        return;
-      }
-
       const fields = buildFieldsPayloadForInputs(
         values,
         pages.flatMap((p) => p.inputs),
       );
       const now = new Date().toISOString();
-      await updateFormResponse(responseId, {
+      await submitOpiniionTest({
+        formVersionId,
+        projetoId: projectId,
         status: "COMPLETED",
         submittedAt: now,
         completedAt: now,
@@ -331,50 +439,49 @@ export default function DinamicFormsPage() {
     navigate("/");
   }
 
-  function mapBackendFieldToInput(field: any): InputType<any> {
+  function mapBackendFieldToInput(
+    field: Record<string, unknown>,
+    schemaRule?: Record<string, unknown>,
+  ): InputType<any> {
+    const inputType = resolveFieldInputType(field, schemaRule);
+    const label =
+      toTrimmedString(field.label) ||
+      toTrimmedString(field.name) ||
+      "Campo";
+    const fieldName = toTrimmedString(field.name);
+    const fieldOptions = getFieldOptions(field);
+    const schemaOptions = getFieldOptions(schemaRule);
+    const isRequired = Boolean(field.required ?? schemaRule?.required);
+    const placeholder =
+      toTrimmedString(field.placeholder) ||
+      toTrimmedString(fieldOptions?.placeholder) ||
+      toTrimmedString(schemaRule?.placeholder) ||
+      toTrimmedString(schemaOptions?.placeholder) ||
+      undefined;
+
     const base = {
-      name: field.name,
-      title: field.label,
+      name: fieldName,
+      title: label,
       colSpan: 12,
-      rules: field.required
-        ? { required: `${field.label} é obrigatório` }
+      ...(placeholder ? { placeholder } : {}),
+      rules: isRequired
+        ? { required: `${label} e obrigatorio` }
         : undefined,
     };
 
-    switch (field.type) {
-      case "text":
-        return {
-          ...base,
-          type: field.options?.selectOptions ? "Select" : "text",
-          selectOptions: field.options?.selectOptions,
-        };
-
-      case "number":
-        return {
-          ...base,
-          type: "number",
-        };
-
-      case "textarea":
-        return {
-          ...base,
-          type: "textarea",
-        };
-
-      case "switch":
-        return {
-          ...base,
-          type: "switch",
-        };
-
-      default:
-        return {
-          ...base,
-          type: "text",
-        };
+    if (inputType === "Select") {
+      return {
+        ...base,
+        type: "Select",
+        selectOptions: normalizeSelectOptions(field, schemaRule),
+      };
     }
-  }
 
+    return {
+      ...base,
+      type: inputType,
+    };
+  }
   function buildDefaultValuesFromPages(pages: FormPage[]) {
     return pages
       .flatMap((p) => p.inputs)
@@ -415,20 +522,50 @@ export default function DinamicFormsPage() {
 
   function groupFieldsByBlocks(
     blocks: { title: string; fields: string[] }[],
-    fields: any[],
+    fields: Record<string, unknown>[],
+    schemaRulesByName: Record<string, Record<string, unknown>>,
   ) {
-    const fieldMap = new Map<string, any>();
-    fields.forEach((field) => fieldMap.set(field.name, field));
+    const fieldMap = new Map<string, Record<string, unknown>>();
+    fields.forEach((field) => {
+      const fieldName = toTrimmedString(field.name);
+      if (!fieldName) return;
+      fieldMap.set(fieldName, field);
+    });
 
-    return blocks.map((block) => ({
+    const mappedPages = blocks.map((block) => ({
       title: block.title,
-      inputs: block.fields
-        .map((name) => fieldMap.get(name))
-        .filter(Boolean)
-        .map(mapBackendFieldToInput),
+      inputs: block.fields.reduce<InputType<any>[]>((accumulator, fieldName) => {
+        const field = fieldMap.get(fieldName);
+        if (!field) return accumulator;
+        const resolvedName = toTrimmedString(field.name);
+        accumulator.push(
+          mapBackendFieldToInput(field, schemaRulesByName[resolvedName]),
+        );
+        return accumulator;
+      }, []),
     }));
-  }
 
+    const assignedNames = new Set(
+      blocks.flatMap((block) =>
+        Array.isArray(block.fields) ? block.fields : [],
+      ),
+    );
+    const unassignedFields = fields.filter(
+      (field) => !assignedNames.has(toTrimmedString(field.name)),
+    );
+
+    if (unassignedFields.length) {
+      mappedPages.push({
+        title: "Formulario",
+        inputs: unassignedFields.map((field) => {
+          const fieldName = toTrimmedString(field.name);
+          return mapBackendFieldToInput(field, schemaRulesByName[fieldName]);
+        }),
+      });
+    }
+
+    return mappedPages.filter((page) => page.inputs.length > 0);
+  }
   useEffect(() => {
     const fetchFormData = async () => {
       try {
@@ -437,10 +574,15 @@ export default function DinamicFormsPage() {
         const activeVersion = response.data.data.activeVersion;
         const projectFromResponse = response.data.data.projeto;
 
-        const blocks = activeVersion.schema.blocks;
-        const fields = activeVersion.fields;
+        const blocks = Array.isArray(activeVersion?.schema?.blocks)
+          ? activeVersion.schema.blocks
+          : [];
+        const fields = Array.isArray(activeVersion?.fields)
+          ? activeVersion.fields
+          : [];
+        const schemaRulesByName = extractSchemaRulesByName(activeVersion?.schema);
 
-        const pages = groupFieldsByBlocks(blocks, fields);
+        const pages = groupFieldsByBlocks(blocks, fields, schemaRulesByName);
         setPages(pages);
         if (typeof activeVersion?.id === "number") {
           setFormVersionId(activeVersion.id);
@@ -487,7 +629,7 @@ export default function DinamicFormsPage() {
     const values = getValues() as Record<string, any>;
     console.log("Submitting step", currentStep, values);
     if (currentStep === 0) {
-      await onSubmitUser(values, page.inputs);
+      await onSubmitUser(values);
       return;
     }
     if (currentStep === pages.length - 1) {
@@ -717,3 +859,4 @@ export default function DinamicFormsPage() {
     </Box>
   );
 }
+
