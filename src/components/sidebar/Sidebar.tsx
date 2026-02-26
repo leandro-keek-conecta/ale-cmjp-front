@@ -45,6 +45,14 @@ export function Sidebar({ estaAberta, aoFechar }: PropriedadesSidebar) {
             onClick={aoFechar}
           />
           <ItemMenu
+            icone={<AssessmentIcon />}
+            rotulo="Relatorio de opiniões"
+            para="/relatorio-opiniao"
+            estaAberta={estaAberta}
+            isActive={isActive("/relatorio-opiniao")}
+            onClick={aoFechar}
+          />
+          <ItemMenu
             icone={<EditDocumentIcon />}
             rotulo="cadastro de tema"
             para="/cadastro-thema"

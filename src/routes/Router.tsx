@@ -3,6 +3,7 @@ import HomePage from "../pages/Panorama/Panorama";
 import FormsPage from "../pages/formPage";
 import EmbedDashboardPage from "../pages/dashboards/EmbedDashboardPage";
 import RelatorioPage from "../pages/relatoriopage";
+import RelatorioOpiniao from "../pages/relatorioOpiniao";
 import LoginPage from "../pages/login";
 import { AuthProvider } from "../context/AuthContext";
 import NotFound from "../pages/notFound/NotFoundPage";
@@ -19,6 +20,7 @@ const RoutesConfig = () => (
     <Routes>
       <Route path="/panorama" element={<ProtectedRoute allowedRoles={["USER", "ADMIN", "SUPERADMIN"]}><HomePage /></ProtectedRoute>} />
       <Route path="/relatorio" element={<ProtectedRoute allowedRoles={["USER", "ADMIN", "SUPERADMIN"]}><RelatorioPage /></ProtectedRoute>} />
+      <Route path="/relatorio-opiniao" element={<ProtectedRoute allowedRoles={["USER", "ADMIN", "SUPERADMIN"]}><RelatorioOpiniao /></ProtectedRoute>} />
       <Route path="/cadastro-usuario" element={<ProtectedRoute allowedRoles={["USER", "ADMIN", "SUPERADMIN"]}><RegisterUser /></ProtectedRoute>} />
       <Route path="/cadastro-projeto" element={<ProtectedRoute allowedRoles={["USER", "ADMIN", "SUPERADMIN"]}><RegisterProject /></ProtectedRoute>} />
       <Route path="/cadastro-thema" element={<ProtectedRoute allowedRoles={["USER", "ADMIN", "SUPERADMIN"]}><ProjetoThemeTab /></ProtectedRoute>} />

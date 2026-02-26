@@ -10,6 +10,11 @@ export type MetricsParams = {
   formIds?: string;
   start?: string;
   end?: string;
+  temas?: string | string[];
+  tipoOpiniao?: string;
+  genero?: string;
+  bairros?: string | string[];
+  faixaEtaria?: string;
   status?: ResponseStatus;
   dateField?: string;
   monthStart?: string;
@@ -18,6 +23,10 @@ export type MetricsParams = {
   dayEnd?: string;
   limitTopForms?: number;
   limitValuesPerField?: number;
+  limits?: {
+    opiniao?: number;
+    bairro?: number;
+  };
 };
 
 type ApiEnvelope<T> = {
@@ -40,6 +49,30 @@ export type ProjectReportResponse = {
   lineByDay?: unknown[];
   responsesByForm?: unknown[];
   statusFunnel?: unknown[];
+  [key: string]: unknown;
+};
+
+export type OpinionReportResponse = {
+  cards?: {
+    totalOpinions?: number | string;
+    totalComplaints?: number | string;
+    totalPraise?: number | string;
+    totalKudos?: number | string;
+    totalSuggestions?: number | string;
+    completionRate?: number | string;
+    [key: string]: unknown;
+  };
+  lineByMonth?: unknown[];
+  opinionsByMonth?: unknown[];
+  lineByDay?: unknown[];
+  opinionsByDay?: unknown[];
+  responsesByForm?: unknown[];
+  statusFunnel?: unknown[];
+  topBairros?: unknown[];
+  opinionsByGender?: unknown[];
+  opinionsByAge?: unknown[];
+  campaignAcceptance?: unknown[];
+  topTemas?: unknown[];
   [key: string]: unknown;
 };
 
@@ -76,6 +109,16 @@ type FormFiltersEntry = {
 export type FormFiltersResponse = {
   forms?: FormFiltersEntry[];
   fields?: DynamicFieldFilter[];
+  [key: string]: unknown;
+};
+
+export type OpinionFilterOptionsResponse = {
+  tipoOpiniao?: Array<{ label: string; value: string; count?: number }>;
+  temas?: Array<{ label: string; value: string; count?: number }>;
+  genero?: Array<{ label: string; value: string; count?: number }>;
+  bairros?: Array<{ label: string; value: string; count?: number }>;
+  campanhas?: Array<{ label: string; value: string; count?: number }>;
+  faixaEtaria?: Array<{ label: string; value: string; count?: number }>;
   [key: string]: unknown;
 };
 
@@ -191,4 +234,50 @@ export async function getGeneralMetrics(params: MetricsParams = {}) {
     dayStart: requestParams.dayStart ?? start ?? defaultDayStart,
     dayEnd: requestParams.dayEnd ?? end ?? defaultDayEnd,
   });
+}
+
+export async function getOpinionReportMetrics(params: MetricsParams = {}) {
+  const requestParams = withProjectScope(params);
+  const { start, end } = requestParams;
+  const { start: defaultMonthStart, end: defaultMonthEnd } =
+    getLastSixMonthsRange();
+  const { start: defaultDayStart, end: defaultDayEnd } =
+    getCurrentMonthToDateRange();
+
+  const response = await api.get<ApiEnvelope<OpinionReportResponse>>(
+    "/form-response/metrics/report",
+    {
+      params: cleanParams({
+        ...(requestParams as Record<string, unknown>),
+        monthStart: requestParams.monthStart ?? start ?? defaultMonthStart,
+        monthEnd: requestParams.monthEnd ?? end ?? defaultMonthEnd,
+        dayStart: requestParams.dayStart ?? start ?? defaultDayStart,
+        dayEnd: requestParams.dayEnd ?? end ?? defaultDayEnd,
+        limits: requestParams.limits ?? {
+          opiniao: 10,
+          bairro: 10,
+        },
+      }),
+    },
+  );
+
+  return unwrapResponse<OpinionReportResponse>(response.data);
+}
+
+export async function getOpinionFilterOptions(params: MetricsParams = {}) {
+  const requestParams = withProjectScope(params);
+  const response = await api.get<ApiEnvelope<OpinionFilterOptionsResponse>>(
+    "/form-response/metrics/filters",
+    {
+      params: cleanParams({
+        projetoId: requestParams.projetoId,
+        formVersionId: requestParams.formVersionId,
+        start: requestParams.start,
+        end: requestParams.end,
+        limit: requestParams.limitValuesPerField ?? 200,
+      }),
+    },
+  );
+
+  return unwrapResponse<OpinionFilterOptionsResponse>(response.data);
 }
