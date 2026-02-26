@@ -7,7 +7,10 @@ import { ChevronLeft, Menu } from "@mui/icons-material";
 import { Sidebar } from "../sidebar/Sidebar";
 import { defaultTheme } from "../../theme";
 import { getActiveProject } from "../../utils/project";
-import CabecalhoEstilizado, { CabecalhoMenuUsuario } from "../CabecalhoEstilizado";
+import CabecalhoEstilizado, {
+  CabecalhoMenuUsuario,
+} from "../CabecalhoEstilizado";
+import { useNavigate } from "react-router-dom";
 // Interface para propriedades do componente Layout
 interface PropriedadesLayout {
   children: React.ReactNode;
@@ -30,6 +33,7 @@ export function Layout({
   mostrarSidebar = true,
   tituloIcon,
 }: PropriedadesLayout) {
+  const navigate = useNavigate();
   const APPBAR_H = "3rem";
   const contentMinHeight = `calc(100vh - ${APPBAR_H})`;
   const [barraLateralAberta, setBarraLateralAberta] = useState(true);
@@ -247,7 +251,9 @@ export function Layout({
             justifyContent: "center",
           }}
         >
-          <Toolbar sx={{ display: "flex", alignItems: "center", width: "100%" }}>
+          <Toolbar
+            sx={{ display: "flex", alignItems: "center", width: "100%" }}
+          >
             <IconButton
               color="inherit"
               onClick={() => setMenuMobileAberto(true)}
@@ -345,4 +351,3 @@ export function Layout({
     </Box>
   );
 }
-

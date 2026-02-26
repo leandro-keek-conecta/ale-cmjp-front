@@ -148,6 +148,8 @@ export default function CabecalhoEstilizado({
   menuMode = "default",
   ...appBarProps
 }: CabecalhoEstilizadoProps) {
+  const navigate = useNavigate();
+
   if (children) {
     return <StyledAppBar {...appBarProps}>{children}</StyledAppBar>;
   }
@@ -173,8 +175,18 @@ export default function CabecalhoEstilizado({
           <Menu />
         </IconButton>
 
-        <Box sx={{ display: "flex", alignItems: "center", flexGrow: 1 }}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            flexGrow: 1,
+            "&:hover": {
+              cursor: "pointer",
+            },
+          }}
+        >
           <img
+            onClick={() => navigate("/panorama")}
             src={logoSrc}
             alt={logoAlt}
             style={{ height: "2.5rem", width: "auto" }}

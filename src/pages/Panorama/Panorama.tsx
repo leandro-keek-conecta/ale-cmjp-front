@@ -15,10 +15,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import CardGrid from "../../components/card-grid";
 import CardGridReflect from "../../components/card-grid-reflect";
 import CardDetails from "../../components/cardDetails";
-import {
-  getAllOpinions
-} from "../../services/opiniao/opiniaoService";
-import SlideComponent from "../../components/slide";
+import { getAllOpinions } from "../../services/opiniao/opiniaoService";
+import SlideComponent, { type SlideItem } from "../../components/slide";
 import PresentationModal from "../../components/modal";
 import { readFromStorage, saveToStorage } from "../../utils/localStorage";
 import { ClimaIcon } from "../../icons/Filter";
@@ -41,6 +39,7 @@ import {
   getMetricas,
 } from "../../services/metricas/metricasService";
 import { getStoredProjectId } from "../../utils/project";
+import { getProjectById } from "../../services/projeto/ProjetoService";
 
 export type Opinion = {
   id: number | string;
@@ -72,8 +71,84 @@ const buildFilternDefaultValues = (): FilterFormValues => ({
   texto_opiniao: "",
 });
 
+type HeroCardConfig = {
+  title: string;
+  subtitle: string;
+};
+
+type PanoramaThemeConfig = {
+  background: string;
+  fontFamily: string;
+  showHero: boolean;
+  kicker: string;
+  title: string;
+  highlight: string;
+  subtitle: string;
+  slideBadge: string;
+  slideMapTitle: string;
+  slideMapSubtitle: string;
+  slides: SlideItem[];
+  cards: HeroCardConfig[];
+  clima: HeroCardConfig;
+};
+
+const DEFAULT_PANORAMA_THEME: PanoramaThemeConfig = {
+  background: "linear-gradient(180deg, #f4f4f4 0%, #f4f4f4 50%, #f4f4f4 100%)",
+  fontFamily: "Inter",
+  showHero: false,
+  kicker: "Monitorando a voz da cidade",
+  title: "Opiniao em",
+  highlight: "tempo real",
+  subtitle:
+    "Veja o que as pessoas estao falando, explore temas e acompanhe como as opinioes evoluem.",
+  slideBadge: "Assistente virtual",
+  slideMapTitle: "Presenca ativa nos bairros",
+  slideMapSubtitle: "Participacao cidada descomplicada e eficiente",
+  slides: [],
+  cards: [
+    { title: "Opinioes de hoje", subtitle: "Total registradas" },
+    { title: "Temas mais falados", subtitle: "Participacao distribuida" },
+    { title: "Bairros mais ativos", subtitle: "Participacao distribuida" },
+  ],
+  clima: {
+    title: "Clima geral",
+    subtitle: "Distribuicao das opinioes",
+  },
+};
+
+const toText = (value: unknown, fallback = "") =>
+  typeof value === "string" && value.trim() ? value : fallback;
+
+const asRecord = (value: unknown): Record<string, unknown> =>
+  value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+
+const toSlideItems = (value: unknown): SlideItem[] => {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .map((item) => {
+      const data = asRecord(item);
+      const title = toText(data.title);
+      const description = toText(data.description);
+      const image = toText(data.image);
+      if (!title && !description && !image) return null;
+      if (!image) return null;
+      return {
+        title: title || "Slide",
+        description,
+        image,
+      };
+    })
+    .filter(Boolean) as SlideItem[];
+};
+
 export default function Panorama() {
   const PRESENTATION_SEEN_KEY = "home:presentationSeen";
+  const [panoramaTheme, setPanoramaTheme] = useState<PanoramaThemeConfig>(
+    DEFAULT_PANORAMA_THEME,
+  );
   const [opinions, setOpinions] = useState<Opinion[]>([]);
   const [topDistricts, setTopDistricts] = useState<any[]>([]);
   const [topTemas, setTopTemas] = useState<any[]>([]);
@@ -124,6 +199,67 @@ export default function Panorama() {
   } = useForm<FilterFormValues>({
     defaultValues: buildFilternDefaultValues(),
   });
+
+  async function fetchProjectTheme() {
+    try {
+      const projectId = getStoredProjectId();
+      if (!projectId) {
+        setError("Nenhum projeto vinculado ao usuario.");
+        return;
+      }
+
+      const project = (await getProjectById(projectId)) as Record<
+        string,
+        unknown
+      > | null;
+      if (!project) return;
+
+      const themeConfig = asRecord(project.themeConfig);
+      const heroConfig = asRecord(project.heroConfig);
+      const copy = asRecord(heroConfig.copy);
+      const slide = asRecord(heroConfig.slide);
+      const cards = asRecord(heroConfig.cards);
+      const clima = asRecord(heroConfig.clima);
+      const cardItems = Array.isArray(cards.items) ? cards.items : [];
+      const nextCards = DEFAULT_PANORAMA_THEME.cards.map((defaultCard, index) => {
+        const currentCard = asRecord(cardItems[index]);
+        return {
+          title: toText(currentCard.title, defaultCard.title),
+          subtitle: toText(currentCard.subtitle, defaultCard.subtitle),
+        };
+      });
+
+      setPanoramaTheme({
+        background: toText(
+          themeConfig.background,
+          DEFAULT_PANORAMA_THEME.background,
+        ),
+        fontFamily: toText(themeConfig.fontFamily, DEFAULT_PANORAMA_THEME.fontFamily),
+        showHero:
+          typeof heroConfig.showHero === "boolean"
+            ? heroConfig.showHero
+            : DEFAULT_PANORAMA_THEME.showHero,
+        kicker: toText(copy.kicker, DEFAULT_PANORAMA_THEME.kicker),
+        title: toText(copy.title, DEFAULT_PANORAMA_THEME.title),
+        highlight: toText(copy.highlight, DEFAULT_PANORAMA_THEME.highlight),
+        subtitle: toText(copy.subtitle, DEFAULT_PANORAMA_THEME.subtitle),
+        slideBadge: toText(slide.badge, DEFAULT_PANORAMA_THEME.slideBadge),
+        slideMapTitle: toText(slide.mapTitle, DEFAULT_PANORAMA_THEME.slideMapTitle),
+        slideMapSubtitle: toText(
+          slide.mapSubtitle,
+          DEFAULT_PANORAMA_THEME.slideMapSubtitle,
+        ),
+        slides: toSlideItems(slide.slides),
+        cards: nextCards,
+        clima: {
+          title: toText(clima.title, DEFAULT_PANORAMA_THEME.clima.title),
+          subtitle: toText(clima.subtitle, DEFAULT_PANORAMA_THEME.clima.subtitle),
+        },
+      });
+    } catch (err) {
+      console.error("Erro ao carregar configuracao da pagina panorama.", err);
+    }
+  }
 
   async function fetchOpinions() {
     try {
@@ -176,6 +312,7 @@ export default function Panorama() {
   useEffect(() => {
     if (hasFetched.current) return;
     hasFetched.current = true;
+    fetchProjectTheme();
     handleGetMetricas();
     fetchFilterOptions();
     fetchOpinions();
@@ -302,15 +439,29 @@ export default function Panorama() {
           open={showPresentationModal}
           onClose={handleClosePresentation}
         />
-        <Box className={styles.container}>
+        <Box
+          className={styles.container}
+          style={{
+            ["--bg" as any]: panoramaTheme.background,
+            fontFamily: panoramaTheme.fontFamily,
+          }}
+        >
           <Box component="header" className={styles.hero}>
-            <div
-              className={styles.reveal}
-              data-reveal
-              style={{ ["--reveal-delay" as any]: "0s" }}
-            >
-              <SlideComponent />
-            </div>
+            {panoramaTheme.showHero ? (
+              <div
+                className={styles.reveal}
+                data-reveal
+                style={{ ["--reveal-delay" as any]: "0s" }}
+              >
+                <SlideComponent
+                  slides={panoramaTheme.slides}
+                  badge={panoramaTheme.slideBadge}
+                  mapTitle={panoramaTheme.slideMapTitle}
+                  mapSubtitle={panoramaTheme.slideMapSubtitle}
+                />
+              </div>
+            ) : null}
+
             <div
               className={styles.reveal}
               data-reveal
@@ -328,7 +479,7 @@ export default function Panorama() {
                       fontWeight: 600,
                     }}
                   >
-                    Monitorando a voz da cidade
+                    {panoramaTheme.kicker}
                   </Typography>
                 </CardGrid>
               </Box>
@@ -341,8 +492,10 @@ export default function Panorama() {
                   ref={heroTitleRef}
                   style={{ display: "inline-block", maxWidth: "100%" }}
                 >
-                  Opinião em{" "}
-                  <span className={styles.gradientText}>tempo real</span>
+                  {panoramaTheme.title}{" "}
+                  <span className={styles.gradientText}>
+                    {panoramaTheme.highlight}
+                  </span>
                 </span>
               </Typography>
               <Typography
@@ -353,8 +506,7 @@ export default function Panorama() {
                   maxWidth: heroCopyWidth ? `${heroCopyWidth}px` : "100%",
                 }}
               >
-                Veja o que as pessoas estão falando, explore temas e acompanhe
-                como as opiniões evoluem.
+                {panoramaTheme.subtitle}
               </Typography>
             </div>
             <Box className={styles.statsRow}>
@@ -367,8 +519,12 @@ export default function Panorama() {
                 <div className={styles.statHeader}>
                   <InsertChartOutlined className={styles.statIcon} />
                   <div>
-                    <div className={styles.statLabel}>Opiniões de hoje</div>
-                    <div className={styles.statHint}>Total registradas</div>
+                    <div className={styles.statLabel}>
+                      {panoramaTheme.cards[0]?.title}
+                    </div>
+                    <div className={styles.statHint}>
+                      {panoramaTheme.cards[0]?.subtitle}
+                    </div>
                   </div>
                 </div>
                 {/* _________________________________________ */}
@@ -384,9 +540,11 @@ export default function Panorama() {
                 <div className={styles.statHeader}>
                   <LocationOnOutlined className={styles.statIcon} />
                   <div>
-                    <div className={styles.statLabel}>Temas mais falados</div>
+                    <div className={styles.statLabel}>
+                      {panoramaTheme.cards[1]?.title}
+                    </div>
                     <div className={styles.statHint}>
-                      Participação distribuída
+                      {panoramaTheme.cards[1]?.subtitle}
                     </div>
                   </div>
                 </div>
@@ -413,9 +571,11 @@ export default function Panorama() {
                 <div className={styles.statHeader}>
                   <LocationOnOutlined className={styles.statIcon} />
                   <div>
-                    <div className={styles.statLabel}>Bairros mais ativos</div>
+                    <div className={styles.statLabel}>
+                      {panoramaTheme.cards[2]?.title}
+                    </div>
                     <div className={styles.statHint}>
-                      Participação distribuída
+                      {panoramaTheme.cards[2]?.subtitle}
                     </div>
                   </div>
                 </div>
@@ -444,9 +604,11 @@ export default function Panorama() {
                   <div className={styles.statHeader}>
                     <ThermostatOutlined className={styles.statIcon} />
                     <Box>
-                      <div className={styles.statLabel}>Clima geral</div>
+                      <div className={styles.statLabel}>
+                        {panoramaTheme.clima.title}
+                      </div>
                       <div className={styles.statHint}>
-                        Distribuição das opiniões
+                        {panoramaTheme.clima.subtitle}
                       </div>
                     </Box>
                   </div>
