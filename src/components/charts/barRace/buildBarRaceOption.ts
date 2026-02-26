@@ -37,7 +37,7 @@ export function buildBarRaceOption({
   return {
     grid: {
       left: leftPadding,
-      right: 10,
+      right: 20,
       top: 0,
       bottom: 10,
       containLabel: true,

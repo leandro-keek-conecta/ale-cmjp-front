@@ -1,75 +1,116 @@
 import { api } from "../api/api";
 import { getStoredProjectId } from "../../utils/project";
 
+export type ResponseStatus = "STARTED" | "COMPLETED" | "ABANDONED";
+
 export type MetricsParams = {
+  projetoId?: number;
+  formVersionId?: number;
+  formId?: number;
+  formIds?: string;
   start?: string;
   end?: string;
-  temas?: string | string[];
-  tipoOpiniao?: string;
-  genero?: string;
-  bairros?: string | string[];
-  faixaEtaria?: string;
+  status?: ResponseStatus;
+  dateField?: string;
+  monthStart?: string;
+  monthEnd?: string;
+  dayStart?: string;
+  dayEnd?: string;
+  limitTopForms?: number;
+  limitValuesPerField?: number;
 };
 
-export async function getMetrics(params: MetricsParams = {}) {
+type ApiEnvelope<T> = {
+  data?: T;
+  message?: string;
+};
+
+type ReportCards = {
+  totalResponses?: number | string;
+  totalOpinionFormResponses?: number | string;
+  totalPraise?: number | string;
+  totalSuggestions?: number | string;
+  completionRate?: number | string;
+  [key: string]: unknown;
+};
+
+export type ProjectReportResponse = {
+  cards?: ReportCards;
+  lineByMonth?: unknown[];
+  lineByDay?: unknown[];
+  responsesByForm?: unknown[];
+  statusFunnel?: unknown[];
+  [key: string]: unknown;
+};
+
+type FilterValue = {
+  label?: string;
+  value?: string | number | boolean;
+  count?: number;
+  total?: number;
+  [key: string]: unknown;
+};
+
+type DynamicFieldFilter = {
+  fieldName?: string;
+  name?: string;
+  label?: string;
+  suggestedFilter?: string;
+  values?: FilterValue[];
+  optionsConfig?: unknown;
+  [key: string]: unknown;
+};
+
+type FormFiltersEntry = {
+  formId?: number;
+  id?: number;
+  formName?: string;
+  name?: string;
+  count?: number;
+  total?: number;
+  totalResponses?: number;
+  fields?: DynamicFieldFilter[];
+  [key: string]: unknown;
+};
+
+export type FormFiltersResponse = {
+  forms?: FormFiltersEntry[];
+  fields?: DynamicFieldFilter[];
+  [key: string]: unknown;
+};
+
+const cleanParams = (params: Record<string, unknown>) =>
+  Object.fromEntries(
+    Object.entries(params).filter(
+      ([, value]) =>
+        value !== undefined &&
+        value !== null &&
+        !(typeof value === "string" && value.trim() === ""),
+    ),
+  );
+
+const withProjectScope = (params: MetricsParams = {}): MetricsParams => {
+  if (params.projetoId || params.formVersionId) {
+    return params;
+  }
+
   const projetoId = getStoredProjectId();
   if (!projetoId) {
-    throw new Error("Projeto não encontrado para buscar relatórios.");
+    throw new Error("Projeto nao encontrado para buscar relatorios.");
   }
-  const {
-    start,
-    end,
-    temas,
-    tipoOpiniao,
-    genero,
-    bairros,
-    faixaEtaria,
-  } = params;
 
-  const {
-    start: defaultMonthStart,
-    end: defaultMonthEnd,
-  } = getLastSixMonthsRange();
-  const {
-    start: defaultDayStart,
-    end: defaultDayEnd,
-  } = getCurrentMonthToDateRange();
-
-  const monthStart = start ?? defaultMonthStart;
-  const monthEnd = end ?? defaultMonthEnd;
-  const dayStart = start ?? defaultDayStart;
-  const dayEnd = end ?? defaultDayEnd;
-
-  const requestParams: Record<string, unknown> = {
+  return {
+    ...params,
     projetoId,
-    monthStart,
-    monthEnd,
-    dayStart,
-    dayEnd,
-    limits: {
-      opiniao: 10,
-      bairro: 10,
-    },
   };
+};
 
-  if (start) requestParams.start = start;
-  if (end) requestParams.end = end;
-  if (temas && (Array.isArray(temas) ? temas.length : true)) {
-    requestParams.temas = temas;
+const unwrapResponse = <T,>(payload: ApiEnvelope<T> | T) => {
+  if (payload && typeof payload === "object" && "data" in (payload as object)) {
+    return (payload as ApiEnvelope<T>).data ?? (payload as T);
   }
-  if (tipoOpiniao) requestParams.tipoOpiniao = tipoOpiniao;
-  if (genero) requestParams.genero = genero;
-  if (bairros && (Array.isArray(bairros) ? bairros.length : true)) {
-    requestParams.bairros = bairros;
-  }
-  if (faixaEtaria) requestParams.faixaEtaria = faixaEtaria;
-
-  const response = await api.get("/form-response/metrics/report", {
-    params: requestParams,
-  });
-
-  return response.data.data;
-}
+  return payload as T;
+};
 
 const toUtcStartOfDayISOString = (date: Date) =>
   new Date(
@@ -108,3 +149,47 @@ const getCurrentMonthToDateRange = () => {
     end: toUtcEndOfDayISOString(end),
   };
 };
+
+export async function getProjectReport(params: MetricsParams = {}) {
+  const requestParams = withProjectScope(params);
+  const response = await api.get<ApiEnvelope<ProjectReportResponse>>(
+    "/form-response/metrics/project-report",
+    {
+      params: cleanParams(requestParams as Record<string, unknown>),
+    },
+  );
+
+  return unwrapResponse<ProjectReportResponse>(response.data);
+}
+
+export async function getFormFilters(params: MetricsParams = {}) {
+  const requestParams = withProjectScope(params);
+  const response = await api.get<ApiEnvelope<FormFiltersResponse>>(
+    "/form-response/metrics/form-filters",
+    {
+      params: cleanParams({
+        ...(requestParams as Record<string, unknown>),
+        limitValuesPerField: requestParams.limitValuesPerField ?? 30,
+      }),
+    },
+  );
+
+  return unwrapResponse<FormFiltersResponse>(response.data);
+}
+
+export async function getGeneralMetrics(params: MetricsParams = {}) {
+  const requestParams = withProjectScope(params);
+  const { start, end } = requestParams;
+  const { start: defaultMonthStart, end: defaultMonthEnd } =
+    getLastSixMonthsRange();
+  const { start: defaultDayStart, end: defaultDayEnd } =
+    getCurrentMonthToDateRange();
+
+  return getProjectReport({
+    ...requestParams,
+    monthStart: requestParams.monthStart ?? start ?? defaultMonthStart,
+    monthEnd: requestParams.monthEnd ?? end ?? defaultMonthEnd,
+    dayStart: requestParams.dayStart ?? start ?? defaultDayStart,
+    dayEnd: requestParams.dayEnd ?? end ?? defaultDayEnd,
+  });
+}
