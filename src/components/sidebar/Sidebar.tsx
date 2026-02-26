@@ -5,6 +5,7 @@ import { useLocation } from "react-router-dom";
 import { ItemMenu } from "../ItemMenu";
 import PageviewIcon from "@mui/icons-material/Pageview";
 import AssessmentIcon from "@mui/icons-material/Assessment";
+import { useAuth } from "@/context/AuthContext";
 
 interface PropriedadesSidebar {
   estaAberta: boolean;
@@ -15,6 +16,10 @@ interface PropriedadesSidebar {
 
 export function Sidebar({ estaAberta, aoFechar }: PropriedadesSidebar) {
   const location = useLocation();
+  const { user } = useAuth();
+
+  const isSuperAdmin = user?.role === "SUPERADMIN";
+  const isAdmin = user?.role === "ADMIN";
 
   const isActive = (path: string) => {
     if (path === "/") return location.pathname === "/";
@@ -46,28 +51,34 @@ export function Sidebar({ estaAberta, aoFechar }: PropriedadesSidebar) {
           />
           <ItemMenu
             icone={<AssessmentIcon />}
-            rotulo="Relatorio de opiniões"
+            rotulo="Relatorio de opinioes"
             para="/relatorio-opiniao"
             estaAberta={estaAberta}
             isActive={isActive("/relatorio-opiniao")}
             onClick={aoFechar}
           />
-          <ItemMenu
-            icone={<EditDocumentIcon />}
-            rotulo="cadastro de tema"
-            para="/cadastro-thema"
-            estaAberta={estaAberta}
-            isActive={isActive("/cadastro-thema")}
-            onClick={aoFechar}
-          />
-          <ItemMenu
-            icone={<EditDocumentIcon />}
-            rotulo="cadastro de formulário"
-            para="/constructor-forms"
-            estaAberta={estaAberta}
-            isActive={isActive("/constructor-forms")}
-            onClick={aoFechar}
-          />
+
+          {isSuperAdmin ? (
+            <ItemMenu
+              icone={<EditDocumentIcon />}
+              rotulo="cadastro de tema"
+              para="/cadastro-thema"
+              estaAberta={estaAberta}
+              isActive={isActive("/cadastro-thema")}
+              onClick={aoFechar}
+            />
+          ) : null}
+
+          {isAdmin ? (
+            <ItemMenu
+              icone={<EditDocumentIcon />}
+              rotulo="cadastro de formulario"
+              para="/constructor-forms"
+              estaAberta={estaAberta}
+              isActive={isActive("/constructor-forms")}
+              onClick={aoFechar}
+            />
+          ) : null}
         </Fragment>
       </ul>
     </nav>

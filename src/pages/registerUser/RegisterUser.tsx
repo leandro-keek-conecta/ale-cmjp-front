@@ -84,6 +84,7 @@ const createEmptyProjetoSelection = (): ProjetoFormValue => ({
 const SYSTEM_SCREENS: SelectOption<string>[] = [
   { label: "Panorama", value: "panorama" },
   { label: "Relatorio", value: "relatorio" },
+  { label: "Relatorio de opiniões", value: "Relatorio de opiniões" },
   { label: "Cadastro de usuario", value: "cadastro-usuario" },
   { label: "Formularios", value: "form-page" },
   { label: "Formulario dinamico", value: "form-dinamico" },

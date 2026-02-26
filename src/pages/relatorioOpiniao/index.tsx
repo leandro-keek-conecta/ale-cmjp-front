@@ -221,18 +221,34 @@ const normalizeChartData = (data: unknown, labelKeys: string[]): ChartDatum[] =>
     .filter((item): item is ChartDatum => item !== null);
 };
 
+const normalizeOptionKey = (value: string) =>
+  value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+
 const mapSelectOptions = (
   items: FilterApiItem[] | undefined,
 ): SelectOption<string>[] =>
   Array.isArray(items)
-    ? items
-        .map((item) => {
-          const label = typeof item.label === "string" ? item.label.trim() : "";
-          const value = typeof item.value === "string" ? item.value.trim() : "";
-          if (!label || !value) return null;
-          return { label, value };
-        })
-        .filter((item): item is SelectOption<string> => item !== null)
+    ? items.reduce<SelectOption<string>[]>((accumulator, item) => {
+        const label = typeof item.label === "string" ? item.label.trim() : "";
+        const value = typeof item.value === "string" ? item.value.trim() : "";
+        if (!label || !value) return accumulator;
+
+        const key = normalizeOptionKey(value) || normalizeOptionKey(label);
+        const alreadyExists = accumulator.some(
+          (option) =>
+            normalizeOptionKey(option.value) === key ||
+            normalizeOptionKey(option.label) === key,
+        );
+        if (alreadyExists) return accumulator;
+
+        accumulator.push({ label, value });
+        return accumulator;
+      }, [])
     : [];
 
 export default function RelatorioOpiniao() {

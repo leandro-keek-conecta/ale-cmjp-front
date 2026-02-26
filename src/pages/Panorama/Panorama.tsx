@@ -144,6 +144,14 @@ const toSlideItems = (value: unknown): SlideItem[] => {
     .filter(Boolean) as SlideItem[];
 };
 
+const normalizeOptionKey = (value: string) =>
+  value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+
 export default function Panorama() {
   const PRESENTATION_SEEN_KEY = "home:presentationSeen";
   const [panoramaTheme, setPanoramaTheme] = useState<PanoramaThemeConfig>(
@@ -179,7 +187,24 @@ export default function Panorama() {
     items: FilterApiItem[] | undefined,
   ): SelectOption<string>[] =>
     Array.isArray(items)
-      ? items.map((item) => ({ label: item.label, value: item.value }))
+      ? items.reduce<SelectOption<string>[]>((accumulator, item) => {
+          const label =
+            typeof item?.label === "string" ? item.label.trim() : "";
+          const value =
+            typeof item?.value === "string" ? item.value.trim() : "";
+          if (!label || !value) return accumulator;
+
+          const key = normalizeOptionKey(value) || normalizeOptionKey(label);
+          const alreadyExists = accumulator.some(
+            (option) =>
+              normalizeOptionKey(option.value) === key ||
+              normalizeOptionKey(option.label) === key,
+          );
+          if (alreadyExists) return accumulator;
+
+          accumulator.push({ label, value });
+          return accumulator;
+        }, [])
       : [];
 
   function IInicial(currentPage: number, itensPerPage: number) {

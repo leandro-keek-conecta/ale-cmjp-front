@@ -18,11 +18,11 @@ const defaultSelectOptions: FilterSelectOptions = {
     { label: "Sugestão", value: "Sugestão" },
   ],
   tema: [
-    { label: "Educação", value: "Educação" },
+    { label: "Educação", value: "educacao" },
     { label: "Infraestrutura", value: "Infraestrutura" },
     { label: "Mobilidade", value: "Mobilidade" },
     { label: "Outros", value: "Outros" },
-    { label: "Saúde", value: "Saúde" },
+    { label: "Saúde", value: "saude" },
     { label: "Segurança", value: "Segurança" },
   ],
   genero: [
