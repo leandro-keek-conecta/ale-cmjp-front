@@ -33,7 +33,7 @@ export function Layout({
   tituloIcon,
 }: PropriedadesLayout) {
   const APPBAR_H = "3rem";
-  const contentMinHeight = `calc(100vh - ${APPBAR_H})`;
+  const contentMinHeight = `calc(100dvh - ${APPBAR_H})`;
   const [barraLateralAberta, setBarraLateralAberta] = useState(true);
   const [menuMobileAberto, setMenuMobileAberto] = useState(false);
   const userString = localStorage.getItem("user");
@@ -61,14 +61,14 @@ export function Layout({
   // Se não deve mostrar a sidebar, renderiza apenas o conteúdo principal
   if (!mostrarSidebar) {
     return (
-      <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "#f5f5f5" }}>
+      <Box sx={{ display: "flex", minHeight: "100dvh", bgcolor: "#f5f5f5" }}>
         {children}
       </Box>
     );
   }
 
   return (
-    <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "#f5f5f5" }}>
+    <Box sx={{ display: "flex", minHeight: "100dvh", bgcolor: "#f5f5f5" }}>
       {/* Barra lateral para desktop */}
       <Box
         component="aside"
@@ -76,7 +76,7 @@ export function Layout({
           position: "fixed",
           left: 0,
           top: 0,
-          height: "100vh",
+          height: "100dvh",
           borderRight: "1px solid #00000014",
           overflowY: "hidden", // Scroll inicialmente escondido
           overflowX: "hidden",
@@ -225,7 +225,7 @@ export function Layout({
         component="main"
         sx={{
           flexGrow: 1,
-          minHeight: "100vh",
+          minHeight: "100dvh",
           display: "flex",
           flexDirection: "column",
           ml: { xs: 0, md: barraLateralAberta ? "13.281vw" : "50px" },

@@ -7,7 +7,7 @@
   gap: 16px;
   background: var(--canvas-bg);
   border: 1px solid var(--canvas-border);
-  min-height: calc(100vh - 5rem);
+  min-height: calc(100dvh - 5rem);
   padding: 16px;
   border-radius: 14px;
   align-content: start;
