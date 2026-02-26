@@ -26,6 +26,12 @@ export type FormOptionItem = {
   [key: string]: unknown;
 };
 
+export type FormTemplateOptionItem = {
+  id: string;
+  name: string;
+  description?: string;
+};
+
 type PrimitiveSelectValue = string | number | boolean;
 
 type N8nBasePayload = {
@@ -203,8 +209,7 @@ function resolveFieldDefinitionsForForm(form: FormOptionItem) {
 
   return fields
     .map((field) => {
-      const name =
-        typeof field?.name === "string" ? field.name.trim() : "";
+      const name = typeof field?.name === "string" ? field.name.trim() : "";
       if (!name) return null;
 
       const label =
@@ -245,6 +250,8 @@ type InputOptionsProps = {
   onDetachSelectedForm: () => void;
   onTogglePreview: () => void;
   onSelectForm: (form: FormOptionItem | null) => void;
+  templateOptions: FormTemplateOptionItem[];
+  onApplyTemplate: (templateId: string) => void;
   onSubmitForm: () => void;
   isSavingForm: boolean;
   isEditingForm: boolean;
@@ -268,16 +275,21 @@ export default function InputOptions({
   onDetachSelectedForm,
   onTogglePreview,
   onSelectForm,
+  templateOptions,
+  onApplyTemplate,
   onSubmitForm,
   isSavingForm,
   isEditingForm,
 }: InputOptionsProps) {
   const [formsOptions, setFormsOptions] = useState<FormOptionItem[]>([]);
   const [selectedFormId, setSelectedFormId] = useState<number | null>(null);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
   const [copiedItemKey, setCopiedItemKey] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(false);
   const [expandedLayout, setExpandedLayout] = useState(false);
   const [expandedLinks, setExpandedLinks] = useState(false);
+  const [expandedTemplates, setExpandedTemplates] = useState(false);
+  const [expandedBasicInfo, setExpandedBasicInfo] = useState(false);
   const [expandedTabs, setExpandedTabs] = useState(false);
   const projectId = getStoredProjectId();
 
@@ -326,6 +338,23 @@ export default function InputOptions({
     [blocks],
   );
 
+  const templateSelectOptions = useMemo(
+    () =>
+      templateOptions.map((template) => ({
+        label: template.name,
+        value: template.id,
+      })),
+    [templateOptions],
+  );
+
+  const selectedTemplateDescription = useMemo(() => {
+    if (!selectedTemplateId) return "";
+    return (
+      templateOptions.find((template) => template.id === selectedTemplateId)
+        ?.description ?? ""
+    );
+  }, [selectedTemplateId, templateOptions]);
+
   const selectedBlock = blocks[selectedBlockIndex] ?? null;
   const formLinks = useMemo<FormLinkItem[]>(() => {
     return formsOptions.reduce<FormLinkItem[]>((accumulator, form) => {
@@ -333,14 +362,14 @@ export default function InputOptions({
       const formName = label;
       if (!formName || idNumber === null) return accumulator;
 
-      const resolvedProjectSlug = resolveProjectSlug(form) || getStoredProjectSlug();
+      const resolvedProjectSlug =
+        resolveProjectSlug(form) || getStoredProjectSlug();
       if (!resolvedProjectSlug) return accumulator;
 
       const href = buildLink(formName, resolvedProjectSlug);
       const formVersionId = resolveFormVersionId(form);
       const resolvedProjectId =
-        resolveProjectIdFromForm(form) ??
-        toOptionalNumber(projectId);
+        resolveProjectIdFromForm(form) ?? toOptionalNumber(projectId);
       if (
         typeof formVersionId !== "number" ||
         typeof resolvedProjectId !== "number"
@@ -420,6 +449,12 @@ export default function InputOptions({
     onDetachSelectedForm();
   };
 
+  const handleApplyTemplate = () => {
+    if (!selectedTemplateId) return;
+    setSelectedFormId(null);
+    onApplyTemplate(selectedTemplateId);
+  };
+
   const handleCopyValue = async (value: string, key: string) => {
     try {
       await navigator.clipboard.writeText(value);
@@ -448,7 +483,6 @@ export default function InputOptions({
           Preview
         </Button>
       </Box>
-
       <Box className={styles.metaSection}>
         <SelectButton
           label="Formularios do projeto"
@@ -458,6 +492,7 @@ export default function InputOptions({
             handleSelectForm(value as number | string | null)
           }
         />
+
         {isEditingForm ? (
           <Box className={styles.selectedFormActions}>
             <Typography className={styles.sectionHint}>
@@ -471,6 +506,12 @@ export default function InputOptions({
             </Button>
           </Box>
         ) : null}
+      </Box>
+      <ExpandableCard
+        title="Informações básicas do formulário"
+        expanded={expandedBasicInfo}
+        onToggle={(next) => setExpandedBasicInfo(next)}
+      >
         <Box className={styles.formInfo}>
           <Box>
             <InputText
@@ -487,7 +528,35 @@ export default function InputOptions({
             />
           </Box>
         </Box>
-      </Box>
+      </ExpandableCard>
+      <ExpandableCard
+        title="Templates de formulários"
+        expanded={expandedTemplates}
+        onToggle={(next) => setExpandedTemplates(next)}
+      >
+        <Box className={styles.templateSection}>
+          <SelectButton
+            label="Templates pre-criados"
+            options={templateSelectOptions}
+            value={selectedTemplateId || null}
+            onChange={(value) =>
+              setSelectedTemplateId(typeof value === "string" ? value : "")
+            }
+          />
+          <Button
+            onClick={handleApplyTemplate}
+            className={styles.previewButton}
+            disabled={!selectedTemplateId}
+          >
+            Aplicar template
+          </Button>
+          {selectedTemplateDescription ? (
+            <Typography className={styles.sectionHint}>
+              {selectedTemplateDescription}
+            </Typography>
+          ) : null}
+        </Box>
+      </ExpandableCard>
 
       <ExpandableCard
         title="Links dos formularios"
@@ -701,8 +770,11 @@ export default function InputOptions({
           </Button>
         </Box>
       </ExpandableCard>
-      <Button onClick={onSubmitForm} isLoading={isSavingForm} 
-              className={styles.previewButtonMain}>
+      <Button
+        onClick={onSubmitForm}
+        isLoading={isSavingForm}
+        className={styles.previewButtonMain}
+      >
         {isEditingForm ? "Atualizar formulario" : "Cadastrar formulario"}
       </Button>
     </Box>

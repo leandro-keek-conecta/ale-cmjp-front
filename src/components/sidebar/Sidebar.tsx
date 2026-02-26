@@ -59,14 +59,24 @@ export function Sidebar({ estaAberta, aoFechar }: PropriedadesSidebar) {
           />
 
           {isSuperAdmin ? (
-            <ItemMenu
-              icone={<EditDocumentIcon />}
-              rotulo="cadastro de tema"
-              para="/cadastro-thema"
-              estaAberta={estaAberta}
-              isActive={isActive("/cadastro-thema")}
-              onClick={aoFechar}
-            />
+            <>
+              <ItemMenu
+                icone={<EditDocumentIcon />}
+                rotulo="cadastro de tema"
+                para="/cadastro-thema"
+                estaAberta={estaAberta}
+                isActive={isActive("/cadastro-thema")}
+                onClick={aoFechar}
+              />
+              <ItemMenu
+                icone={<EditDocumentIcon />}
+                rotulo="cadastro de formulario"
+                para="/constructor-forms"
+                estaAberta={estaAberta}
+                isActive={isActive("/constructor-forms")}
+                onClick={aoFechar}
+              />
+            </>
           ) : null}
 
           {isAdmin ? (

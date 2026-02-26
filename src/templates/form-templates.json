@@ -1,0 +1,616 @@
+{
+  "templates": [
+    {
+      "id": "opiniao-cidada",
+      "name": "Formulario de Opiniao",
+      "description": "Coleta de opinioes da populacao",
+      "initialVersion": {
+        "isActive": true,
+        "schema": {
+          "title": "Formulario de Opiniao",
+          "description": "Coleta de opinioes",
+          "blocks": [
+            {
+              "title": "Dados do Usuario",
+              "fields": [
+                "nome",
+                "telefone",
+                "ano_nascimento",
+                "genero",
+                "bairro",
+                "campanha"
+              ]
+            },
+            {
+              "title": "Dados da Opiniao",
+              "fields": [
+                "opiniao",
+                "outra_opiniao",
+                "tipo_opiniao",
+                "texto_opiniao"
+              ]
+            }
+          ],
+          "styles": {
+            "formBackgroundColor": "#f8fafc",
+            "formBorderColor": "#dbe4ef",
+            "titleColor": "#0f172a",
+            "descriptionColor": "#475569",
+            "buttonBackgroundColor": "#5070dd",
+            "buttonTextColor": "#ffffff"
+          }
+        },
+        "fields": [
+          {
+            "name": "nome",
+            "label": "Nome",
+            "type": "text",
+            "required": true,
+            "ordem": 1,
+            "options": { "layout": { "row": 1, "column": 1 }, "helpStyle": "default" }
+          },
+          {
+            "name": "telefone",
+            "label": "Telefone",
+            "type": "text",
+            "required": true,
+            "ordem": 2,
+            "options": { "layout": { "row": 1, "column": 2 }, "helpStyle": "default" }
+          },
+          {
+            "name": "ano_nascimento",
+            "label": "Ano de nascimento",
+            "type": "number",
+            "required": true,
+            "ordem": 3,
+            "options": { "layout": { "row": 2, "column": 1 }, "helpStyle": "default" }
+          },
+          {
+            "name": "genero",
+            "label": "Genero",
+            "type": "Select",
+            "required": true,
+            "ordem": 4,
+            "options": {
+              "items": ["Masculino", "Feminino", "Nao informado"],
+              "layout": { "row": 2, "column": 2 },
+              "helpStyle": "default"
+            }
+          },
+          {
+            "name": "bairro",
+            "label": "Bairro",
+            "type": "text",
+            "required": true,
+            "ordem": 5,
+            "options": { "layout": { "row": 3, "column": 1 }, "helpStyle": "default" }
+          },
+          {
+            "name": "campanha",
+            "label": "Deseja receber novidades?",
+            "type": "Select",
+            "required": true,
+            "ordem": 6,
+            "options": {
+              "items": ["Sim", "Nao"],
+              "layout": { "row": 3, "column": 2 },
+              "helpStyle": "default"
+            }
+          },
+          {
+            "name": "opiniao",
+            "label": "Tema",
+            "type": "Select",
+            "required": true,
+            "ordem": 7,
+            "options": {
+              "items": [
+                "Saude",
+                "Educacao",
+                "Seguranca",
+                "Infraestrutura",
+                "Mobilidade",
+                "Meio ambiente",
+                "Outro"
+              ],
+              "layout": { "row": 4, "column": 1 },
+              "helpStyle": "default"
+            }
+          },
+          {
+            "name": "outra_opiniao",
+            "label": "Outro tema",
+            "type": "text",
+            "required": false,
+            "ordem": 8,
+            "options": { "layout": { "row": 4, "column": 2 }, "helpStyle": "default" }
+          },
+          {
+            "name": "tipo_opiniao",
+            "label": "Tipo de opiniao",
+            "type": "Select",
+            "required": true,
+            "ordem": 9,
+            "options": {
+              "items": ["Reclamacao", "Elogio", "Sugestao"],
+              "layout": { "row": 5, "column": 1 },
+              "helpStyle": "default"
+            }
+          },
+          {
+            "name": "texto_opiniao",
+            "label": "Descricao",
+            "type": "text",
+            "required": true,
+            "ordem": 10,
+            "options": { "layout": { "row": 6, "column": 1 }, "helpStyle": "default" }
+          }
+        ]
+      }
+    },
+    {
+      "id": "cadastro-usuario",
+      "name": "Cadastro de Usuario",
+      "description": "Cadastro basico de cidadaos",
+      "initialVersion": {
+        "isActive": true,
+        "schema": {
+          "title": "Cadastro de Usuario",
+          "description": "Cadastro de dados pessoais",
+          "blocks": [
+            {
+              "title": "Dados Pessoais",
+              "fields": [
+                "nome",
+                "sobrenome",
+                "telefone",
+                "email",
+                "ano_nascimento",
+                "genero",
+                "bairro"
+              ]
+            },
+            {
+              "title": "Comunicacao",
+              "fields": ["campanha"]
+            }
+          ],
+          "styles": {
+            "formBackgroundColor": "#f8fafc",
+            "formBorderColor": "#dbe4ef",
+            "titleColor": "#0f172a",
+            "descriptionColor": "#475569",
+            "buttonBackgroundColor": "#5070dd",
+            "buttonTextColor": "#ffffff"
+          }
+        },
+        "fields": [
+          {
+            "name": "nome",
+            "label": "Nome",
+            "type": "text",
+            "required": true,
+            "ordem": 1,
+            "options": { "layout": { "row": 1, "column": 1 }, "helpStyle": "default" }
+          },
+          {
+            "name": "sobrenome",
+            "label": "Sobrenome",
+            "type": "text",
+            "required": true,
+            "ordem": 2,
+            "options": { "layout": { "row": 1, "column": 2 }, "helpStyle": "default" }
+          },
+          {
+            "name": "telefone",
+            "label": "Telefone",
+            "type": "text",
+            "required": true,
+            "ordem": 3,
+            "options": { "layout": { "row": 2, "column": 1 }, "helpStyle": "default" }
+          },
+          {
+            "name": "email",
+            "label": "E-mail",
+            "type": "email",
+            "required": false,
+            "ordem": 4,
+            "options": { "layout": { "row": 2, "column": 2 }, "helpStyle": "default" }
+          },
+          {
+            "name": "ano_nascimento",
+            "label": "Ano de nascimento",
+            "type": "number",
+            "required": true,
+            "ordem": 5,
+            "options": { "layout": { "row": 3, "column": 1 }, "helpStyle": "default" }
+          },
+          {
+            "name": "genero",
+            "label": "Genero",
+            "type": "Select",
+            "required": false,
+            "ordem": 6,
+            "options": {
+              "items": ["Masculino", "Feminino", "Nao informado"],
+              "layout": { "row": 3, "column": 2 },
+              "helpStyle": "default"
+            }
+          },
+          {
+            "name": "bairro",
+            "label": "Bairro",
+            "type": "text",
+            "required": false,
+            "ordem": 7,
+            "options": { "layout": { "row": 4, "column": 1 }, "helpStyle": "default" }
+          },
+          {
+            "name": "campanha",
+            "label": "Aceita receber novidades?",
+            "type": "Select",
+            "required": false,
+            "ordem": 8,
+            "options": {
+              "items": ["Sim", "Nao"],
+              "layout": { "row": 4, "column": 2 },
+              "helpStyle": "default"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "cadastro-pessoas-prefeitura",
+      "name": "Cadastro de Pessoas",
+      "description": "Cadastro de pessoas da prefeitura",
+      "initialVersion": {
+        "isActive": true,
+        "schema": {
+          "title": "Cadastro de Pessoas",
+          "description": "Cadastro interno de pessoas",
+          "blocks": [
+            {
+              "title": "Dados da Pessoa",
+              "fields": [
+                "nome",
+                "sobrenome",
+                "genero",
+                "ano_nascimento",
+                "bairro",
+                "setor"
+              ]
+            }
+          ],
+          "styles": {
+            "formBackgroundColor": "#f8fafc",
+            "formBorderColor": "#dbe4ef",
+            "titleColor": "#0f172a",
+            "descriptionColor": "#475569",
+            "buttonBackgroundColor": "#5070dd",
+            "buttonTextColor": "#ffffff"
+          }
+        },
+        "fields": [
+          {
+            "name": "nome",
+            "label": "Nome",
+            "type": "text",
+            "required": true,
+            "ordem": 1,
+            "options": { "layout": { "row": 1, "column": 1 }, "helpStyle": "highlight" }
+          },
+          {
+            "name": "sobrenome",
+            "label": "Sobrenome",
+            "type": "text",
+            "required": true,
+            "ordem": 2,
+            "options": { "layout": { "row": 1, "column": 2 }, "helpStyle": "highlight" }
+          },
+          {
+            "name": "genero",
+            "label": "Genero",
+            "type": "Select",
+            "required": false,
+            "ordem": 3,
+            "options": {
+              "items": ["Masculino", "Feminino", "Outra opcao"],
+              "layout": { "row": 2, "column": 1 },
+              "helpStyle": "default"
+            }
+          },
+          {
+            "name": "ano_nascimento",
+            "label": "Ano de nascimento",
+            "type": "number",
+            "required": true,
+            "ordem": 4,
+            "options": {
+              "min": 1930,
+              "max": 2030,
+              "layout": { "row": 2, "column": 2 },
+              "helpStyle": "default"
+            }
+          },
+          {
+            "name": "bairro",
+            "label": "Bairro",
+            "type": "text",
+            "required": false,
+            "ordem": 5,
+            "options": { "layout": { "row": 3, "column": 1 }, "helpStyle": "default" }
+          },
+          {
+            "name": "setor",
+            "label": "Setor",
+            "type": "text",
+            "required": false,
+            "ordem": 6,
+            "options": { "layout": { "row": 3, "column": 2 }, "helpStyle": "default" }
+          }
+        ]
+      }
+    },
+    {
+      "id": "pesquisa-satisfacao",
+      "name": "Pesquisa de Satisfacao",
+      "description": "Avaliacao de atendimento e servico",
+      "initialVersion": {
+        "isActive": true,
+        "schema": {
+          "title": "Pesquisa de Satisfacao",
+          "description": "Avalie o atendimento recebido",
+          "blocks": [
+            {
+              "title": "Atendimento",
+              "fields": [
+                "unidade",
+                "servico",
+                "opiniao",
+                "tipo_opiniao",
+                "texto_opiniao"
+              ]
+            },
+            {
+              "title": "Perfil (opcional)",
+              "fields": ["bairro", "genero", "ano_nascimento", "campanha"]
+            }
+          ],
+          "styles": {
+            "formBackgroundColor": "#f8fafc",
+            "formBorderColor": "#dbe4ef",
+            "titleColor": "#0f172a",
+            "descriptionColor": "#475569",
+            "buttonBackgroundColor": "#5070dd",
+            "buttonTextColor": "#ffffff"
+          }
+        },
+        "fields": [
+          {
+            "name": "unidade",
+            "label": "Unidade",
+            "type": "text",
+            "required": true,
+            "ordem": 1,
+            "options": { "layout": { "row": 1, "column": 1 }, "helpStyle": "default" }
+          },
+          {
+            "name": "servico",
+            "label": "Servico",
+            "type": "text",
+            "required": true,
+            "ordem": 2,
+            "options": { "layout": { "row": 1, "column": 2 }, "helpStyle": "default" }
+          },
+          {
+            "name": "opiniao",
+            "label": "Tema",
+            "type": "Select",
+            "required": true,
+            "ordem": 3,
+            "options": {
+              "items": ["Atendimento", "Tempo de espera", "Infraestrutura", "Outro"],
+              "layout": { "row": 2, "column": 1 },
+              "helpStyle": "default"
+            }
+          },
+          {
+            "name": "tipo_opiniao",
+            "label": "Tipo de opiniao",
+            "type": "Select",
+            "required": true,
+            "ordem": 4,
+            "options": {
+              "items": ["Reclamacao", "Elogio", "Sugestao"],
+              "layout": { "row": 2, "column": 2 },
+              "helpStyle": "default"
+            }
+          },
+          {
+            "name": "texto_opiniao",
+            "label": "Comentario",
+            "type": "text",
+            "required": true,
+            "ordem": 5,
+            "options": { "layout": { "row": 3, "column": 1 }, "helpStyle": "default" }
+          },
+          {
+            "name": "bairro",
+            "label": "Bairro",
+            "type": "text",
+            "required": false,
+            "ordem": 6,
+            "options": { "layout": { "row": 4, "column": 1 }, "helpStyle": "default" }
+          },
+          {
+            "name": "genero",
+            "label": "Genero",
+            "type": "Select",
+            "required": false,
+            "ordem": 7,
+            "options": {
+              "items": ["Masculino", "Feminino", "Nao informado"],
+              "layout": { "row": 4, "column": 2 },
+              "helpStyle": "default"
+            }
+          },
+          {
+            "name": "ano_nascimento",
+            "label": "Ano de nascimento",
+            "type": "number",
+            "required": false,
+            "ordem": 8,
+            "options": { "layout": { "row": 5, "column": 1 }, "helpStyle": "default" }
+          },
+          {
+            "name": "campanha",
+            "label": "Aceita receber novidades?",
+            "type": "Select",
+            "required": false,
+            "ordem": 9,
+            "options": {
+              "items": ["Sim", "Nao"],
+              "layout": { "row": 5, "column": 2 },
+              "helpStyle": "default"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "cadastro-pets",
+      "name": "Cadastro de Pets",
+      "description": "Cadastro de pets e responsaveis",
+      "initialVersion": {
+        "isActive": true,
+        "schema": {
+          "title": "Cadastro de Pets",
+          "description": "Cadastro para campanhas e acoes de protecao animal",
+          "blocks": [
+            {
+              "title": "Responsavel",
+              "fields": [
+                "nome_tutor",
+                "telefone",
+                "bairro",
+                "genero",
+                "ano_nascimento"
+              ]
+            },
+            {
+              "title": "Pet",
+              "fields": ["nome_pet", "especie", "idade_pet", "castrado", "vacinado"]
+            }
+          ],
+          "styles": {
+            "formBackgroundColor": "#f8fafc",
+            "formBorderColor": "#dbe4ef",
+            "titleColor": "#0f172a",
+            "descriptionColor": "#475569",
+            "buttonBackgroundColor": "#5070dd",
+            "buttonTextColor": "#ffffff"
+          }
+        },
+        "fields": [
+          {
+            "name": "nome_tutor",
+            "label": "Nome do responsavel",
+            "type": "text",
+            "required": true,
+            "ordem": 1,
+            "options": { "layout": { "row": 1, "column": 1 }, "helpStyle": "default" }
+          },
+          {
+            "name": "telefone",
+            "label": "Telefone",
+            "type": "text",
+            "required": true,
+            "ordem": 2,
+            "options": { "layout": { "row": 1, "column": 2 }, "helpStyle": "default" }
+          },
+          {
+            "name": "bairro",
+            "label": "Bairro",
+            "type": "text",
+            "required": true,
+            "ordem": 3,
+            "options": { "layout": { "row": 2, "column": 1 }, "helpStyle": "default" }
+          },
+          {
+            "name": "genero",
+            "label": "Genero do responsavel",
+            "type": "Select",
+            "required": false,
+            "ordem": 4,
+            "options": {
+              "items": ["Masculino", "Feminino", "Nao informado"],
+              "layout": { "row": 2, "column": 2 },
+              "helpStyle": "default"
+            }
+          },
+          {
+            "name": "ano_nascimento",
+            "label": "Ano de nascimento do responsavel",
+            "type": "number",
+            "required": false,
+            "ordem": 5,
+            "options": { "layout": { "row": 3, "column": 1 }, "helpStyle": "default" }
+          },
+          {
+            "name": "nome_pet",
+            "label": "Nome do pet",
+            "type": "text",
+            "required": true,
+            "ordem": 6,
+            "options": { "layout": { "row": 4, "column": 1 }, "helpStyle": "default" }
+          },
+          {
+            "name": "especie",
+            "label": "Especie",
+            "type": "Select",
+            "required": true,
+            "ordem": 7,
+            "options": {
+              "items": ["Cao", "Gato", "Outro"],
+              "layout": { "row": 4, "column": 2 },
+              "helpStyle": "default"
+            }
+          },
+          {
+            "name": "idade_pet",
+            "label": "Idade do pet (anos)",
+            "type": "number",
+            "required": false,
+            "ordem": 8,
+            "options": { "layout": { "row": 5, "column": 1 }, "helpStyle": "default" }
+          },
+          {
+            "name": "castrado",
+            "label": "E castrado?",
+            "type": "Select",
+            "required": false,
+            "ordem": 9,
+            "options": {
+              "items": ["Sim", "Nao"],
+              "layout": { "row": 5, "column": 2 },
+              "helpStyle": "default"
+            }
+          },
+          {
+            "name": "vacinado",
+            "label": "Vacinacao em dia?",
+            "type": "Select",
+            "required": false,
+            "ordem": 10,
+            "options": {
+              "items": ["Sim", "Nao"],
+              "layout": { "row": 6, "column": 1 },
+              "helpStyle": "default"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
