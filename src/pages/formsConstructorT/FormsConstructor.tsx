@@ -21,8 +21,8 @@ import { DragDropProvider } from "@dnd-kit/react";
 import FormPreview from "./FormsPreview/FormPreview";
 import getForms, { createForm, updateFormById } from "@/services/forms/formsService";
 import { triggerAlert } from "@/services/alert/alertService";
+import { getStoredProjectSlug } from "@/utils/project";
 
-const DEFAULT_PROJECT_SLUG = "ale-cmjp";
 const MAX_FIELDS_PER_ROW = 3;
 
 type DropPlacement =
@@ -321,13 +321,12 @@ function resolveFormSlug(form: FormOptionItem) {
 }
 
 function resolveProjectSlug(form: FormOptionItem) {
-  return (
-    pickFirstText(
-      form.projetoSlug,
-      form.projectSlug,
-      (form.projeto as Record<string, unknown> | undefined)?.slug,
-      (form.project as Record<string, unknown> | undefined)?.slug,
-    ) || DEFAULT_PROJECT_SLUG
+  return pickFirstText(
+    form.projetoSlug,
+    form.projectSlug,
+    (form.projeto as Record<string, unknown> | undefined)?.slug,
+    (form.project as Record<string, unknown> | undefined)?.slug,
+    getStoredProjectSlug(),
   );
 }
 
@@ -1046,6 +1045,10 @@ export default function ConstructorForm() {
           return;
         }
         const projectSlug = resolveProjectSlug(selectedForm);
+        if (!projectSlug) {
+          console.warn("Projeto ativo sem slug para carregar formulario.");
+          return;
+        }
         const response = await getForms(formSlug, projectSlug);
         payload = (response?.data?.data ?? {}) as Record<string, unknown>;
         activeVersion = resolveActiveVersion(payload as FormOptionItem);

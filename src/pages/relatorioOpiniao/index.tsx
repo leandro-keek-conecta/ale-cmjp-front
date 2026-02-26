@@ -408,7 +408,7 @@ const deriveCompletionRate = (
   return Math.round((completed / total) * 100);
 };
 
-export default function RelatorioPage() {
+export default function RelatorioOpiniao() {
   const [cardsData, setCardsData] = useState<ReportCard[]>([]);
   const [metricsLoading, setMetricsLoading] = useState(true);
   const [lineByDayData, setLineByDayData] = useState<ChartDatum[]>([]);

@@ -169,7 +169,6 @@ export async function getFormFilters(params: MetricsParams = {}) {
     {
       params: cleanParams({
         ...(requestParams as Record<string, unknown>),
-        limitValuesPerField: requestParams.limitValuesPerField ?? 30,
       }),
     },
   );

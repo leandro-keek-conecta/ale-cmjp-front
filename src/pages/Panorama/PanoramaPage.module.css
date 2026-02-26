@@ -372,8 +372,9 @@
 .filterActions {
   display: flex;
   justify-content: flex-end;
-  gap: 12px;
-  margin-top: 12px;
+  gap: 5px;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
   flex-wrap: wrap;
 }
 

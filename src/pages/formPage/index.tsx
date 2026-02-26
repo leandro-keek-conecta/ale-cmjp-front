@@ -24,7 +24,11 @@ import {
 
 import { useNavigate } from "react-router-dom";
 import { submitOpinion } from "../../services/opiniao/opiniaoService";
-import getForms, { createUSer } from "@/services/forms/formsService";
+import getForms, {
+  createUSer,
+  getFormsById,
+} from "@/services/forms/formsService";
+import { getStoredProjectId, getStoredProjectSlug } from "@/utils/project";
 
 const steps = ["Dados do Usuário", "Dados da Opinião", "Concluído"];
 
@@ -281,13 +285,55 @@ export default function FormsPage() {
   useEffect(() => {
     const fetchFormData = async () => {
       try {
-        const projectName = "ale-cmjp";
-        const slug = "formulario-de-opiniao";
-        const response = await getForms(slug, projectName);
+        const projectId = getStoredProjectId();
+        const projectSlug = getStoredProjectSlug();
+        if (!projectId || !projectSlug) {
+          return;
+        }
+
+        const forms = await getFormsById(projectId);
+        const firstFormWithSlug = Array.isArray(forms)
+          ? forms.find((form) => {
+              if (!form || typeof form !== "object") return false;
+              const row = form as Record<string, unknown>;
+              const nestedForm =
+                (row.form as Record<string, unknown> | undefined) ?? undefined;
+              const formSlug =
+                (typeof row.slug === "string" ? row.slug.trim() : "") ||
+                (typeof row.formSlug === "string"
+                  ? row.formSlug.trim()
+                  : "") ||
+                (typeof nestedForm?.slug === "string"
+                  ? nestedForm.slug.trim()
+                  : "");
+              return Boolean(formSlug);
+            })
+          : null;
+
+        if (!firstFormWithSlug || typeof firstFormWithSlug !== "object") {
+          return;
+        }
+
+        const selectedForm = firstFormWithSlug as Record<string, unknown>;
+        const nestedForm =
+          (selectedForm.form as Record<string, unknown> | undefined) ?? undefined;
+        const formSlug =
+          (typeof selectedForm.slug === "string"
+            ? selectedForm.slug.trim()
+            : "") ||
+          (typeof selectedForm.formSlug === "string"
+            ? selectedForm.formSlug.trim()
+            : "") ||
+          (typeof nestedForm?.slug === "string" ? nestedForm.slug.trim() : "");
+
+        if (!formSlug) {
+          return;
+        }
+
+        const response = await getForms(formSlug, projectSlug);
         console.log("Form data fetched:", response.data);
-        // Aqui você pode usar os dados do formulário conforme necessário
       } catch (error) {
-        console.error("Erro ao buscar dados do formulário:", error);
+        console.error("Erro ao buscar dados do formulario:", error);
       }
     };
     fetchFormData();
@@ -506,3 +552,4 @@ export default function FormsPage() {
     </Box>
   );
 }
+

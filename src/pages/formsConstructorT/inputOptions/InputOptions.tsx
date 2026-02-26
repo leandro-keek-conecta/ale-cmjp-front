@@ -16,7 +16,7 @@ import SelectButton from "@/components/selectButtom";
 import { useEffect, useMemo, useState } from "react";
 import Button from "@/components/Button";
 import ExpandableCard from "@/components/expandable-card";
-import { getStoredProjectId } from "@/utils/project";
+import { getStoredProjectId, getStoredProjectSlug } from "@/utils/project";
 import { getFormsById } from "@/services/forms/formsService";
 import buildLink from "@/utils/buildLinksWithSlug.ts";
 
@@ -27,7 +27,6 @@ export type FormOptionItem = {
 };
 
 type PrimitiveSelectValue = string | number | boolean;
-const DEFAULT_PROJECT_SLUG = "ale-cmjp";
 
 type N8nBasePayload = {
   formVersionId: number;
@@ -334,13 +333,20 @@ export default function InputOptions({
       const formName = label;
       if (!formName || idNumber === null) return accumulator;
 
-      const resolvedProjectSlug = resolveProjectSlug(form) || DEFAULT_PROJECT_SLUG;
+      const resolvedProjectSlug = resolveProjectSlug(form) || getStoredProjectSlug();
+      if (!resolvedProjectSlug) return accumulator;
+
       const href = buildLink(formName, resolvedProjectSlug);
-      const formVersionId = resolveFormVersionId(form) ?? 0;
+      const formVersionId = resolveFormVersionId(form);
       const resolvedProjectId =
         resolveProjectIdFromForm(form) ??
-        toOptionalNumber(projectId) ??
-        0;
+        toOptionalNumber(projectId);
+      if (
+        typeof formVersionId !== "number" ||
+        typeof resolvedProjectId !== "number"
+      ) {
+        return accumulator;
+      }
       const fieldDefinitions = resolveFieldDefinitionsForForm(form);
       const fields = fieldDefinitions.reduce<Record<string, string>>(
         (fieldsAccumulator, field) => {
