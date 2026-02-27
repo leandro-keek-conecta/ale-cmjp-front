@@ -1,6 +1,6 @@
 .page {
   width: 100%;
-  min-height: 100vh;
+  min-height: 100dvh;
   background: linear-gradient(180deg, #f4f7ff 0%, #eef3ff 100%);
   font-family: "Inter", sans-serif;
 }

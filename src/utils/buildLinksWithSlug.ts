@@ -8,5 +8,11 @@ export default function buildLink(formName: string, slug: string) {
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-");
 
-  return `http://localhost:5173/form/${slug}/${nameFormatted}`;
+  const origin =
+    typeof window !== "undefined" && window.location?.origin
+      ? window.location.origin
+      : "";
+
+  const basePath = slug ? `/form/${slug}/${nameFormatted}` : `/form/${nameFormatted}`;
+  return `${origin}${basePath}`;
 }

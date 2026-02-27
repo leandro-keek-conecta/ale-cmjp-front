@@ -31,3 +31,7 @@
   text-overflow: ellipsis;
   max-width: 130px; /* Idem */
 }
+
+.imageNavigate:hover {
+  cursor: pointer;
+}

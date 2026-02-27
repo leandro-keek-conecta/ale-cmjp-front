@@ -10,28 +10,32 @@ export type FilterSelectOptions = {
   faixaEtaria: SelectOption<string>[];
 };
 
+type FilterInputsConfig = {
+  hideTema?: boolean;
+};
+
 const defaultSelectOptions: FilterSelectOptions = {
   tipo: [
-    { label: "Denúncia", value: "Denúncia" },
+    { label: "Denuncia", value: "Denuncia" },
     { label: "Elogio", value: "Elogio" },
-    { label: "Reclamação", value: "Reclamação" },
-    { label: "Sugestão", value: "Sugestão" },
+    { label: "Reclamacao", value: "Reclamacao" },
+    { label: "Sugestao", value: "Sugestao" },
   ],
   tema: [
-    { label: "Educação", value: "educacao" },
+    { label: "Educacao", value: "Educacao" },
     { label: "Infraestrutura", value: "Infraestrutura" },
     { label: "Mobilidade", value: "Mobilidade" },
     { label: "Outros", value: "Outros" },
-    { label: "Saúde", value: "saude" },
-    { label: "Segurança", value: "Segurança" },
+    { label: "Saude", value: "Saude" },
+    { label: "Seguranca", value: "Seguranca" },
   ],
   genero: [
     { label: "Feminino", value: "Feminino" },
     { label: "Masculino", value: "Masculino" },
-    { label: "Não-Binário", value: "Não-Binário" },
+    { label: "Nao-Binario", value: "Nao-Binario" },
     { label: "Outros", value: "Outros" },
-    { label: "Prefiro não responder", value: "Prefiro não responder" },
-    { label: "Transgênero", value: "Transgênero" },
+    { label: "Prefiro nao responder", value: "Prefiro nao responder" },
+    { label: "Transgenero", value: "Transgenero" },
   ],
   faixaEtaria: [
     { label: "18-24", value: "18-24" },
@@ -40,13 +44,15 @@ const defaultSelectOptions: FilterSelectOptions = {
     { label: "45-54", value: "45-54" },
     { label: "55-64", value: "55-64" },
     { label: "65+", value: "65+" },
-    { label: "Até 17", value: "Até 17" },
+    { label: "Ate 17", value: "Ate 17" },
   ],
 };
 
 export const getFilterInputs = (
   options: Partial<FilterSelectOptions> = {},
+  config: FilterInputsConfig = {},
 ): InputType<FormValues>[] => {
+  const hideTema = Boolean(config.hideTema);
   const resolved = {
     tipo: options.tipo ?? defaultSelectOptions.tipo,
     tema: options.tema ?? defaultSelectOptions.tema,
@@ -74,23 +80,27 @@ export const getFilterInputs = (
       title: "Tipo",
       placeholder: "Selecione o tipo",
       type: "Select",
-      colSpan: 4,
+      colSpan: hideTema ? 6 : 4,
       selectOptions: resolved.tipo,
     },
-    {
-      name: "tema",
-      title: "Tema",
-      placeholder: "Selecione o tema",
-      type: "Select",
-      colSpan: 4,
-      selectOptions: resolved.tema,
-    },
+    ...(hideTema
+      ? []
+      : [
+          {
+            name: "tema" as const,
+            title: "Tema",
+            placeholder: "Selecione o tema",
+            type: "Select" as const,
+            colSpan: 4,
+            selectOptions: resolved.tema,
+          },
+        ]),
     {
       name: "genero",
-      title: "Gênero",
-      placeholder: "Selecione o gênero",
+      title: "Genero",
+      placeholder: "Selecione o genero",
       type: "Select",
-      colSpan: 4,
+      colSpan: hideTema ? 6 : 4,
       selectOptions: resolved.genero,
     },
     {
@@ -102,18 +112,13 @@ export const getFilterInputs = (
     },
     {
       name: "faixaEtaria",
-      title: "Faixa etária",
+      title: "Faixa etaria",
       placeholder: "Selecione a faixa",
       type: "Select",
       colSpan: 6,
       selectOptions: resolved.faixaEtaria,
     },
-    {
-      name: "texto_opiniao",
-      title: "Texto da opinião",
-      placeholder: "Busque por palavra-chave",
-      type: "text",
-      colSpan: 12,
-    },
   ];
 };
+
+export default getFilterInputs;

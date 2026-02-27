@@ -1,4 +1,4 @@
-import { Box, Button, IconButton } from "@mui/material";
+import { Box, Button, CircularProgress, IconButton } from "@mui/material";
 import styles from "./FormsPage.module.css";
 import HorizontalLinearAlternativeLabelStepper from "../../components/stepper";
 import { useEffect, useMemo, useState } from "react";
@@ -21,6 +21,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import getForms from "@/services/forms/formsService";
 import { submitOpiniionTest } from "@/services/opiniao/opiniaoService";
 import { useAuth } from "@/context/AuthContext";
+import { getStoredProjectId, getStoredProjectSlug } from "@/utils/project";
 
 type FormPage = {
   title: string;
@@ -37,9 +38,6 @@ const USER_FIELDS = [
   "bairro",
   "campanha",
 ] as const;
-
-const DEFAULT_PROJECT_ID = 1;
-const DEFAULT_FORM_VERSION_ID = 1;
 
 export type SubmitSummary = {
   id?: string;
@@ -302,13 +300,122 @@ function extractSchemaRulesByName(schema: unknown) {
   return result;
 }
 
+function formatFieldLabel(fieldName: string) {
+  const cleaned = fieldName
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+[a-f0-9]{8,}$/i, "")
+    .trim();
+
+  if (!cleaned) return "Campo";
+
+  return cleaned
+    .split(" ")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function normalizeBlocks(source: unknown) {
+  if (!Array.isArray(source)) return [];
+
+  return source
+    .map((block, index) => {
+      if (!block || typeof block !== "object") {
+        return null;
+      }
+
+      const data = block as Record<string, unknown>;
+      const title = toTrimmedString(data.title) || `Aba ${index + 1}`;
+      const fields = (Array.isArray(data.fields) ? data.fields : [])
+        .map((fieldName) => toTrimmedString(fieldName))
+        .filter(Boolean);
+
+      return { title, fields };
+    })
+    .filter(Boolean) as { title: string; fields: string[] }[];
+}
+
+function buildFieldFromSchema(
+  name: string,
+  schemaRule?: Record<string, unknown>,
+) {
+  const normalizedName = toTrimmedString(name);
+  if (!normalizedName) return null;
+
+  const options = getFieldOptions(schemaRule);
+  const label =
+    toTrimmedString(schemaRule?.label) || formatFieldLabel(normalizedName);
+  const type = toTrimmedString(schemaRule?.type) || "text";
+  const required = Boolean(schemaRule?.required);
+  const placeholder =
+    toTrimmedString(schemaRule?.placeholder) ||
+    toTrimmedString(options?.placeholder) ||
+    undefined;
+  const min = toOptionalNumber(schemaRule?.min ?? options?.min);
+  const max = toOptionalNumber(schemaRule?.max ?? options?.max);
+  const rows = toOptionalNumber(schemaRule?.rows ?? options?.rows);
+
+  return {
+    name: normalizedName,
+    label,
+    type,
+    required,
+    ...(placeholder ? { placeholder } : {}),
+    ...(options ? { options } : {}),
+    ...(typeof min === "number" ? { min } : {}),
+    ...(typeof max === "number" ? { max } : {}),
+    ...(typeof rows === "number" ? { rows } : {}),
+  } as Record<string, unknown>;
+}
+
+function buildFieldsFromSchema(
+  blocks: { title: string; fields: string[] }[],
+  schemaRulesByName: Record<string, Record<string, unknown>>,
+) {
+  const orderedNames: string[] = [];
+  const seen = new Set<string>();
+
+  const pushFieldName = (fieldName: unknown) => {
+    const normalizedName = toTrimmedString(fieldName);
+    if (!normalizedName || seen.has(normalizedName)) return;
+    seen.add(normalizedName);
+    orderedNames.push(normalizedName);
+  };
+
+  blocks.forEach((block) => {
+    block.fields.forEach(pushFieldName);
+  });
+  Object.keys(schemaRulesByName).forEach(pushFieldName);
+
+  return orderedNames
+    .map((fieldName) =>
+      buildFieldFromSchema(fieldName, schemaRulesByName[fieldName]),
+    )
+    .filter(Boolean) as Record<string, unknown>[];
+}
+
+function getRequestErrorMessage(error: unknown) {
+  if (error && typeof error === "object") {
+    const message =
+      toTrimmedString((error as any)?.response?.data?.message) ||
+      toTrimmedString((error as any)?.message);
+    if (message) return message;
+  }
+
+  return "Nao foi possivel carregar os dados do formulario.";
+}
+
 export default function DinamicFormsPage() {
   const [currentStep, setCurrentStep] = useState(0);
   const [pages, setPages] = useState<FormPage[]>([]);
-  const [formVersionId, setFormVersionId] = useState<number>(
-    DEFAULT_FORM_VERSION_ID,
+  const [isFormLoading, setIsFormLoading] = useState(true);
+  const [formLoadError, setFormLoadError] = useState<string | null>(null);
+  const [formTitle, setFormTitle] = useState("Registre Sua Opiniao");
+  const [formDescription, setFormDescription] = useState("");
+  const [formVersionId, setFormVersionId] = useState<number | null>(null);
+  const [projectId, setProjectId] = useState<number | null>(() =>
+    getStoredProjectId(),
   );
-  const [projectId, setProjectId] = useState<number>(DEFAULT_PROJECT_ID);
   const steps = useMemo(() => {
     const labels = pages.map((p) => p.title);
     return labels.length ? [...labels, "Concluído"] : [];
@@ -329,7 +436,7 @@ export default function DinamicFormsPage() {
     project?: string;
     slug?: string;
   }>();
-  const projectName = projectParam ?? "";
+  const projectName = (projectParam ?? getStoredProjectSlug() ?? "").trim();
   const formSlug = slugParam ?? "";
   const { user } = useAuth();
   const responseContext = useMemo(() => buildFormResponseContext(), []);
@@ -398,6 +505,14 @@ export default function DinamicFormsPage() {
   async function onSubmitOpinion(values: Record<string, any>) {
     setOpinionAlert(null);
     try {
+      if (!projectId || !formVersionId) {
+        setOpinionAlert({
+          severity: "error",
+          message: "Nao foi possivel identificar projeto ou versao do formulario.",
+        });
+        return;
+      }
+
       const fields = buildFieldsPayloadForInputs(
         values,
         pages.flatMap((p) => p.inputs),
@@ -444,11 +559,9 @@ export default function DinamicFormsPage() {
     schemaRule?: Record<string, unknown>,
   ): InputType<any> {
     const inputType = resolveFieldInputType(field, schemaRule);
-    const label =
-      toTrimmedString(field.label) ||
-      toTrimmedString(field.name) ||
-      "Campo";
     const fieldName = toTrimmedString(field.name);
+    const label =
+      toTrimmedString(field.label) || formatFieldLabel(fieldName) || "Campo";
     const fieldOptions = getFieldOptions(field);
     const schemaOptions = getFieldOptions(schemaRule);
     const isRequired = Boolean(field.required ?? schemaRule?.required);
@@ -535,9 +648,12 @@ export default function DinamicFormsPage() {
     const mappedPages = blocks.map((block) => ({
       title: block.title,
       inputs: block.fields.reduce<InputType<any>[]>((accumulator, fieldName) => {
-        const field = fieldMap.get(fieldName);
+        const field =
+          fieldMap.get(fieldName) ??
+          buildFieldFromSchema(fieldName, schemaRulesByName[fieldName]);
         if (!field) return accumulator;
         const resolvedName = toTrimmedString(field.name);
+        if (!resolvedName) return accumulator;
         accumulator.push(
           mapBackendFieldToInput(field, schemaRulesByName[resolvedName]),
         );
@@ -557,10 +673,17 @@ export default function DinamicFormsPage() {
     if (unassignedFields.length) {
       mappedPages.push({
         title: "Formulario",
-        inputs: unassignedFields.map((field) => {
-          const fieldName = toTrimmedString(field.name);
-          return mapBackendFieldToInput(field, schemaRulesByName[fieldName]);
-        }),
+        inputs: unassignedFields.reduce<InputType<any>[]>(
+          (accumulator, field) => {
+            const fieldName = toTrimmedString(field.name);
+            if (!fieldName) return accumulator;
+            accumulator.push(
+              mapBackendFieldToInput(field, schemaRulesByName[fieldName]),
+            );
+            return accumulator;
+          },
+          [],
+        ),
       });
     }
 
@@ -568,30 +691,101 @@ export default function DinamicFormsPage() {
   }
   useEffect(() => {
     const fetchFormData = async () => {
+      setIsFormLoading(true);
+      setFormLoadError(null);
       try {
+        if (!formSlug) {
+          setPages([]);
+          setCurrentStep(0);
+          setFormLoadError("Link do formulario invalido.");
+          return;
+        }
+
+        if (!projectName) {
+          setPages([]);
+          setCurrentStep(0);
+          setFormLoadError("Projeto nao identificado para carregar o formulario.");
+          return;
+        }
+
         const response = await getForms(formSlug, projectName);
 
-        const activeVersion = response.data.data.activeVersion;
-        const projectFromResponse = response.data.data.projeto;
+        const responseData = (response?.data?.data ?? {}) as Record<
+          string,
+          unknown
+        >;
+        const formFromResponse = (responseData.form ??
+          {}) as Record<string, unknown>;
+        const projectFromResponse = (responseData.projeto ??
+          {}) as Record<string, unknown>;
+        const activeVersion = (responseData.activeVersion ??
+          responseData.active_version ??
+          formFromResponse.activeVersion ??
+          formFromResponse.active_version ??
+          {}) as Record<string, unknown>;
 
-        const blocks = Array.isArray(activeVersion?.schema?.blocks)
-          ? activeVersion.schema.blocks
+        const activeSchema =
+          activeVersion.schema &&
+          typeof activeVersion.schema === "object" &&
+          !Array.isArray(activeVersion.schema)
+            ? (activeVersion.schema as Record<string, unknown>)
+            : {};
+        const blocks = normalizeBlocks(activeSchema.blocks);
+        const schemaRulesByName = extractSchemaRulesByName(activeSchema);
+        const fieldsFromVersion = Array.isArray(activeVersion.fields)
+          ? (activeVersion.fields as Record<string, unknown>[])
           : [];
-        const fields = Array.isArray(activeVersion?.fields)
-          ? activeVersion.fields
-          : [];
-        const schemaRulesByName = extractSchemaRulesByName(activeVersion?.schema);
+        const normalizedFields = fieldsFromVersion.length
+          ? fieldsFromVersion
+          : buildFieldsFromSchema(blocks, schemaRulesByName);
 
-        const pages = groupFieldsByBlocks(blocks, fields, schemaRulesByName);
-        setPages(pages);
-        if (typeof activeVersion?.id === "number") {
-          setFormVersionId(activeVersion.id);
-        }
-        if (typeof projectFromResponse?.id === "number") {
-          setProjectId(projectFromResponse.id);
-        }
+        const nextPages = groupFieldsByBlocks(
+          blocks,
+          normalizedFields,
+          schemaRulesByName,
+        );
+
+        setPages(nextPages);
+        setCurrentStep(0);
+        setShowOutraOpiniao(false);
+        setSummary(null);
+        setIsOpinionTextModalOpen(false);
+        setUserAlert(null);
+        setOpinionAlert(null);
+
+        const formName =
+          toTrimmedString(formFromResponse.name) ||
+          toTrimmedString(responseData.name) ||
+          "Registre Sua Opiniao";
+        const description =
+          toTrimmedString(formFromResponse.description) ||
+          toTrimmedString(responseData.description);
+        setFormTitle(formName);
+        setFormDescription(description);
+
+        const resolvedFormVersionId = toOptionalNumber(activeVersion.id);
+        setFormVersionId(
+          typeof resolvedFormVersionId === "number" ? resolvedFormVersionId : null,
+        );
+
+        const resolvedProjectId = toOptionalNumber(
+          projectFromResponse.id ??
+            responseData.projetoId ??
+            formFromResponse.projetoId,
+        );
+        setProjectId(
+          typeof resolvedProjectId === "number"
+            ? resolvedProjectId
+            : (getStoredProjectId() ?? null),
+        );
       } catch (error) {
-        console.error("Erro ao buscar dados do formulário:", error);
+        setPages([]);
+        setCurrentStep(0);
+        setFormVersionId(null);
+        setFormLoadError(getRequestErrorMessage(error));
+        console.error("Erro ao buscar dados do formulario:", error);
+      } finally {
+        setIsFormLoading(false);
       }
     };
 
@@ -628,12 +822,12 @@ export default function DinamicFormsPage() {
 
     const values = getValues() as Record<string, any>;
     console.log("Submitting step", currentStep, values);
-    if (currentStep === 0) {
-      await onSubmitUser(values);
-      return;
-    }
     if (currentStep === pages.length - 1) {
       await onSubmitOpinion(values);
+      return;
+    }
+    if (currentStep === 0) {
+      await onSubmitUser(values);
       return;
     }
 
@@ -652,6 +846,8 @@ export default function DinamicFormsPage() {
         ? "Enviar opinião"
         : "Próximo";
 
+  const shouldRenderFormFlow =
+    !isFormLoading && !formLoadError && pages.length > 0;
   return (
     <Box className={styles.container}>
       <Box className={styles.formBox}>
@@ -660,200 +856,221 @@ export default function DinamicFormsPage() {
           fontWeight={700}
           sx={{ mb: 3, textAlign: "center" }}
         >
-          Registre Sua Opinião
+          {formTitle}
         </Typography>
-        <Box className={styles.stepperBox}>
-          <HorizontalLinearAlternativeLabelStepper
-            step={steps}
-            activeNumberStep={currentStep}
-          />
-        </Box>
+        {formDescription ? (
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ mb: 2, textAlign: "center" }}
+          >
+            {formDescription}
+          </Typography>
+        ) : null}
+        {shouldRenderFormFlow ? (
+          <Box className={styles.stepperBox}>
+            <HorizontalLinearAlternativeLabelStepper
+              step={steps}
+              activeNumberStep={currentStep}
+            />
+          </Box>
+        ) : null}
 
         <Box>
-          {page && resolvedPageInputs.length > 0 && (
-            <Forms
-              inputsList={resolvedPageInputs}
-              control={control}
-              errors={errors}
-              onInputChange={handleInputChange}
-            />
-          )}
-          {(currentStep === 0 || currentStep === 1) && userAlert && (
-            <Alert severity={userAlert.severity} sx={{ mt: 2 }}>
-              {userAlert.message}
-            </Alert>
-          )}
-          {currentStep === pages.length - 1 && opinionAlert && (
-            <Alert severity={opinionAlert.severity} sx={{ mt: 2 }}>
-              {opinionAlert.message}
-            </Alert>
-          )}
+          {isFormLoading ? (
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                py: 4,
+                gap: 1.5,
+              }}
+            >
+              <CircularProgress size={28} />
+              <Typography variant="body2" color="text.secondary">
+                Carregando formulario...
+              </Typography>
+            </Box>
+          ) : formLoadError ? (
+            <Alert severity="error">{formLoadError}</Alert>
+          ) : !pages.length ? (
+            <Alert severity="info">Formulario indisponivel no momento.</Alert>
+          ) : (
+            <>
+              {page && resolvedPageInputs.length > 0 && (
+                <Forms
+                  inputsList={resolvedPageInputs}
+                  control={control}
+                  errors={errors}
+                  onInputChange={handleInputChange}
+                />
+              )}
+              {(currentStep === 0 || currentStep === 1) && userAlert && (
+                <Alert severity={userAlert.severity} sx={{ mt: 2 }}>
+                  {userAlert.message}
+                </Alert>
+              )}
+              {currentStep === pages.length - 1 && opinionAlert && (
+                <Alert severity={opinionAlert.severity} sx={{ mt: 2 }}>
+                  {opinionAlert.message}
+                </Alert>
+              )}
 
-          <Box className={styles.buttonsBox}>
-            {isFormStep && !showBackButton && (
-              <Button
-                className={styles.submitButton}
-                onClick={handleStepSubmit}
-              >
-                {primaryButtonLabel}
-              </Button>
-            )}
+              <Box className={styles.buttonsBox}>
+                {isFormStep && !showBackButton && (
+                  <Button
+                    className={styles.submitButton}
+                    onClick={handleStepSubmit}
+                  >
+                    {primaryButtonLabel}
+                  </Button>
+                )}
 
-            {showBackButton && (
-              <Box
-                sx={{
-                  position: "relative",
-                  width: "100%",
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <Button
-                  className={styles.submitButton}
-                  onClick={handleStepSubmit}
-                  sx={{ minWidth: { xs: "100%", sm: "35%" } }}
-                >
-                  {primaryButtonLabel}
-                </Button>
-                <IconButton
-                  aria-label="Voltar para cadastro do usuário"
-                  onClick={() =>
-                    setCurrentStep((prev) => Math.max(prev - 1, 0))
-                  }
-                  sx={{
-                    position: "absolute",
-                    left: 0,
-                    color: "#1e8e9c",
-                  }}
-                >
-                  <KeyboardBackspaceIcon />
-                </IconButton>
+                {showBackButton && (
+                  <Box
+                    sx={{
+                      position: "relative",
+                      width: "100%",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Button
+                      className={styles.submitButton}
+                      onClick={handleStepSubmit}
+                      sx={{ minWidth: { xs: "100%", sm: "35%" } }}
+                    >
+                      {primaryButtonLabel}
+                    </Button>
+                    <IconButton
+                      aria-label="Voltar para cadastro do usuario"
+                      onClick={() =>
+                        setCurrentStep((prev) => Math.max(prev - 1, 0))
+                      }
+                      sx={{
+                        position: "absolute",
+                        left: 0,
+                        color: "#1e8e9c",
+                      }}
+                    >
+                      <KeyboardBackspaceIcon />
+                    </IconButton>
+                  </Box>
+                )}
+                {currentStep === pages.length && (
+                  <Card
+                    elevation={0}
+                    sx={{ border: "1px solid #eee", borderRadius: 3 }}
+                  >
+                    <CardContent>
+                      <Stack spacing={2.5} alignItems="center" textAlign="center">
+                        <Typography variant="h5" fontWeight={700}>
+                          Opiniao registrada com sucesso
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{ maxWidth: 520 }}
+                        >
+                          Valeu por participar! Isso ajuda a priorizar melhorias e
+                          acoes reais.
+                        </Typography>
+                        <Stack
+                          direction="row"
+                          spacing={1}
+                          useFlexGap
+                          flexWrap="wrap"
+                          justifyContent="center"
+                          sx={{ maxWidth: 720 }}
+                        >
+                          {summary?.tema && <Chip label={`Tema: ${summary.tema}`} />}
+                          {summary?.tipo && <Chip label={`Tipo: ${summary.tipo}`} />}
+                          {summary?.texto_opiniao && (
+                            <Chip
+                              label={`Texto da opiniao: ${getOpinionPreviewText(
+                                summary.texto_opiniao,
+                              )}`}
+                              onClick={() => setIsOpinionTextModalOpen(true)}
+                              clickable
+                              title="Ver texto completo"
+                              sx={{
+                                maxWidth: "100%",
+                                ".MuiChip-label": {
+                                  maxWidth: "100%",
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                  whiteSpace: "nowrap",
+                                },
+                              }}
+                            />
+                          )}
+                        </Stack>
+
+                        <Divider sx={{ width: "100%", maxWidth: 720 }} />
+
+                        <Dialog
+                          open={isOpinionTextModalOpen}
+                          onClose={() => setIsOpinionTextModalOpen(false)}
+                          fullWidth
+                          maxWidth="sm"
+                        >
+                          <DialogTitle>Texto da opiniao</DialogTitle>
+                          <DialogContentText component="div" sx={{ px: 2, pb: 2 }}>
+                            {summary?.texto_opiniao || "Sem texto"}
+                          </DialogContentText>
+                        </Dialog>
+
+                        <Stack
+                          direction={{ xs: "column", sm: "row" }}
+                          spacing={1.5}
+                          sx={{ pt: 1 }}
+                        >
+                          <Button
+                            variant="contained"
+                            onClick={async () => {
+                              setIsOpinionTextModalOpen(false);
+                              await saveOptInPreference();
+                              setCurrentStep(0);
+                            }}
+                          >
+                            Concluir
+                          </Button>
+
+                          <Button
+                            variant="outlined"
+                            onClick={() => {
+                              setSummary(null);
+                              setShowOutraOpiniao(false);
+                              setOpinionAlert(null);
+                              setIsOpinionTextModalOpen(false);
+                              const currentValues = getValues() as Record<
+                                string,
+                                any
+                              >;
+                              const nextValues = buildDefaultValuesFromPages(pages);
+                              USER_FIELDS.forEach((field) => {
+                                if (currentValues?.[field] !== undefined) {
+                                  (nextValues as Record<string, any>)[field] =
+                                    currentValues[field];
+                                }
+                              });
+                              reset(nextValues);
+                              setCurrentStep(Math.min(1, pages.length - 1));
+                            }}
+                          >
+                            Enviar outra opiniao
+                          </Button>
+                        </Stack>
+                      </Stack>
+                    </CardContent>
+                  </Card>
+                )}
               </Box>
-            )}
-            {currentStep === pages.length && (
-              <Card
-                elevation={0}
-                sx={{ border: "1px solid #eee", borderRadius: 3 }}
-              >
-                <CardContent>
-                  <Stack spacing={2.5} alignItems="center" textAlign="center">
-                    {/* Sucesso */}
-                    <Typography variant="h5" fontWeight={700}>
-                      Opinião registrada com sucesso ✅
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ maxWidth: 520 }}
-                    >
-                      Valeu por participar! Isso ajuda a priorizar melhorias e
-                      ações reais.
-                    </Typography>
-                    {/* Resumo */}
-                    <Stack
-                      direction="row"
-                      spacing={1}
-                      useFlexGap
-                      flexWrap="wrap"
-                      justifyContent="center"
-                      sx={{ maxWidth: 720 }}
-                    >
-                      {summary?.tema && (
-                        <Chip label={`Tema: ${summary.tema}`} />
-                      )}
-                      {summary?.tipo && (
-                        <Chip label={`Tipo: ${summary.tipo}`} />
-                      )}
-                      {summary?.texto_opiniao && (
-                        <Chip
-                          label={`Texto da opinião: ${getOpinionPreviewText(
-                            summary.texto_opiniao,
-                          )}`}
-                          onClick={() => setIsOpinionTextModalOpen(true)}
-                          clickable
-                          title="Ver texto completo"
-                          sx={{
-                            maxWidth: "100%",
-                            ".MuiChip-label": {
-                              maxWidth: "100%",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              whiteSpace: "nowrap",
-                            },
-                          }}
-                        />
-                      )}
-                    </Stack>
-
-                    <Divider sx={{ width: "100%", maxWidth: 720 }} />
-
-                    <Dialog
-                      open={isOpinionTextModalOpen}
-                      onClose={() => setIsOpinionTextModalOpen(false)}
-                      fullWidth
-                      maxWidth="sm"
-                    >
-                      <DialogTitle>Texto da opinião</DialogTitle>
-                      <DialogContentText component="div" sx={{ px: 2, pb: 2 }}>
-                        {summary?.texto_opiniao || "Sem texto"}
-                      </DialogContentText>
-                    </Dialog>
-
-                    {/* CTAs */}
-                    <Stack
-                      direction={{ xs: "column", sm: "row" }}
-                      spacing={1.5}
-                      sx={{ pt: 1 }}
-                    >
-                      <Button
-                        variant="contained"
-                        onClick={async () => {
-                          setIsOpinionTextModalOpen(false);
-                          // salva opt-in se marcado
-                          await saveOptInPreference();
-
-                          // finalizar fluxo (você escolhe)
-                          // 1) reset total:
-                          // setCurrentStep(0);
-
-                          // 2) ou levar pro início:
-                          setCurrentStep(0);
-                        }}
-                      >
-                        Concluir
-                      </Button>
-
-                      <Button
-                        variant="outlined"
-                        onClick={() => {
-                          setSummary(null);
-                          setShowOutraOpiniao(false);
-                          setOpinionAlert(null);
-                          setIsOpinionTextModalOpen(false);
-                          const currentValues = getValues() as Record<
-                            string,
-                            any
-                          >;
-                          const nextValues = buildDefaultValuesFromPages(pages);
-                          USER_FIELDS.forEach((field) => {
-                            if (currentValues?.[field] !== undefined) {
-                              (nextValues as Record<string, any>)[field] =
-                                currentValues[field];
-                            }
-                          });
-                          reset(nextValues);
-                          setCurrentStep(Math.min(1, pages.length - 1));
-                        }}
-                      >
-                        Enviar outra opinião
-                      </Button>
-                    </Stack>
-                  </Stack>
-                </CardContent>
-              </Card>
-            )}
-          </Box>
+            </>
+          )}
         </Box>
       </Box>
     </Box>

@@ -76,6 +76,13 @@
   padding: 10px;
 }
 
+.templateSection {
+  display: grid;
+  gap: 8px;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
 .selectedFormActions {
   display: flex;
   align-items: center;

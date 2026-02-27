@@ -1,138 +1,151 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-br">
-<head>
-<meta charset="UTF-8">
-<style>
-  body {
-    background-color: #000;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
-  }
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      body {
+        background-color: #000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100dvh;
+        margin: 0;
+      }
 
-  .icon-container {
-    width: 200px;
-    height: 200px;
-    position: relative;
-  }
+      .icon-container {
+        width: 200px;
+        height: 200px;
+        position: relative;
+      }
 
-  /* O Documento Azul */
-  .document {
-    width: 120px;
-    height: 160px;
-    background-color: #3b82f6; /* Azul */
-    border-radius: 20px;
-    position: absolute;
-    top: 20px;
-    left: 40px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-    display: flex;
-    flex-direction: column;
-    padding: 20px;
-    box-sizing: border-box;
-    z-index: 1;
-  }
+      /* O Documento Azul */
+      .document {
+        width: 120px;
+        height: 160px;
+        background-color: #3b82f6; /* Azul */
+        border-radius: 20px;
+        position: absolute;
+        top: 20px;
+        left: 40px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+        display: flex;
+        flex-direction: column;
+        padding: 20px;
+        box-sizing: border-box;
+        z-index: 1;
+      }
 
-  /* Dobra da página (canto superior direito) */
-  .document::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 0;
-    height: 0;
-    border-style: solid;
-    border-width: 0 40px 40px 0;
-    border-color: transparent #60a5fa transparent transparent; /* Azul mais claro */
-    border-bottom-left-radius: 10px;
-  }
+      /* Dobra da página (canto superior direito) */
+      .document::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 0;
+        height: 0;
+        border-style: solid;
+        border-width: 0 40px 40px 0;
+        border-color: transparent #60a5fa transparent transparent; /* Azul mais claro */
+        border-bottom-left-radius: 10px;
+      }
 
-  /* Linhas de texto */
-  .line {
-    height: 8px;
-    background-color: rgba(255,255,255,0.9);
-    margin-bottom: 12px;
-    border-radius: 4px;
-    width: 100%;
-    transform-origin: left;
-    animation: lines-in 0.8s ease-out forwards;
-  }
+      /* Linhas de texto */
+      .line {
+        height: 8px;
+        background-color: rgba(255, 255, 255, 0.9);
+        margin-bottom: 12px;
+        border-radius: 4px;
+        width: 100%;
+        transform-origin: left;
+        animation: lines-in 0.8s ease-out forwards;
+      }
 
-  .line.short { width: 60%; }
-  
-  /* Animação das linhas aparecendo */
-  @keyframes lines-in {
-    0% { transform: scaleX(0); opacity: 0; }
-    100% { transform: scaleX(1); opacity: 1; }
-  }
+      .line.short {
+        width: 60%;
+      }
 
-  /* O Quadrado Laranja (Badge) */
-  .badge {
-    width: 70px;
-    height: 70px;
-    background-color: #f59e0b; /* Laranja/Amarelo */
-    border-radius: 18px;
-    position: absolute;
-    bottom: 30px;
-    right: 20px;
-    z-index: 2;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-    
-    /* Animação de entrada do quadrado */
-    transform: scale(0);
-    animation: pop-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-    animation-delay: 0.5s; /* Espera o documento aparecer um pouco */
-  }
+      /* Animação das linhas aparecendo */
+      @keyframes lines-in {
+        0% {
+          transform: scaleX(0);
+          opacity: 0;
+        }
+        100% {
+          transform: scaleX(1);
+          opacity: 1;
+        }
+      }
 
-  @keyframes pop-in {
-    0% { transform: scale(0) rotate(-10deg); }
-    100% { transform: scale(1) rotate(0deg); }
-  }
+      /* O Quadrado Laranja (Badge) */
+      .badge {
+        width: 70px;
+        height: 70px;
+        background-color: #f59e0b; /* Laranja/Amarelo */
+        border-radius: 18px;
+        position: absolute;
+        bottom: 30px;
+        right: 20px;
+        z-index: 2;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 
-  /* O Checkmark (Visto) */
-  .checkmark {
-    width: 40px;
-    height: 40px;
-    fill: none;
-    stroke: white;
-    stroke-width: 6;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    stroke-dasharray: 100;
-    stroke-dashoffset: 100;
-    animation: check-draw 0.6s ease-in-out forwards;
-    animation-delay: 1s; /* Começa depois que o quadrado laranja aparece */
-  }
+        /* Animação de entrada do quadrado */
+        transform: scale(0);
+        animation: pop-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        animation-delay: 0.5s; /* Espera o documento aparecer um pouco */
+      }
 
-  @keyframes check-draw {
-    0% { stroke-dashoffset: 100; }
-    100% { stroke-dashoffset: 0; }
-  }
+      @keyframes pop-in {
+        0% {
+          transform: scale(0) rotate(-10deg);
+        }
+        100% {
+          transform: scale(1) rotate(0deg);
+        }
+      }
 
-</style>
-</head>
-<body>
+      /* O Checkmark (Visto) */
+      .checkmark {
+        width: 40px;
+        height: 40px;
+        fill: none;
+        stroke: white;
+        stroke-width: 6;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-dasharray: 100;
+        stroke-dashoffset: 100;
+        animation: check-draw 0.6s ease-in-out forwards;
+        animation-delay: 1s; /* Começa depois que o quadrado laranja aparece */
+      }
 
-<div class="icon-container">
-  <div class="document">
-    <div class="line short"></div>
-    <div class="line"></div>
-    <div class="line"></div>
-    <div class="line short"></div>
-    <div class="line"></div>
-  </div>
+      @keyframes check-draw {
+        0% {
+          stroke-dashoffset: 100;
+        }
+        100% {
+          stroke-dashoffset: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="icon-container">
+      <div class="document">
+        <div class="line short"></div>
+        <div class="line"></div>
+        <div class="line"></div>
+        <div class="line short"></div>
+        <div class="line"></div>
+      </div>
 
-  <div class="badge">
-    <svg class="checkmark" viewBox="0 0 50 50">
-      <polyline points="10 25 20 35 40 15" />
-    </svg>
-  </div>
-</div>
-
-</body>
+      <div class="badge">
+        <svg class="checkmark" viewBox="0 0 50 50">
+          <polyline points="10 25 20 35 40 15" />
+        </svg>
+      </div>
+    </div>
+  </body>
 </html>

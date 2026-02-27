@@ -9,6 +9,24 @@ type BuildPieChartOptionParams = {
   data: PieChartDatum[];
 };
 
+const formatChartNumber = (value: unknown) => {
+  const numericValue =
+    typeof value === "number"
+      ? value
+      : typeof value === "string"
+        ? Number(value)
+        : NaN;
+
+  if (!Number.isFinite(numericValue)) {
+    return "0";
+  }
+
+  return numericValue.toLocaleString("pt-BR", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  });
+};
+
 export function buildPieChartOption({
   data,
 }: BuildPieChartOptionParams): EChartsOption {
@@ -20,7 +38,8 @@ export function buildPieChartOption({
   return {
     tooltip: {
       trigger: "item",
-      formatter: "{b}: {c} ({d}%)",
+      formatter: (params: any) =>
+        `${params?.name ?? ""}: ${formatChartNumber(params?.value)} (${formatChartNumber(params?.percent)}%)`,
     },
 
     legend: {
@@ -45,7 +64,8 @@ export function buildPieChartOption({
         label: {
           show: true,
           position: "outside",
-          formatter: ({ value, percent }) => `${value} (${percent}%)`,
+          formatter: (params: any) =>
+            `${formatChartNumber(params?.value)} (${formatChartNumber(params?.percent)}%)`,
           fontSize: 11,
           fontWeight: 600,
           color: "#334155",

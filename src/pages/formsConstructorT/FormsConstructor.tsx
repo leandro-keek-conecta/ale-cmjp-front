@@ -2,7 +2,10 @@ import { Box } from "@mui/material";
 import styles from "./form.module.css";
 import CabecalhoEstilizado from "@/components/CabecalhoEstilizado";
 import { useEffect, useMemo, useState } from "react";
-import InputOptions, { type FormOptionItem } from "./inputOptions/InputOptions";
+import InputOptions, {
+  type FormOptionItem,
+  type FormTemplateOptionItem,
+} from "./inputOptions/InputOptions";
 import Button from "@/components/Button";
 import {
   type BuilderBlock,
@@ -21,14 +24,50 @@ import { DragDropProvider } from "@dnd-kit/react";
 import FormPreview from "./FormsPreview/FormPreview";
 import getForms, { createForm, updateFormById } from "@/services/forms/formsService";
 import { triggerAlert } from "@/services/alert/alertService";
+import { getStoredProjectSlug } from "@/utils/project";
+import formTemplatesData from "@/templates/form-templates.json";
 
-const DEFAULT_PROJECT_SLUG = "ale-cmjp";
 const MAX_FIELDS_PER_ROW = 3;
 
 type DropPlacement =
   | { type: "new-row" }
   | { type: "side"; rowIndex: number }
   | { type: "below"; rowIndex: number };
+
+type FormTemplateItem = FormTemplateOptionItem & {
+  initialVersion: Record<string, unknown>;
+};
+
+function normalizeFormTemplates(value: unknown): FormTemplateItem[] {
+  const source =
+    value && typeof value === "object" ? (value as Record<string, unknown>) : {};
+  const templates = Array.isArray(source.templates) ? source.templates : [];
+
+  return templates
+    .map<FormTemplateItem | null>((template, index) => {
+      if (!template || typeof template !== "object") return null;
+      const parsedTemplate = template as Record<string, unknown>;
+      const rawId = toTrimmedString(parsedTemplate.id);
+      const name = toTrimmedString(parsedTemplate.name);
+      const initialVersion =
+        parsedTemplate.initialVersion &&
+        typeof parsedTemplate.initialVersion === "object"
+          ? (parsedTemplate.initialVersion as Record<string, unknown>)
+          : {};
+
+      if (!name) return null;
+
+      return {
+        id: rawId || `template_${index + 1}`,
+        name,
+        description: toTrimmedString(parsedTemplate.description) || undefined,
+        initialVersion,
+      };
+    })
+    .filter((template): template is FormTemplateItem => template !== null);
+}
+
+const FORM_TEMPLATES = normalizeFormTemplates(formTemplatesData);
 
 function generateImportedFieldId(index: number) {
   return `imported-${Date.now()}-${index}-${Math.random().toString(16).slice(2, 6)}`;
@@ -321,13 +360,12 @@ function resolveFormSlug(form: FormOptionItem) {
 }
 
 function resolveProjectSlug(form: FormOptionItem) {
-  return (
-    pickFirstText(
-      form.projetoSlug,
-      form.projectSlug,
-      (form.projeto as Record<string, unknown> | undefined)?.slug,
-      (form.project as Record<string, unknown> | undefined)?.slug,
-    ) || DEFAULT_PROJECT_SLUG
+  return pickFirstText(
+    form.projetoSlug,
+    form.projectSlug,
+    (form.projeto as Record<string, unknown> | undefined)?.slug,
+    (form.project as Record<string, unknown> | undefined)?.slug,
+    getStoredProjectSlug(),
   );
 }
 
@@ -745,6 +783,16 @@ export default function ConstructorForm() {
     };
   }, [descriptionForm, fieldRows, formBlocks, formStyles, titleForm]);
 
+  const templateOptions = useMemo<FormTemplateOptionItem[]>(
+    () =>
+      FORM_TEMPLATES.map((template) => ({
+        id: template.id,
+        name: template.name,
+        description: template.description,
+      })),
+    [],
+  );
+
   useEffect(() => {
     const fieldNames = fieldRows.flatMap((row) => row.map((field) => field.name));
     setFormBlocks((previous) => syncBlocksWithFieldNames(previous, fieldNames));
@@ -1046,6 +1094,10 @@ export default function ConstructorForm() {
           return;
         }
         const projectSlug = resolveProjectSlug(selectedForm);
+        if (!projectSlug) {
+          console.warn("Projeto ativo sem slug para carregar formulario.");
+          return;
+        }
         const response = await getForms(formSlug, projectSlug);
         payload = (response?.data?.data ?? {}) as Record<string, unknown>;
         activeVersion = resolveActiveVersion(payload as FormOptionItem);
@@ -1095,6 +1147,46 @@ export default function ConstructorForm() {
     } catch (error) {
       console.error("Erro ao carregar formulario selecionado", error);
     }
+  };
+
+  const handleApplyTemplate = (templateId: string) => {
+    const selectedTemplate =
+      FORM_TEMPLATES.find((template) => template.id === templateId) ?? null;
+    if (!selectedTemplate) {
+      return;
+    }
+
+    const version = selectedTemplate.initialVersion;
+    const schema = (version.schema as Record<string, unknown> | undefined) ?? {};
+    const importedFields = Array.isArray(version.fields)
+      ? (version.fields as Record<string, unknown>[])
+      : [];
+    const blocks = Array.isArray(schema.blocks)
+      ? (schema.blocks as Record<string, unknown>[])
+      : [];
+    const schemaRulesByName = extractSchemaRulesByName(schema);
+
+    setSelectedFormId(null);
+    setSelectedFormVersionId(null);
+    setSelectedFieldIdByName({});
+    setSelectedBlockIndex(0);
+    setFormBlocks(mapImportedBlocks(blocks));
+    setFieldRows(mapImportedFieldsToRows(importedFields, blocks, schemaRulesByName));
+    setFormStyles(normalizeFormStyles(schema.styles));
+    setTitleForm(
+      pickFirstText(
+        schema.title,
+        selectedTemplate.name,
+        "Titulo do Formulario",
+      ),
+    );
+    setDescriptionForm(
+      pickFirstText(
+        schema.description,
+        selectedTemplate.description,
+      ),
+    );
+    setPreview(false);
   };
 
   return (
@@ -1147,6 +1239,8 @@ export default function ConstructorForm() {
                   onDetachSelectedForm={handleDetachSelectedForm}
                   onTogglePreview={() => setPreview(true)}
                   onSelectForm={handleSelectForm}
+                  templateOptions={templateOptions}
+                  onApplyTemplate={handleApplyTemplate}
                   onSubmitForm={handleSubmitForm}
                   isSavingForm={isSavingForm}
                   isEditingForm={selectedFormId !== null}

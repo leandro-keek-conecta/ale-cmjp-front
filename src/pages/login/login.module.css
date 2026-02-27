@@ -19,7 +19,7 @@
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  height: 100vh;
+  height: 100dvh;
   background-color: #ffff;
 }
 
@@ -302,7 +302,7 @@
   .container {
     flex-direction: column;
     height: auto;
-    min-height: 100vh;
+    min-height: 100dvh;
   }
 
   .leftSide {

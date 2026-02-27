@@ -7,7 +7,6 @@ import { useCallback, useMemo } from "react";
 import LogoutIcon from "@mui/icons-material/Logout";
 import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
 import AddBusinessIcon from "@mui/icons-material/AddBusiness";
-import ChatIcon from "@mui/icons-material/Chat";
 import { useNavigate } from "react-router-dom";
 import Logo from "../assets/logo-horizontal-n.png";
 import UserMenuMinimal, { type MenuOption } from "./SplitButton";
@@ -106,11 +105,6 @@ export function CabecalhoMenuUsuario({
           onClick: () => navigate("/cadastro-projeto"),
         },
         {
-          label: "Cadastro de automacoes",
-          icone: <ChatIcon />,
-          onClick: () => navigate("/cadastro-automacoes"),
-        },
-        {
           label: "Sair",
           icone: <LogoutIcon />,
           onClick: handleLogout,
@@ -148,6 +142,8 @@ export default function CabecalhoEstilizado({
   menuMode = "default",
   ...appBarProps
 }: CabecalhoEstilizadoProps) {
+  const navigate = useNavigate();
+
   if (children) {
     return <StyledAppBar {...appBarProps}>{children}</StyledAppBar>;
   }
@@ -173,8 +169,18 @@ export default function CabecalhoEstilizado({
           <Menu />
         </IconButton>
 
-        <Box sx={{ display: "flex", alignItems: "center", flexGrow: 1 }}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            flexGrow: 1,
+            "&:hover": {
+              cursor: "pointer",
+            },
+          }}
+        >
           <img
+            onClick={() => navigate("/panorama")}
             src={logoSrc}
             alt={logoAlt}
             style={{ height: "2.5rem", width: "auto" }}

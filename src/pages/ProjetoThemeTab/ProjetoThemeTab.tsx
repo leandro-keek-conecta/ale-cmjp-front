@@ -478,7 +478,7 @@ export default function ProjetoThemeTab() {
   };
 
   return (
-    <Layout titulo="Tela de Estilização">
+    <Layout titulo="Aparencia e Conteudo">
       {alert.show && (
         <CustomAlert
           category={alert.category}
@@ -538,3 +538,4 @@ export default function ProjetoThemeTab() {
     </Layout>
   );
 }
+

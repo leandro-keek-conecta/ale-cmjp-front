@@ -2,7 +2,7 @@ import { Avatar, Box, Button, Card } from "@mui/material";
 import styles from "./card.module.css";
 import { BarChart } from "@/components/charts/bar/BarChart";
 import type { ChartDatum } from "@/types/ChartDatum";
-import ChipsCard, { type ThemeChipDatum } from "./chips";
+import { type ThemeChipDatum } from "./chips";
 import { useEffect, useRef, useState } from "react";
 
 interface CardProjectProps {
@@ -20,7 +20,6 @@ export default function CardProject({
   title,
   actived = false,
   responsesByMonthLast12Months,
-  responsesByTheme,
   responsesLast7Days = 0,
   onSelect,
 }: CardProjectProps) {
@@ -90,8 +89,6 @@ export default function CardProject({
 
       <Box className={styles.footerCard}>
         <Box className={styles.leftFooter}>
-          <Box className={styles.footerTitle}>Temas mais falados:</Box>
-          <ChipsCard data={responsesByTheme} />
         </Box>
         <Box className={styles.rightFooter}>
           <Button

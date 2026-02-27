@@ -8,6 +8,8 @@ export type FilterFormValues = {
   genero: string;
   faixaEtaria: string;
   texto_opiniao: string;
+  status?: string;
+  formIds?: Array<string | number>;
 };
 
 export type FiltersState = {

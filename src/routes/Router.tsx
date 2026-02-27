@@ -3,6 +3,7 @@ import HomePage from "../pages/Panorama/Panorama";
 import FormsPage from "../pages/formPage";
 import EmbedDashboardPage from "../pages/dashboards/EmbedDashboardPage";
 import RelatorioPage from "../pages/relatoriopage";
+import RelatorioOpiniao from "../pages/relatorioOpiniao";
 import LoginPage from "../pages/login";
 import { AuthProvider } from "../context/AuthContext";
 import NotFound from "../pages/notFound/NotFoundPage";
@@ -19,11 +20,13 @@ const RoutesConfig = () => (
     <Routes>
       <Route path="/panorama" element={<ProtectedRoute allowedRoles={["USER", "ADMIN", "SUPERADMIN"]}><HomePage /></ProtectedRoute>} />
       <Route path="/relatorio" element={<ProtectedRoute allowedRoles={["USER", "ADMIN", "SUPERADMIN"]}><RelatorioPage /></ProtectedRoute>} />
+      <Route path="/constructor-forms" element={<ProtectedRoute allowedRoles={["ADMIN", "SUPERADMIN"]}><ConstructorForm /></ProtectedRoute>} />
+      <Route path="/relatorio-opiniao" element={<ProtectedRoute allowedRoles={["USER", "ADMIN", "SUPERADMIN"]}><RelatorioOpiniao /></ProtectedRoute>} />
+      <Route path="/relatorio-opiniao/tema/:tema" element={<ProtectedRoute allowedRoles={["USER", "ADMIN", "SUPERADMIN"]}><RelatorioOpiniao /></ProtectedRoute>} />
       <Route path="/cadastro-usuario" element={<ProtectedRoute allowedRoles={["USER", "ADMIN", "SUPERADMIN"]}><RegisterUser /></ProtectedRoute>} />
       <Route path="/cadastro-projeto" element={<ProtectedRoute allowedRoles={["USER", "ADMIN", "SUPERADMIN"]}><RegisterProject /></ProtectedRoute>} />
-      <Route path="/cadastro-thema" element={<ProtectedRoute allowedRoles={["USER", "ADMIN", "SUPERADMIN"]}><ProjetoThemeTab /></ProtectedRoute>} />
+      <Route path="/cadastro-thema" element={<ProtectedRoute allowedRoles={["SUPERADMIN"]}><ProjetoThemeTab /></ProtectedRoute>} />
       <Route path="/projetos" element={<ProtectedRoute allowedRoles={["USER", "ADMIN", "SUPERADMIN"]}><Projetos /></ProtectedRoute>} />
-      <Route path="/constructor-forms" element={<ProtectedRoute allowedRoles={["USER", "ADMIN", "SUPERADMIN"]}><ConstructorForm /></ProtectedRoute>} />
       <Route path="/dashboards/embed/:id" element={<EmbedDashboardPage />} />
       <Route path="/form-page" element={<FormsPage />} />
       <Route path="/form/:project/:slug" element={<DinamicFormsPage />} />

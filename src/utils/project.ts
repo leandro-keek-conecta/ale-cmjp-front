@@ -7,6 +7,9 @@ export type ProjectLike = {
   projetoId?: number | null;
   nome?: string | null;
   name?: string | null;
+  slug?: string | null;
+  projetoSlug?: string | null;
+  projectSlug?: string | null;
   corHex?: string | null;
   url?: string | null;
   hiddenTabs?: string[] | null;
@@ -82,6 +85,39 @@ export function getProjectId(
   return null;
 }
 
+export function getProjectSlug(
+  project: ProjectLike | null | undefined,
+): string | null {
+  if (!project || typeof project !== "object") {
+    return null;
+  }
+
+  const directSlug =
+    typeof project.slug === "string"
+      ? project.slug.trim()
+      : typeof project.projetoSlug === "string"
+        ? project.projetoSlug.trim()
+        : typeof project.projectSlug === "string"
+          ? project.projectSlug.trim()
+          : "";
+  if (directSlug) {
+    return directSlug;
+  }
+
+  const nested =
+    project.projeto && typeof project.projeto === "object"
+      ? (project.projeto as ProjectLike)
+      : null;
+  if (nested) {
+    const nestedSlug = getProjectSlug(nested);
+    if (nestedSlug) {
+      return nestedSlug;
+    }
+  }
+
+  return null;
+}
+
 export function storeProjectContext(project: ProjectLike | null | undefined) {
   if (typeof window === "undefined") {
     return null;
@@ -127,6 +163,49 @@ export function getStoredProjectId(): number | null {
     const user = JSON.parse(userString) as UserWithProjects;
     const project = getActiveProject(user);
     return getProjectId(project);
+  } catch {
+    return null;
+  }
+}
+
+export function getStoredProjectSlug(): string | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  const rawContext = localStorage.getItem(PROJECT_CONTEXT_KEY);
+  if (rawContext) {
+    try {
+      const parsed = JSON.parse(rawContext) as {
+        slug?: string | null;
+        projetoSlug?: string | null;
+        projectSlug?: string | null;
+      };
+      const contextSlug =
+        (typeof parsed?.slug === "string" ? parsed.slug.trim() : "") ||
+        (typeof parsed?.projetoSlug === "string"
+          ? parsed.projetoSlug.trim()
+          : "") ||
+        (typeof parsed?.projectSlug === "string"
+          ? parsed.projectSlug.trim()
+          : "");
+      if (contextSlug) {
+        return contextSlug;
+      }
+    } catch {
+      // ignore parse errors and fall back to user storage
+    }
+  }
+
+  const userString = localStorage.getItem("user");
+  if (!userString) {
+    return null;
+  }
+
+  try {
+    const user = JSON.parse(userString) as UserWithProjects;
+    const project = getActiveProject(user);
+    return getProjectSlug(project);
   } catch {
     return null;
   }
