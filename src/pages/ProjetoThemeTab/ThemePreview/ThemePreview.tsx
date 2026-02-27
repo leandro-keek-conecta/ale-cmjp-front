@@ -109,7 +109,7 @@ export default function ThemePreview({
 
   const resolvedSettings = settings ?? {};
   const heroKicker = resolvedSettings.kicker || "Monitorando a voz da cidade";
-  const heroTitle = resolvedSettings.title || "Opiniao em";
+  const heroTitle = resolvedSettings.title || "Opinião em";
   const heroHighlight = resolvedSettings.highlight || "tempo real";
   const heroSubtitle =
     resolvedSettings.subtitle ||
@@ -175,21 +175,21 @@ export default function ThemePreview({
       title: resolvedSettings.slide1_title || "Pronta para responder",
       description:
         resolvedSettings.slide1_description ||
-        "Interface humanizada para tirar duvidas da populacao a qualquer hora.",
+        "Interface humanizada para tirar dúvidas da população a qualquer hora.",
       image: resolvedImages.slide1,
     },
     {
       title: resolvedSettings.slide2_title || "Assistente presente nas ruas",
       description:
         resolvedSettings.slide2_description ||
-        "Registra solicitacoes diretamente dos bairros e agiliza o atendimento.",
+        "Registra solicitações diretamente dos bairros e agiliza o atendimento.",
       image: resolvedImages.slide2,
     },
     {
       title: resolvedSettings.slide3_title || "Conversas claras e objetivas",
       description:
         resolvedSettings.slide3_description ||
-        "Painel mostra o que esta acontecendo em tempo real, sem complicacao.",
+        "Painel mostra o que está acontecendo em tempo real, sem complicação.",
       image: resolvedImages.slide3,
     },
   ];

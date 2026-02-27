@@ -67,7 +67,7 @@
           },
           {
             "name": "genero",
-            "label": "Genero",
+            "label": "Gênero",
             "type": "Select",
             "required": true,
             "ordem": 4,
@@ -151,7 +151,7 @@
     {
       "id": "cadastro-usuario",
       "name": "Cadastro de Usuário",
-      "description": "Cadastro basico de cidadaos",
+      "description": "Cadastro básico de cidadãos",
       "initialVersion": {
         "isActive": true,
         "schema": {
@@ -227,7 +227,7 @@
           },
           {
             "name": "genero",
-            "label": "Genero",
+            "label": "Gênero",
             "type": "Select",
             "required": false,
             "ordem": 6,
@@ -310,7 +310,7 @@
           },
           {
             "name": "genero",
-            "label": "Genero",
+            "label": "Gênero",
             "type": "Select",
             "required": false,
             "ordem": 3,
@@ -445,7 +445,7 @@
           },
           {
             "name": "genero",
-            "label": "Genero",
+            "label": "Gênero",
             "type": "Select",
             "required": false,
             "ordem": 7,
@@ -539,7 +539,7 @@
           },
           {
             "name": "genero",
-            "label": "Genero do responsavel",
+            "label": "Gênero do responsável",
             "type": "Select",
             "required": false,
             "ordem": 4,

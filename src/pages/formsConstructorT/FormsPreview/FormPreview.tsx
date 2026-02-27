@@ -286,7 +286,7 @@ export default function FormPreview({
   return (
     <Box className={styles.container} style={themeStyle}>
       <Typography className={styles.title}>
-        {formSchema.title || "Formulário sem titulo"}
+        {formSchema.title || "Formulário sem título"}
       </Typography>
       {formSchema.description ? (
         <Typography className={styles.description}>

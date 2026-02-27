@@ -410,7 +410,7 @@ export default function DinamicFormsPage() {
   const [pages, setPages] = useState<FormPage[]>([]);
   const [isFormLoading, setIsFormLoading] = useState(true);
   const [formLoadError, setFormLoadError] = useState<string | null>(null);
-  const [formTitle, setFormTitle] = useState("Registre Sua Opiniao");
+  const [formTitle, setFormTitle] = useState("Registre Sua Opinião");
   const [formDescription, setFormDescription] = useState("");
   const [formVersionId, setFormVersionId] = useState<number | null>(null);
   const [projectId, setProjectId] = useState<number | null>(() =>
@@ -756,7 +756,7 @@ export default function DinamicFormsPage() {
         const formName =
           toTrimmedString(formFromResponse.name) ||
           toTrimmedString(responseData.name) ||
-          "Registre Sua Opiniao";
+          "Registre Sua Opinião";
         const description =
           toTrimmedString(formFromResponse.description) ||
           toTrimmedString(responseData.description);
@@ -968,7 +968,7 @@ export default function DinamicFormsPage() {
                     <CardContent>
                       <Stack spacing={2.5} alignItems="center" textAlign="center">
                         <Typography variant="h5" fontWeight={700}>
-                          Opiniao registrada com sucesso
+                          Opinião registrada com sucesso
                         </Typography>
                         <Typography
                           variant="body2"

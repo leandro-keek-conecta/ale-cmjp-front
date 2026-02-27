@@ -150,25 +150,25 @@ export const buildThemeDefaultValues = (): ThemeFormValues => ({
   background: "linear-gradient(180deg, #f4f4f4 0%, #f4f4f4 100%)",
   fontFamily: "Inter",
   kicker: "Monitorando a voz da cidade",
-  title: "Opiniao em",
+  title: "Opinião em",
   highlight: "tempo real",
   highlightTone: "gradient",
   subtitle:
     "Veja o que as pessoas estão falando, explore temas e acompanhe como as opiniões evoluem.",
   slideBadge: "Assistente virtual",
-  slideMapTitle: "Presenca ativa nos bairros",
-  slideMapSubtitle: "Participacao cidada descomplicada e eficiente",
+  slideMapTitle: "Presença ativa nos bairros",
+  slideMapSubtitle: "Participação cidadã descomplicada e eficiente",
   slide1_title: "Pronta para responder",
   slide1_description:
-    "Interface humanizada para tirar duvidas da populacao a qualquer hora.",
+    "Interface humanizada para tirar dúvidas da população a qualquer hora.",
   slide1_image: "https://s3.keekconecta.com.br/ale-cmjp/fotos/ale-1.jpg",
   slide2_title: "Assistente presente nas ruas",
   slide2_description:
-    "Registra solicitacoes diretamente dos bairros e agiliza o atendimento.",
+    "Registra solicitações diretamente dos bairros e agiliza o atendimento.",
   slide2_image: "https://s3.keekconecta.com.br/ale-cmjp/fotos/ale-2.jpg",
   slide3_title: "Conversas claras e objetivas",
   slide3_description:
-    "Painel mostra o que esta acontecendo em tempo real, sem complicacao.",
+    "Painel mostra o que está acontecendo em tempo real, sem complicação.",
   slide3_image: "https://s3.keekconecta.com.br/ale-cmjp/fotos/ale-5.png",
   cardsCount: 3,
   card1_metric: "opinions_today",
@@ -225,15 +225,15 @@ export const getSlideInputs = (
     {
       name: "slideMapTitle",
       title: "Título do card do slide",
-      placeholder: "Presenca ativa nos bairros",
+      placeholder: "Presença ativa nos bairros",
       type: "text",
       colSpan: 12,
       containerClassName: heroClassName,
     },
     {
       name: "slideMapSubtitle",
-      title: "Subtitulo do card do slide",
-      placeholder: "Participacao cidada descomplicada e eficiente",
+      title: "Subtítulo do card do slide",
+      placeholder: "Participação cidadã descomplicada e eficiente",
       type: "text",
       colSpan: 12,
       containerClassName: heroClassName,
@@ -250,7 +250,7 @@ export const getSlideInputs = (
     {
       name: "slide1_description",
       title: "Descrição do slide 1",
-      placeholder: "Interface humanizada para tirar duvidas...",
+      placeholder: "Interface humanizada para tirar dúvidas...",
       type: "text",
       colSpan: 12,
       containerClassName: heroClassName,
@@ -274,7 +274,7 @@ export const getSlideInputs = (
     {
       name: "slide2_description",
       title: "Descrição do slide 2",
-      placeholder: "Registra solicitacoes diretamente...",
+      placeholder: "Registra solicitações diretamente...",
       type: "text",
       colSpan: 6,
       containerClassName: heroClassName,
@@ -298,7 +298,7 @@ export const getSlideInputs = (
     {
       name: "slide3_description",
       title: "Descrição do slide 3",
-      placeholder: "Painel mostra o que esta acontecendo...",
+      placeholder: "Painel mostra o que está acontecendo...",
       type: "text",
       colSpan: 6,
       containerClassName: heroClassName,
@@ -363,7 +363,7 @@ export const getThemeInputs = (
     {
       name: "kicker",
       title: "Kicker",
-      placeholder: "Texto pequeno acima do titulo",
+      placeholder: "Texto pequeno acima do título",
       type: "text",
       colSpan: 12,
       sectionTitle: "Hero",
@@ -371,14 +371,14 @@ export const getThemeInputs = (
     {
       name: "title",
       title: "Título",
-      placeholder: "Parte principal do titulo",
+      placeholder: "Parte principal do título",
       type: "text",
       colSpan: 8,
     },
     {
       name: "highlight",
       title: "Highlight",
-      placeholder: "Parte colorida do titulo",
+      placeholder: "Parte colorida do título",
       type: "text",
       colSpan: 4,
     },
@@ -423,7 +423,7 @@ export const getThemeInputs = (
     cardInputs.push(
       {
         name: metricName,
-        title: "Metrica",
+        title: "Métrica",
         type: "Select",
         selectOptions: getMetricOptions(index),
         colSpan: 12,
@@ -438,8 +438,8 @@ export const getThemeInputs = (
       },
       {
         name: subtitleName,
-        title: "Subtitulo",
-        placeholder: "Subtitulo do card",
+        title: "Subtítulo",
+        placeholder: "Subtítulo do card",
         type: "text",
         colSpan: 6,
       },
@@ -449,7 +449,7 @@ export const getThemeInputs = (
   const climaInputs: InputType<ThemeFormValues>[] = [
     {
       name: "clima_metric",
-      title: "Metrica",
+      title: "Métrica",
       type: "Select",
       selectOptions: getClimaMetricOptions(),
       colSpan: 12,
@@ -464,7 +464,7 @@ export const getThemeInputs = (
     },
     {
       name: "clima_subtitle",
-      title: "Subtitulo",
+      title: "Subtítulo",
       placeholder: "Distribuição das opiniões",
       type: "text",
       colSpan: 6,

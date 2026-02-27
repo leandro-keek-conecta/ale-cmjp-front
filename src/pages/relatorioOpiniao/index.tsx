@@ -185,7 +185,7 @@ const toNumber = (value: unknown) => {
 const buildCards = (cards?: ReportCards) => [
   {
     id: 1,
-    title: "Quantidade Total de Opinioes",
+    title: "Quantidade Total de Opiniões",
     subtitle: toNumber(cards?.totalOpinions),
   },
   {
@@ -537,7 +537,7 @@ export default function RelatorioOpiniao() {
         </Box>
         <Box className={styles.gridContainer} sx={{ marginTop: "1rem" }}>
           <CardGridReflect span={6}>
-            <h5>Quantidade de Opinioes Mes a Mes</h5>
+            <h5>Quantidade de Opiniões Mês a Mês</h5>
             <LineChart
               data={opinionsByMonth}
               height={200}
@@ -546,7 +546,7 @@ export default function RelatorioOpiniao() {
           </CardGridReflect>
 
           <CardGridReflect span={6}>
-            <h5>Quantidade de Opinioes Dia a Dia (mes atual)</h5>
+            <h5>Quantidade de Opiniões Dia a Dia (mês atual)</h5>
             <LineChart
               data={opinionsByDay}
               height={200}
@@ -556,7 +556,7 @@ export default function RelatorioOpiniao() {
         </Box>
         <Box className={styles.gridContainer} sx={{ marginTop: "1rem" }}>
           <CardGridReflect span={4}>
-            <h5>Quantidade de Opinioes por Faixa Etaria</h5>
+            <h5>Quantidade de Opiniões por Faixa Etária</h5>
             <Box sx={{ marginTop: "1rem" }}>
               <BarChart
                 data={opinionsByAge}
@@ -567,7 +567,7 @@ export default function RelatorioOpiniao() {
           </CardGridReflect>
 
           <CardGridReflect span={4}>
-            <h5>Quantidade de Opinioes por Genero</h5>
+            <h5>Quantidade de Opiniões por Gênero</h5>
             <Box sx={{ marginTop: "1rem" }}>
               <PieChart
                 data={opinionsByGender}

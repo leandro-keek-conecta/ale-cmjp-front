@@ -198,7 +198,7 @@ const buildCards = (cards?: ReportCards) => [
   },
   {
     id: 2,
-    title: "Total de Opiniao",
+    title: "Total de Opinião",
     subtitle: toNumber(cards?.totalOpinionFormResponses),
   },
   {
@@ -661,7 +661,7 @@ export default function RelatorioPage() {
         </Box>
         <Box className={styles.gridContainer} sx={{ marginTop: "1rem" }}>
           <CardGridReflect span={6}>
-            <h5>Quantidade de Respostas Mes a Mes (ultimos 6 meses)</h5>
+            <h5>Quantidade de Respostas Mês a Mês (últimos 6 meses)</h5>
             <LineChart
               data={lineByMonthData}
               height={200}
@@ -670,7 +670,7 @@ export default function RelatorioPage() {
           </CardGridReflect>
 
           <CardGridReflect span={6}>
-            <h5>Quantidade de Respostas Dia a Dia (mes atual)</h5>
+            <h5>Quantidade de Respostas Dia a Dia (mês atual)</h5>
             <LineChart data={lineByDayData} height={200} loading={metricsLoading} />
           </CardGridReflect>
         </Box>
