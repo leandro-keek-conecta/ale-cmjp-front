@@ -90,8 +90,6 @@ export default function CardProject({
 
       <Box className={styles.footerCard}>
         <Box className={styles.leftFooter}>
-          <Box className={styles.footerTitle}>Temas mais falados:</Box>
-          <ChipsCard data={responsesByTheme} />
         </Box>
         <Box className={styles.rightFooter}>
           <Button

@@ -22,6 +22,7 @@ const RoutesConfig = () => (
       <Route path="/relatorio" element={<ProtectedRoute allowedRoles={["USER", "ADMIN", "SUPERADMIN"]}><RelatorioPage /></ProtectedRoute>} />
       <Route path="/constructor-forms" element={<ProtectedRoute allowedRoles={["ADMIN", "SUPERADMIN"]}><ConstructorForm /></ProtectedRoute>} />
       <Route path="/relatorio-opiniao" element={<ProtectedRoute allowedRoles={["USER", "ADMIN", "SUPERADMIN"]}><RelatorioOpiniao /></ProtectedRoute>} />
+      <Route path="/relatorio-opiniao/tema/:tema" element={<ProtectedRoute allowedRoles={["USER", "ADMIN", "SUPERADMIN"]}><RelatorioOpiniao /></ProtectedRoute>} />
       <Route path="/cadastro-usuario" element={<ProtectedRoute allowedRoles={["USER", "ADMIN", "SUPERADMIN"]}><RegisterUser /></ProtectedRoute>} />
       <Route path="/cadastro-projeto" element={<ProtectedRoute allowedRoles={["USER", "ADMIN", "SUPERADMIN"]}><RegisterProject /></ProtectedRoute>} />
       <Route path="/cadastro-thema" element={<ProtectedRoute allowedRoles={["SUPERADMIN"]}><ProjetoThemeTab /></ProtectedRoute>} />

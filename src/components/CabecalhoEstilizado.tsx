@@ -106,11 +106,6 @@ export function CabecalhoMenuUsuario({
           onClick: () => navigate("/cadastro-projeto"),
         },
         {
-          label: "Cadastro de automacoes",
-          icone: <ChatIcon />,
-          onClick: () => navigate("/cadastro-automacoes"),
-        },
-        {
           label: "Sair",
           icone: <LogoutIcon />,
           onClick: handleLogout,

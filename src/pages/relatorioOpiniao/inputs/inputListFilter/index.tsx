@@ -10,6 +10,10 @@ export type FilterSelectOptions = {
   faixaEtaria: SelectOption<string>[];
 };
 
+type FilterInputsConfig = {
+  hideTema?: boolean;
+};
+
 const defaultSelectOptions: FilterSelectOptions = {
   tipo: [
     { label: "Denuncia", value: "Denuncia" },
@@ -46,7 +50,9 @@ const defaultSelectOptions: FilterSelectOptions = {
 
 export const getFilterInputs = (
   options: Partial<FilterSelectOptions> = {},
+  config: FilterInputsConfig = {},
 ): InputType<FormValues>[] => {
+  const hideTema = Boolean(config.hideTema);
   const resolved = {
     tipo: options.tipo ?? defaultSelectOptions.tipo,
     tema: options.tema ?? defaultSelectOptions.tema,
@@ -74,23 +80,27 @@ export const getFilterInputs = (
       title: "Tipo",
       placeholder: "Selecione o tipo",
       type: "Select",
-      colSpan: 4,
+      colSpan: hideTema ? 6 : 4,
       selectOptions: resolved.tipo,
     },
-    {
-      name: "tema",
-      title: "Tema",
-      placeholder: "Selecione o tema",
-      type: "Select",
-      colSpan: 4,
-      selectOptions: resolved.tema,
-    },
+    ...(hideTema
+      ? []
+      : [
+          {
+            name: "tema" as const,
+            title: "Tema",
+            placeholder: "Selecione o tema",
+            type: "Select" as const,
+            colSpan: 4,
+            selectOptions: resolved.tema,
+          },
+        ]),
     {
       name: "genero",
       title: "Genero",
       placeholder: "Selecione o genero",
       type: "Select",
-      colSpan: 4,
+      colSpan: hideTema ? 6 : 4,
       selectOptions: resolved.genero,
     },
     {

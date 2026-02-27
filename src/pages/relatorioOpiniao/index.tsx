@@ -8,7 +8,7 @@ import { LineChart } from "../../components/charts/line/LineChart";
 import { PieChart } from "../../components/charts/pie/PieChart";
 import { BarRaceChart } from "../../components/charts/barRace/BarRaceChart";
 import AnimatedNumber from "../../components/animated-number";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   getOpinionFilterOptions,
   getOpinionReportMetrics,
@@ -31,6 +31,7 @@ import getFilterInputs, {
   type SelectOption,
 } from "./inputs/inputListFilter";
 import type { ChartDatum } from "@/types/ChartDatum";
+import { useParams } from "react-router-dom";
 
 type ReportCards = {
   totalOpinions?: number | string;
@@ -54,11 +55,13 @@ type FilterApiItem = {
 
 const DEFAULT_VALUE_KEYS = ["value", "total", "count"] as const;
 
-const buildFilternDefaultValues = (): FilterFormValues => ({
+const buildFilternDefaultValues = (
+  forcedTema?: string | null,
+): FilterFormValues => ({
   dataInicio: null,
   dataFim: null,
   tipo: "",
-  tema: "",
+  tema: forcedTema ?? "",
   bairro: "",
   genero: "",
   faixaEtaria: "",
@@ -113,7 +116,21 @@ const parseDateInput = (value: unknown) => {
 
 const normalizeParam = (value: string) => value.trim();
 
-const buildMetricsParamsFromForm = (data: FilterFormValues): MetricsParams => {
+const decodeRouteTheme = (rawTheme: string | undefined) => {
+  if (typeof rawTheme !== "string") return "";
+
+  try {
+    const decoded = decodeURIComponent(rawTheme).trim();
+    return decoded;
+  } catch {
+    return rawTheme.trim();
+  }
+};
+
+const buildMetricsParamsFromForm = (
+  data: FilterFormValues,
+  forcedTema?: string,
+): MetricsParams => {
   const params: MetricsParams = {};
 
   const startDate = parseDateInput(data.dataInicio);
@@ -125,9 +142,12 @@ const buildMetricsParamsFromForm = (data: FilterFormValues): MetricsParams => {
     params.end = toUtcEndOfDayISOString(endDate);
   }
 
-  if (data.tema) {
-    const tema = normalizeParam(data.tema);
-    if (tema) params.temas = tema;
+  const temaSource = forcedTema ?? data.tema;
+  if (temaSource) {
+    const tema = normalizeParam(temaSource);
+    if (tema) {
+      params.temas = tema;
+    }
   }
 
   if (data.tipo) {
@@ -252,6 +272,10 @@ const mapSelectOptions = (
     : [];
 
 export default function RelatorioOpiniao() {
+  const { tema: routeTheme } = useParams<{ tema?: string }>();
+  const fixedTheme = useMemo(() => decodeRouteTheme(routeTheme), [routeTheme]);
+  const hasFixedTheme = fixedTheme.length > 0;
+
   const [cardsData, setCardsData] = useState<ReportCard[]>([]);
   const [metricsLoading, setMetricsLoading] = useState(true);
   const [opinionsByDay, setOpinionsByDay] = useState<ChartDatum[]>([]);
@@ -272,102 +296,116 @@ export default function RelatorioOpiniao() {
     handleSubmit: handleFilterSubmit,
     reset: resetFilterForm,
   } = useForm<FilterFormValues>({
-    defaultValues: buildFilternDefaultValues(),
+    defaultValues: buildFilternDefaultValues(fixedTheme || null),
   });
 
   const activeRef = useRef(true);
 
-  const fetchMetrics = useCallback(async (params?: MetricsParams) => {
-    try {
-      setMetricsLoading(true);
+  const fetchMetrics = useCallback(
+    async (params?: MetricsParams) => {
+      try {
+        setMetricsLoading(true);
 
-      const requestParams = params ?? {};
-      const [report, filters] = await Promise.all([
-        getOpinionReportMetrics(requestParams),
-        getOpinionFilterOptions(requestParams).catch(() => null),
-      ]);
+        const requestParams = params ?? {};
+        const scopedParams =
+          hasFixedTheme && fixedTheme
+            ? {
+                ...requestParams,
+                temas: fixedTheme,
+              }
+            : requestParams;
 
-      if (!activeRef.current) return;
+        const [report, filters] = await Promise.all([
+          getOpinionReportMetrics(scopedParams),
+          getOpinionFilterOptions(scopedParams).catch(() => null),
+        ]);
 
-      const typedReport = report as OpinionReportResponse;
-      const typedFilters = filters as OpinionFilterOptionsResponse | null;
+        if (!activeRef.current) return;
 
-      setCardsData(buildCards(typedReport.cards));
+        const typedReport = report as OpinionReportResponse;
+        const typedFilters = filters as OpinionFilterOptionsResponse | null;
 
-      const rawOpinionsByMonth =
-        typedReport.lineByMonth ?? typedReport.opinionsByMonth ?? [];
-      setOpinionsByMonth(
-        groupOpinionsByMonthOnly(
-          rawOpinionsByMonth as Parameters<typeof groupOpinionsByMonthOnly>[0],
-        ),
-      );
+        setCardsData(buildCards(typedReport.cards));
 
-      const rawOpinionsByDay = typedReport.lineByDay ?? typedReport.opinionsByDay ?? [];
-      setOpinionsByDay(
-        normalizeOpinionsByDay(
-          rawOpinionsByDay as Parameters<typeof normalizeOpinionsByDay>[0],
-        ),
-      );
+        const rawOpinionsByMonth =
+          typedReport.lineByMonth ?? typedReport.opinionsByMonth ?? [];
+        setOpinionsByMonth(
+          groupOpinionsByMonthOnly(
+            rawOpinionsByMonth as Parameters<
+              typeof groupOpinionsByMonthOnly
+            >[0],
+          ),
+        );
 
-      setOpinionsByGender(
-        normalizeChartData(typedReport.opinionsByGender, [
-          "label",
-          "genero",
-          "gender",
-          "name",
-        ]),
-      );
+        const rawOpinionsByDay =
+          typedReport.lineByDay ?? typedReport.opinionsByDay ?? [];
+        setOpinionsByDay(
+          normalizeOpinionsByDay(
+            rawOpinionsByDay as Parameters<typeof normalizeOpinionsByDay>[0],
+          ),
+        );
 
-      setCampaignAcceptance(
-        normalizeChartData(typedReport.campaignAcceptance, [
-          "label",
-          "aceite",
-          "status",
-          "name",
-        ]),
-      );
+        setOpinionsByGender(
+          normalizeChartData(typedReport.opinionsByGender, [
+            "label",
+            "genero",
+            "gender",
+            "name",
+          ]),
+        );
 
-      setTopTemas(
-        normalizeChartData(typedReport.topTemas, ["label", "tema", "name"]),
-      );
+        setCampaignAcceptance(
+          normalizeChartData(typedReport.campaignAcceptance, [
+            "label",
+            "aceite",
+            "status",
+            "name",
+          ]),
+        );
 
-      setTopBairros(
-        normalizeChartData(typedReport.topBairros, ["label", "bairro", "name"]),
-      );
+        setTopTemas(
+          normalizeChartData(typedReport.topTemas, ["label", "tema", "name"]),
+        );
 
-      setOpinionsByAge(
-        normalizeChartData(typedReport.opinionsByAge, [
-          "label",
-          "faixaEtaria",
-          "ageRange",
-          "name",
-        ]),
-      );
+        setTopBairros(
+          normalizeChartData(typedReport.topBairros, ["label", "bairro", "name"]),
+        );
 
-      if (typedFilters) {
-        setFilterSelectOptions({
-          tipo: mapSelectOptions(typedFilters.tipoOpiniao),
-          tema: mapSelectOptions(typedFilters.temas),
-          genero: mapSelectOptions(typedFilters.genero),
-          faixaEtaria: mapSelectOptions(typedFilters.faixaEtaria),
-        });
+        setOpinionsByAge(
+          normalizeChartData(typedReport.opinionsByAge, [
+            "label",
+            "faixaEtaria",
+            "ageRange",
+            "name",
+          ]),
+        );
+
+        if (typedFilters) {
+          setFilterSelectOptions({
+            tipo: mapSelectOptions(typedFilters.tipoOpiniao),
+            tema: mapSelectOptions(typedFilters.temas),
+            genero: mapSelectOptions(typedFilters.genero),
+            faixaEtaria: mapSelectOptions(typedFilters.faixaEtaria),
+          });
+        }
+      } catch {
+        if (!activeRef.current) return;
+        setCardsData(buildCards());
+        setOpinionsByMonth([]);
+        setOpinionsByDay([]);
+        setOpinionsByGender([]);
+        setCampaignAcceptance([]);
+        setTopTemas([]);
+        setTopBairros([]);
+        setOpinionsByAge([]);
+      } finally {
+        if (activeRef.current) {
+          setMetricsLoading(false);
+        }
       }
-    } catch {
-      if (!activeRef.current) return;
-      setCardsData(buildCards());
-      setOpinionsByMonth([]);
-      setOpinionsByDay([]);
-      setOpinionsByGender([]);
-      setCampaignAcceptance([]);
-      setTopTemas([]);
-      setTopBairros([]);
-      setOpinionsByAge([]);
-    } finally {
-      if (activeRef.current) {
-        setMetricsLoading(false);
-      }
-    }
-  }, []);
+    },
+    [fixedTheme, hasFixedTheme],
+  );
 
   useEffect(() => {
     activeRef.current = true;
@@ -377,6 +415,11 @@ export default function RelatorioOpiniao() {
       activeRef.current = false;
     };
   }, [fetchMetrics]);
+
+  useEffect(() => {
+    const defaults = buildFilternDefaultValues(fixedTheme || null);
+    resetFilterForm(defaults);
+  }, [fixedTheme, resetFilterForm]);
 
   useEffect(() => {
     const elements = document.querySelectorAll<HTMLElement>("[data-reveal]");
@@ -400,18 +443,24 @@ export default function RelatorioOpiniao() {
   }, []);
 
   const handleClearFilters = () => {
-    const defaults = buildFilternDefaultValues();
+    const defaults = buildFilternDefaultValues(fixedTheme || null);
     resetFilterForm(defaults);
     void fetchMetrics();
   };
 
   async function onSubmitUser(data: FilterFormValues) {
-    const params = buildMetricsParamsFromForm(data);
+    const params = buildMetricsParamsFromForm(data, fixedTheme || undefined);
     void fetchMetrics(params);
   }
 
   return (
-    <Layout titulo="Tela de Relatorio de Opinioes">
+    <Layout
+      titulo={
+        hasFixedTheme
+          ? `Tela de Relatorio de Opinioes - ${fixedTheme}`
+          : "Tela de Relatorio de Opinioes"
+      }
+    >
       <Box className={styles.container}>
         <CardGrid
           className={`${styles.searchCard} ${styles.reveal}`}
@@ -439,7 +488,9 @@ export default function RelatorioOpiniao() {
           >
             <Forms<FilterFormValues>
               errors={filterErrors}
-              inputsList={getFilterInputs(filterSelectOptions)}
+              inputsList={getFilterInputs(filterSelectOptions, {
+                hideTema: hasFixedTheme,
+              })}
               control={filterControl}
             />{" "}
             <Box className={styles.filterActions}>
