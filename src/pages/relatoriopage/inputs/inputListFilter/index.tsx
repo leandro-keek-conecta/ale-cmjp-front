@@ -12,7 +12,7 @@ const defaultSelectOptions: FilterSelectOptions = {
   formIds: [],
   status: [
     { label: "Iniciadas", value: "STARTED" },
-    { label: "Concluidas", value: "COMPLETED" },
+    { label: "Concluídas", value: "COMPLETED" },
     { label: "Abandonadas", value: "ABANDONED" },
   ],
 };

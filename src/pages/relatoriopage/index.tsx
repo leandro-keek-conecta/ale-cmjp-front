@@ -53,7 +53,7 @@ const DEFAULT_VALUE_KEYS = ["value", "total", "count"] as const;
 
 const STATUS_LABELS: Record<ResponseStatus, string> = {
   STARTED: "Iniciadas",
-  COMPLETED: "Concluidas",
+  COMPLETED: "Concluídas",
   ABANDONED: "Abandonadas",
 };
 
@@ -511,7 +511,7 @@ export default function RelatorioPage() {
       const statusCounts = extractStatusCounts(typedReport.statusFunnel);
       const completionRate = deriveCompletionRate(statusCounts, cards);
       setCompletionData([
-        { label: "Concluidas", value: completionRate },
+        { label: "Concluídas", value: completionRate },
         { label: "Não concluídas", value: Math.max(0, 100 - completionRate) },
       ]);
 

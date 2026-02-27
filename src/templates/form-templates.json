@@ -105,9 +105,9 @@
             "ordem": 7,
             "options": {
               "items": [
-                "Saude",
-                "Educacao",
-                "Seguranca",
+                "Saúde",
+                "Educação",
+                "Segurança",
                 "Infraestrutura",
                 "Mobilidade",
                 "Meio ambiente",
@@ -515,7 +515,7 @@
         "fields": [
           {
             "name": "nome_tutor",
-            "label": "Nome do responsavel",
+            "label": "Nome do responsável",
             "type": "text",
             "required": true,
             "ordem": 1,
@@ -551,7 +551,7 @@
           },
           {
             "name": "ano_nascimento",
-            "label": "Ano de nascimento do responsavel",
+            "label": "Ano de nascimento do responsável",
             "type": "number",
             "required": false,
             "ordem": 5,

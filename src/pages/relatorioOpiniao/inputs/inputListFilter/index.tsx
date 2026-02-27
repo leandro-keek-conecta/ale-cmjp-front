@@ -16,18 +16,18 @@ type FilterInputsConfig = {
 
 const defaultSelectOptions: FilterSelectOptions = {
   tipo: [
-    { label: "Denuncia", value: "Denuncia" },
+    { label: "Denúncia", value: "Denuncia" },
     { label: "Elogio", value: "Elogio" },
     { label: "Reclamação", value: "Reclamação" },
     { label: "Sugestão", value: "Sugestão" },
   ],
   tema: [
-    { label: "Educacao", value: "Educacao" },
+    { label: "Educação", value: "Educacao" },
     { label: "Infraestrutura", value: "Infraestrutura" },
     { label: "Mobilidade", value: "Mobilidade" },
     { label: "Outros", value: "Outros" },
-    { label: "Saude", value: "Saude" },
-    { label: "Seguranca", value: "Seguranca" },
+    { label: "Saúde", value: "Saude" },
+    { label: "Segurança", value: "Seguranca" },
   ],
   genero: [
     { label: "Feminino", value: "Feminino" },
@@ -35,7 +35,7 @@ const defaultSelectOptions: FilterSelectOptions = {
     { label: "Não-Binário", value: "Não-Binário" },
     { label: "Outros", value: "Outros" },
     { label: "Prefiro não responder", value: "Prefiro não responder" },
-    { label: "Transgenero", value: "Transgenero" },
+    { label: "Transgênero", value: "Transgenero" },
   ],
   faixaEtaria: [
     { label: "18-24", value: "18-24" },
@@ -44,7 +44,7 @@ const defaultSelectOptions: FilterSelectOptions = {
     { label: "45-54", value: "45-54" },
     { label: "55-64", value: "55-64" },
     { label: "65+", value: "65+" },
-    { label: "Ate 17", value: "Ate 17" },
+    { label: "Até 17", value: "Ate 17" },
   ],
 };
 
@@ -97,8 +97,8 @@ export const getFilterInputs = (
         ]),
     {
       name: "genero",
-      title: "Genero",
-      placeholder: "Selecione o genero",
+      title: "Gênero",
+      placeholder: "Selecione o gênero",
       type: "Select",
       colSpan: hideTema ? 6 : 4,
       selectOptions: resolved.genero,
@@ -112,7 +112,7 @@ export const getFilterInputs = (
     },
     {
       name: "faixaEtaria",
-      title: "Faixa etaria",
+      title: "Faixa etária",
       placeholder: "Selecione a faixa",
       type: "Select",
       colSpan: 6,

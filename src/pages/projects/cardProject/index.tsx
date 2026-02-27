@@ -64,7 +64,7 @@ export default function CardProject({
           <Box className={styles.projectName}>
             <Box className={styles.headerTitle}>{title}</Box>
             <Box className={styles.headerSubtitle}>
-              {formatNumber(responsesLast7Days)} mencoes nos ultimos 7 dias
+              {formatNumber(responsesLast7Days)} menções nos últimos 7 dias
             </Box>
           </Box>
         </Box>

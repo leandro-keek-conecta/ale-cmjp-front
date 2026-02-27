@@ -395,7 +395,7 @@ export default function RegisterUser() {
     setAlert({
       show: true,
       category: "success",
-      title: "Usuario deletado com sucesso!",
+      title: "Usuário deletado com sucesso!",
     });
     await loadUsers();
   };
@@ -430,7 +430,7 @@ export default function RegisterUser() {
         setAlert({
           show: true,
           category: "success",
-          title: "Usuario cadastrado com sucesso!",
+          title: "Usuário cadastrado com sucesso!",
         });
       }
 
@@ -487,7 +487,7 @@ export default function RegisterUser() {
         setAlert({
           show: true,
           category: "success",
-          title: "Usuario atualizado com sucesso!",
+          title: "Usuário atualizado com sucesso!",
         });
       }
 
@@ -718,7 +718,7 @@ export default function RegisterUser() {
               <Box className={styles.statHeader}>
                 <ClimaIcon />
                 <Box>
-                  <Box className={styles.statLabel}>Usuarios cadastrados</Box>
+                  <Box className={styles.statLabel}>Usuários cadastrados</Box>
                 </Box>
               </Box>
             </Box>

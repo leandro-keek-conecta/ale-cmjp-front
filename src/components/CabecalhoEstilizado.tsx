@@ -95,7 +95,7 @@ export function CabecalhoMenuUsuario({
       return [
         ...allProjectsOption,
         {
-          label: "Cadastro de Usuario",
+          label: "Cadastro de Usuário",
           icone: <PersonAddAlt1Icon />,
           onClick: () => navigate("/cadastro-usuario"),
         },
