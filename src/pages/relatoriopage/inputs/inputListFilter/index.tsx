@@ -1,4 +1,4 @@
-import type { FormValues } from "../../../../types/filter";
+﻿import type { FormValues } from "../../../../types/filter";
 import type { InputType } from "../../../../components/Forms";
 
 export type SelectOption<T = string | number> = { label: string; value: T };
@@ -50,8 +50,8 @@ export const getFilterInputs = (
     },
     {
       name: "formIds",
-      title: "Formularios",
-      placeholder: "Selecione um ou mais formularios",
+      title: "Formulários",
+      placeholder: "Selecione um ou mais formulários",
       type: "Select",
       colSpan: 12,
       selectOptions: resolved.formIds,
@@ -61,3 +61,4 @@ export const getFilterInputs = (
 };
 
 export default getFilterInputs;
+

@@ -1,4 +1,4 @@
-import { Box } from "@mui/material";
+﻿import { Box } from "@mui/material";
 import styles from "./form.module.css";
 import CabecalhoEstilizado from "@/components/CabecalhoEstilizado";
 import { useEffect, useMemo, useState } from "react";
@@ -740,7 +740,7 @@ export default function ConstructorForm() {
     Record<string, number>
   >({});
   const [isSavingForm, setIsSavingForm] = useState(false);
-  const [titleForm, setTitleForm] = useState("Titulo do Formulario");
+  const [titleForm, setTitleForm] = useState("Título do Formulário");
   const [descriptionForm, setDescriptionForm] = useState("");
   const [formStyles, setFormStyles] = useState<FormStyleOptions>(() => ({
     ...DEFAULT_FORM_STYLE_OPTIONS,
@@ -1006,10 +1006,10 @@ export default function ConstructorForm() {
   const handleSubmitForm = async () => {
     const normalizedTitle = titleForm.trim();
     if (!normalizedTitle) {
-      console.warn("Titulo do formulario e obrigatorio.");
+      console.warn("Título do formulário é obrigatório.");
       triggerAlert({
         category: "warning",
-        title: "Titulo do formulario e obrigatorio.",
+        title: "Título do formulário é obrigatório.",
       });
       return;
     }
@@ -1042,18 +1042,18 @@ export default function ConstructorForm() {
       triggerAlert({
         category: "success",
         title: isUpdating
-          ? "Formulario atualizado com sucesso."
-          : "Formulario criado com sucesso.",
+          ? "Formulário atualizado com sucesso."
+          : "Formulário criado com sucesso.",
       });
     } catch (error) {
-      console.error("Erro ao salvar formulario", error);
+      console.error("Erro ao salvar formulário", error);
       triggerAlert({
         category: "error",
         title: resolveRequestErrorMessage(
           error,
           selectedFormId !== null
-            ? "Erro ao atualizar formulario."
-            : "Erro ao cadastrar formulario.",
+            ? "Erro ao atualizar formulário."
+            : "Erro ao cadastrar formulário.",
         ),
       });
     } finally {
@@ -1068,7 +1068,7 @@ export default function ConstructorForm() {
     setSelectedBlockIndex(0);
     setFieldRows([]);
     setFormBlocks([]);
-    setTitleForm("Titulo do Formulario");
+    setTitleForm("Título do Formulário");
     setDescriptionForm("");
     setFormStyles({ ...DEFAULT_FORM_STYLE_OPTIONS });
     setPreview(false);
@@ -1090,12 +1090,12 @@ export default function ConstructorForm() {
       if (!activeVersion) {
         const formSlug = resolveFormSlug(selectedForm);
         if (!formSlug) {
-          console.warn("Formulario selecionado sem versao ativa e sem slug.");
+          console.warn("Formulário selecionado sem versão ativa e sem slug.");
           return;
         }
         const projectSlug = resolveProjectSlug(selectedForm);
         if (!projectSlug) {
-          console.warn("Projeto ativo sem slug para carregar formulario.");
+          console.warn("Projeto ativo sem slug para carregar formulário.");
           return;
         }
         const response = await getForms(formSlug, projectSlug);
@@ -1104,7 +1104,7 @@ export default function ConstructorForm() {
       }
 
       if (!activeVersion) {
-        console.warn("Formulario sem versao ativa para edicao.");
+        console.warn("Formulário sem versão ativa para edição.");
         setSelectedFormVersionId(null);
         setSelectedFieldIdByName({});
         return;
@@ -1141,11 +1141,11 @@ export default function ConstructorForm() {
         payload.description,
       );
 
-      setTitleForm(loadedTitle || "Titulo do Formulario");
+      setTitleForm(loadedTitle || "Título do Formulário");
       setDescriptionForm(loadedDescription);
       setSelectedFormId(resolveFormId(payload) ?? selectedId);
     } catch (error) {
-      console.error("Erro ao carregar formulario selecionado", error);
+      console.error("Erro ao carregar formulário selecionado", error);
     }
   };
 
@@ -1177,7 +1177,7 @@ export default function ConstructorForm() {
       pickFirstText(
         schema.title,
         selectedTemplate.name,
-        "Titulo do Formulario",
+        "Título do Formulário",
       ),
     );
     setDescriptionForm(

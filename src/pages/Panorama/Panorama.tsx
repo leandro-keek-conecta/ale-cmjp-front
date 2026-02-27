@@ -100,7 +100,7 @@ const DEFAULT_PANORAMA_THEME: PanoramaThemeConfig = {
   title: "Opiniao em",
   highlight: "tempo real",
   subtitle:
-    "Veja o que as pessoas estao falando, explore temas e acompanhe como as opinioes evoluem.",
+    "Veja o que as pessoas estão falando, explore temas e acompanhe como as opiniões evoluem.",
   slideBadge: "Assistente virtual",
   slideMapTitle: "Presenca ativa nos bairros",
   slideMapSubtitle: "Participacao cidada descomplicada e eficiente",
@@ -112,7 +112,7 @@ const DEFAULT_PANORAMA_THEME: PanoramaThemeConfig = {
   ],
   clima: {
     title: "Clima geral",
-    subtitle: "Distribuicao das opinioes",
+    subtitle: "Distribuição das opiniões",
   },
 };
 
@@ -229,7 +229,7 @@ export default function Panorama() {
     try {
       const projectId = getStoredProjectId();
       if (!projectId) {
-        setError("Nenhum projeto vinculado ao usuario.");
+        setError("Nenhum projeto vinculado ao usuário.");
         return;
       }
 
@@ -438,7 +438,7 @@ export default function Panorama() {
   const renderTypeIcon = (type: string) => {
     const key = normalizeText(type);
     if (key === "reclamacao") return <PriorityHigh fontSize="small" />;
-    if (key === "sugestao") return <LightbulbOutlined fontSize="small" />;
+    if (key === "sugestão") return <LightbulbOutlined fontSize="small" />;
     if (key === "elogio") return <StarBorderRounded fontSize="small" />;
     return <ChatBubbleOutline fontSize="small" />;
   };
@@ -734,3 +734,4 @@ export default function Panorama() {
     </>
   );
 }
+

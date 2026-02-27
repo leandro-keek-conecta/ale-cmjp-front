@@ -1,4 +1,4 @@
-import { api } from "../api/api";
+﻿import { api } from "../api/api";
 import { getStoredProjectId } from "../../utils/project";
 
 export type ResponseStatus = "STARTED" | "COMPLETED" | "ABANDONED";
@@ -139,7 +139,7 @@ const withProjectScope = (params: MetricsParams = {}): MetricsParams => {
 
   const projetoId = getStoredProjectId();
   if (!projetoId) {
-    throw new Error("Projeto nao encontrado para buscar relatorios.");
+    throw new Error("Projeto não encontrado para buscar relatórios.");
   }
 
   return {
@@ -286,3 +286,4 @@ export async function getOpinionFilterOptions(params: MetricsParams = {}) {
 
   return unwrapResponse<OpinionFilterOptionsResponse>(response.data);
 }
+

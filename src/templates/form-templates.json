@@ -1,17 +1,17 @@
-{
+﻿{
   "templates": [
     {
       "id": "opiniao-cidada",
-      "name": "Formulario de Opiniao",
-      "description": "Coleta de opinioes da populacao",
+      "name": "Formulário de Opinião",
+      "description": "Coleta de opiniões da população",
       "initialVersion": {
         "isActive": true,
         "schema": {
-          "title": "Formulario de Opiniao",
-          "description": "Coleta de opinioes",
+          "title": "Formulário de Opinião",
+          "description": "Coleta de opiniões",
           "blocks": [
             {
-              "title": "Dados do Usuario",
+              "title": "Dados do Usuário",
               "fields": [
                 "nome",
                 "telefone",
@@ -22,7 +22,7 @@
               ]
             },
             {
-              "title": "Dados da Opiniao",
+              "title": "Dados da Opinião",
               "fields": [
                 "opiniao",
                 "outra_opiniao",
@@ -72,7 +72,7 @@
             "required": true,
             "ordem": 4,
             "options": {
-              "items": ["Masculino", "Feminino", "Nao informado"],
+              "items": ["Masculino", "Feminino", "Não informado"],
               "layout": { "row": 2, "column": 2 },
               "helpStyle": "default"
             }
@@ -92,7 +92,7 @@
             "required": true,
             "ordem": 6,
             "options": {
-              "items": ["Sim", "Nao"],
+              "items": ["Sim", "Não"],
               "layout": { "row": 3, "column": 2 },
               "helpStyle": "default"
             }
@@ -132,14 +132,14 @@
             "required": true,
             "ordem": 9,
             "options": {
-              "items": ["Reclamacao", "Elogio", "Sugestao"],
+              "items": ["Reclamação", "Elogio", "Sugestão"],
               "layout": { "row": 5, "column": 1 },
               "helpStyle": "default"
             }
           },
           {
             "name": "texto_opiniao",
-            "label": "Descricao",
+            "label": "Descrição",
             "type": "text",
             "required": true,
             "ordem": 10,
@@ -150,12 +150,12 @@
     },
     {
       "id": "cadastro-usuario",
-      "name": "Cadastro de Usuario",
+      "name": "Cadastro de Usuário",
       "description": "Cadastro basico de cidadaos",
       "initialVersion": {
         "isActive": true,
         "schema": {
-          "title": "Cadastro de Usuario",
+          "title": "Cadastro de Usuário",
           "description": "Cadastro de dados pessoais",
           "blocks": [
             {
@@ -232,7 +232,7 @@
             "required": false,
             "ordem": 6,
             "options": {
-              "items": ["Masculino", "Feminino", "Nao informado"],
+              "items": ["Masculino", "Feminino", "Não informado"],
               "layout": { "row": 3, "column": 2 },
               "helpStyle": "default"
             }
@@ -252,7 +252,7 @@
             "required": false,
             "ordem": 8,
             "options": {
-              "items": ["Sim", "Nao"],
+              "items": ["Sim", "Não"],
               "layout": { "row": 4, "column": 2 },
               "helpStyle": "default"
             }
@@ -315,7 +315,7 @@
             "required": false,
             "ordem": 3,
             "options": {
-              "items": ["Masculino", "Feminino", "Outra opcao"],
+              "items": ["Masculino", "Feminino", "Outra opção"],
               "layout": { "row": 2, "column": 1 },
               "helpStyle": "default"
             }
@@ -422,7 +422,7 @@
             "required": true,
             "ordem": 4,
             "options": {
-              "items": ["Reclamacao", "Elogio", "Sugestao"],
+              "items": ["Reclamação", "Elogio", "Sugestão"],
               "layout": { "row": 2, "column": 2 },
               "helpStyle": "default"
             }
@@ -450,7 +450,7 @@
             "required": false,
             "ordem": 7,
             "options": {
-              "items": ["Masculino", "Feminino", "Nao informado"],
+              "items": ["Masculino", "Feminino", "Não informado"],
               "layout": { "row": 4, "column": 2 },
               "helpStyle": "default"
             }
@@ -470,7 +470,7 @@
             "required": false,
             "ordem": 9,
             "options": {
-              "items": ["Sim", "Nao"],
+              "items": ["Sim", "Não"],
               "layout": { "row": 5, "column": 2 },
               "helpStyle": "default"
             }
@@ -544,7 +544,7 @@
             "required": false,
             "ordem": 4,
             "options": {
-              "items": ["Masculino", "Feminino", "Nao informado"],
+              "items": ["Masculino", "Feminino", "Não informado"],
               "layout": { "row": 2, "column": 2 },
               "helpStyle": "default"
             }
@@ -592,7 +592,7 @@
             "required": false,
             "ordem": 9,
             "options": {
-              "items": ["Sim", "Nao"],
+              "items": ["Sim", "Não"],
               "layout": { "row": 5, "column": 2 },
               "helpStyle": "default"
             }
@@ -604,7 +604,7 @@
             "required": false,
             "ordem": 10,
             "options": {
-              "items": ["Sim", "Nao"],
+              "items": ["Sim", "Não"],
               "layout": { "row": 6, "column": 1 },
               "helpStyle": "default"
             }
@@ -614,3 +614,4 @@
     }
   ]
 }
+

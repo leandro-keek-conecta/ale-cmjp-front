@@ -1,4 +1,4 @@
-import { Box } from "@mui/material";
+﻿import { Box } from "@mui/material";
 import { Layout } from "../../components/layout/Layout";
 import styles from "./RelatorioPage.module.css";
 import CardGridReflect from "../../components/card-grid-reflect";
@@ -219,7 +219,7 @@ const toChartLabel = (value: unknown): string | null => {
     return trimmed ? trimmed : null;
   }
   if (typeof value === "number" && Number.isFinite(value)) return String(value);
-  if (typeof value === "boolean") return value ? "Sim" : "Nao";
+  if (typeof value === "boolean") return value ? "Sim" : "Não";
   return null;
 };
 
@@ -263,7 +263,7 @@ const normalizeFormOptionLabel = (entry: Record<string, unknown>, id: number) =>
   toOptionalString(entry.name) ??
   toOptionalString(entry.title) ??
   toOptionalString((entry.form as Record<string, unknown> | undefined)?.name) ??
-  `Formulario ${id}`;
+  `Formulário ${id}`;
 
 const normalizeFormOptionId = (entry: Record<string, unknown>) =>
   toOptionalNumber(entry.formId) ??
@@ -512,7 +512,7 @@ export default function RelatorioPage() {
       const completionRate = deriveCompletionRate(statusCounts, cards);
       setCompletionData([
         { label: "Concluidas", value: completionRate },
-        { label: "Nao concluidas", value: Math.max(0, 100 - completionRate) },
+        { label: "Não concluídas", value: Math.max(0, 100 - completionRate) },
       ]);
 
       const formCounts = extractFormCounts(filters as FormFiltersResponse | null);
@@ -586,7 +586,7 @@ export default function RelatorioPage() {
   }
 
   return (
-    <Layout titulo="Tela de Relatorio">
+    <Layout titulo="Tela de Relatório">
       <Box className={styles.container}>
         <CardGrid
           className={`${styles.searchCard} ${styles.reveal}`}
@@ -676,7 +676,7 @@ export default function RelatorioPage() {
         </Box>
         <Box className={styles.gridContainer} sx={{ marginTop: "1rem" }}>
           <CardGridReflect span={4}>
-            <h5>Quantidade de Respostas por Formulario</h5>
+            <h5>Quantidade de Respostas por Formulário</h5>
             <Box sx={{ marginTop: "1rem" }}>
               <BarChart
                 data={responsesByFormData}
@@ -703,7 +703,7 @@ export default function RelatorioPage() {
 
         <Box className={styles.gridContainerOndeLine} sx={{ marginTop: "1rem" }}>
           <CardGridReflect span={6} style={{ marginBottom: 0 }} disablePadding>
-            <h5 style={{ margin: "1rem" }}>Formularios com mais respostas</h5>
+            <h5 style={{ margin: "1rem" }}>Formulários com mais respostas</h5>
             <BarRaceChart
               data={responsesByFormData}
               height={360}
@@ -727,3 +727,4 @@ export default function RelatorioPage() {
     </Layout>
   );
 }
+

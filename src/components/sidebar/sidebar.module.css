@@ -57,9 +57,9 @@
 }
 
 .divider {
-  margin: 16px 8px;
+  margin: 12px 8px;
   height: 1px;
-  background-color: rgba(0, 0, 0, 0.05);
+  background-color: #e5e7eb;
 }
 
 .noAccessMessage {

@@ -115,7 +115,7 @@ export function FormsDraggable({
   rows,
   visibleFieldNames,
   activeBlockTitle,
-  titleForm = "Titulo do Formulario",
+  titleForm = "Título do Formulário",
   descriptionForm,
   formStyles,
   onDeleteField,
@@ -256,7 +256,7 @@ export function FormsDraggable({
             onChange={(event) => setDraftRequired(event.target.checked)}
           />
         }
-        label="Campo obrigatorio"
+        label="Campo obrigatório"
       />
 
       <TextField
@@ -284,7 +284,7 @@ export function FormsDraggable({
 
   const renderTextConfig = () => (
     <Typography variant="body2" color="text.secondary">
-      Este tipo nao possui configuracoes adicionais.
+      Este tipo não possui configurações adicionais.
     </Typography>
   );
 
@@ -301,7 +301,7 @@ export function FormsDraggable({
             onChange={(event) => updateOption(index, event.target.value)}
           />
           <IconButton
-            aria-label="Remover opcao"
+            aria-label="Remover opção"
             onClick={() => removeOption(index)}
           >
             <DeleteOutlineIcon />
@@ -310,7 +310,7 @@ export function FormsDraggable({
       ))}
 
       <Button onClick={addOption} variant="outlined">
-        Adicionar opcao
+        Adicionar opção
       </Button>
     </Box>
   );
@@ -439,7 +439,7 @@ export function FormsDraggable({
       <Box className={styles.header}>
         <Box className={styles.headerTop}>
           <Typography className={styles.title}>
-            {titleForm || "Formulario sem titulo"}
+            {titleForm || "Formulário sem título"}
           </Typography>
           {activeBlockTitle ? (
             <Typography className={styles.activeBlockLabel}>
@@ -461,7 +461,7 @@ export function FormsDraggable({
           activeClassName={styles.dropZoneActive}
         >
           <Typography className={styles.emptyTitle}>
-            Arraste um campo para iniciar o layout do formulario
+            Arraste um campo para iniciar o layout do formulário
           </Typography>
           <Typography className={styles.emptyText}>
             O primeiro campo sempre inicia uma nova linha.
@@ -554,7 +554,7 @@ export function FormsDraggable({
         </Box>
       )}
       <ExpandableCard
-        title="JSON do formulario"
+        title="JSON do formulário"
         expanded={expanded}
         onToggle={(next) => setExpanded(next)}
         className={styles.card}

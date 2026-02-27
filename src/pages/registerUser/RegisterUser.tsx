@@ -83,11 +83,11 @@ const createEmptyProjetoSelection = (): ProjetoFormValue => ({
 
 const SYSTEM_SCREENS: SelectOption<string>[] = [
   { label: "Panorama", value: "panorama" },
-  { label: "Relatorio", value: "relatorio" },
-  { label: "Relatorio de opiniões", value: "Relatorio de opiniões" },
-  { label: "Cadastro de usuario", value: "cadastro-usuario" },
-  { label: "Formularios", value: "form-page" },
-  { label: "Formulario dinamico", value: "form-dinamico" },
+  { label: "Relatório", value: "relatorio" },
+  { label: "Relatório de opiniões", value: "Relatório de opiniões" },
+  { label: "Cadastro de usuário", value: "cadastro-usuario" },
+  { label: "Formulários", value: "form-page" },
+  { label: "Formulário dinâmico", value: "form-dinamico" },
 ];
 
 const normalizeProjetosForRequest = (
@@ -259,7 +259,7 @@ export default function RegisterUser() {
         setUsers(mapped);
       }
     } catch (error) {
-      console.error("Erro ao carregar usuarios.", error);
+      console.error("Erro ao carregar usuários.", error);
       if (isMountedRef.current) {
         setUsers([]);
       }
@@ -413,7 +413,7 @@ export default function RegisterUser() {
 
       const password = rest.password;
       if (!password) {
-        throw new Error("Informe uma senha para criar o usuario.");
+        throw new Error("Informe uma senha para criar o usuário.");
       }
 
       await createUser({
@@ -437,7 +437,7 @@ export default function RegisterUser() {
       handlerCancelEdit();
       await loadUsers();
     } catch (error: any) {
-      const message = error?.message || "Erro ao cadastrar usuario.";
+      const message = error?.message || "Erro ao cadastrar usuário.";
       if (!isMountedRef.current) return;
       if (
         typeof message === "string" &&
@@ -466,7 +466,7 @@ export default function RegisterUser() {
       const { projetos, password, passwordConfirm, ...rest } = data;
       const id = rest.id;
       if (typeof id !== "number") {
-        throw new Error("Usuario invalido para atualizacao.");
+        throw new Error("Usuário inválido para atualização.");
       }
 
       const projetosPayload = normalizeProjetosForRequest(projetos);
@@ -494,7 +494,7 @@ export default function RegisterUser() {
       handlerCancelEdit();
       await loadUsers();
     } catch (error: any) {
-      const message = error?.message || "Erro ao atualizar usuario.";
+      const message = error?.message || "Erro ao atualizar usuário.";
       if (!isMountedRef.current) return;
       setAlert({ show: true, category: "error", title: message });
     } finally {
@@ -635,7 +635,7 @@ export default function RegisterUser() {
                             label="Telas do sistema (desmarque para esconder)"
                             options={SYSTEM_SCREENS}
                             value={campo.value ?? []}
-                            noOptionsText="Nenhuma tela disponivel"
+                            noOptionsText="Nenhuma tela disponível"
                             onChange={(selected) =>
                               campo.onChange(
                                 Array.isArray(selected) ? selected : [],
@@ -744,7 +744,7 @@ export default function RegisterUser() {
               />
             ) : (
               <Box className={styles.emptyState}>
-                Nenhum usuario cadastrado.
+                Nenhum usuário cadastrado.
               </Box>
             )}
           </Box>
@@ -753,3 +753,4 @@ export default function RegisterUser() {
     </Layout>
   );
 }
+

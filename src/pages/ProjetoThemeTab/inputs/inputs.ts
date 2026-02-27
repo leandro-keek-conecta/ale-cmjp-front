@@ -154,7 +154,7 @@ export const buildThemeDefaultValues = (): ThemeFormValues => ({
   highlight: "tempo real",
   highlightTone: "gradient",
   subtitle:
-    "Veja o que as pessoas estao falando, explore temas e acompanhe como as opinioes evoluem.",
+    "Veja o que as pessoas estão falando, explore temas e acompanhe como as opiniões evoluem.",
   slideBadge: "Assistente virtual",
   slideMapTitle: "Presenca ativa nos bairros",
   slideMapSubtitle: "Participacao cidada descomplicada e eficiente",
@@ -191,7 +191,7 @@ export const buildThemeDefaultValues = (): ThemeFormValues => ({
   card6_subtitle: "",
   clima_metric: "by_type",
   clima_title: "Clima geral",
-  clima_subtitle: "Distribuicao das opinioes",
+  clima_subtitle: "Distribuição das opiniões",
 });
 
 export const getSlideInputs = (
@@ -224,7 +224,7 @@ export const getSlideInputs = (
     },
     {
       name: "slideMapTitle",
-      title: "Titulo do card do slide",
+      title: "Título do card do slide",
       placeholder: "Presenca ativa nos bairros",
       type: "text",
       colSpan: 12,
@@ -240,7 +240,7 @@ export const getSlideInputs = (
     },
     {
       name: "slide1_title",
-      title: "Titulo do slide 1",
+      title: "Título do slide 1",
       placeholder: "Pronta para responder",
       type: "text",
       colSpan: 12,
@@ -249,7 +249,7 @@ export const getSlideInputs = (
     },
     {
       name: "slide1_description",
-      title: "Descricao do slide 1",
+      title: "Descrição do slide 1",
       placeholder: "Interface humanizada para tirar duvidas...",
       type: "text",
       colSpan: 12,
@@ -265,7 +265,7 @@ export const getSlideInputs = (
     },
     {
       name: "slide2_title",
-      title: "Titulo do slide 2",
+      title: "Título do slide 2",
       placeholder: "Assistente presente nas ruas",
       type: "text",
       colSpan: 6,
@@ -273,7 +273,7 @@ export const getSlideInputs = (
     },
     {
       name: "slide2_description",
-      title: "Descricao do slide 2",
+      title: "Descrição do slide 2",
       placeholder: "Registra solicitacoes diretamente...",
       type: "text",
       colSpan: 6,
@@ -289,7 +289,7 @@ export const getSlideInputs = (
     },
     {
       name: "slide3_title",
-      title: "Titulo do slide 3",
+      title: "Título do slide 3",
       placeholder: "Conversas claras e objetivas",
       type: "text",
       colSpan: 6,
@@ -297,7 +297,7 @@ export const getSlideInputs = (
     },
     {
       name: "slide3_description",
-      title: "Descricao do slide 3",
+      title: "Descrição do slide 3",
       placeholder: "Painel mostra o que esta acontecendo...",
       type: "text",
       colSpan: 6,
@@ -370,7 +370,7 @@ export const getThemeInputs = (
     },
     {
       name: "title",
-      title: "Titulo",
+      title: "Título",
       placeholder: "Parte principal do titulo",
       type: "text",
       colSpan: 8,
@@ -431,8 +431,8 @@ export const getThemeInputs = (
       },
       {
         name: titleName,
-        title: "Titulo",
-        placeholder: "Titulo do card",
+        title: "Título",
+        placeholder: "Título do card",
         type: "text",
         colSpan: 6,
       },
@@ -457,7 +457,7 @@ export const getThemeInputs = (
     },
     {
       name: "clima_title",
-      title: "Titulo",
+      title: "Título",
       placeholder: "Clima geral",
       type: "text",
       colSpan: 6,
@@ -465,7 +465,7 @@ export const getThemeInputs = (
     {
       name: "clima_subtitle",
       title: "Subtitulo",
-      placeholder: "Distribuicao das opinioes",
+      placeholder: "Distribuição das opiniões",
       type: "text",
       colSpan: 6,
     },
@@ -473,3 +473,4 @@ export const getThemeInputs = (
 
   return [...baseInputs, ...cardInputs, ...climaInputs];
 };
+

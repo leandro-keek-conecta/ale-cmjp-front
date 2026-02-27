@@ -42,7 +42,7 @@ export function LayoutForms({
     try {
       user = JSON.parse(userString);
     } catch (error) {
-      console.error("Erro ao interpretar usuario no layout:", error);
+      console.error("Erro ao interpretar usuário no layout:", error);
       user = null;
     }
   }

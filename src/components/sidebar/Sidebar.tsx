@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useState } from "react";
+﻿import { Fragment, useEffect, useMemo, useState } from "react";
 import styles from "./sidebar.module.css";
 import PaletteIcon from "@mui/icons-material/Palette";
 import { useLocation } from "react-router-dom";
@@ -170,6 +170,7 @@ export function Sidebar({ estaAberta, aoFechar }: PropriedadesSidebar) {
 
   const isSuperAdmin = user?.role === "SUPERADMIN";
   const isAdmin = user?.role === "ADMIN";
+  const hasManagementSection = isSuperAdmin || isAdmin;
   const themeRoutes = useMemo(
     () =>
       projectThemes.map((theme) => ({
@@ -233,7 +234,7 @@ export function Sidebar({ estaAberta, aoFechar }: PropriedadesSidebar) {
           <ItemMenu rotulo="Menu" isTitle estaAberta={estaAberta} />
           <ItemMenu
             icone={<DashboardCustomizeIcon />}
-            rotulo="Visao geral"
+            rotulo="Visão geral"
             para="/panorama"
             estaAberta={estaAberta}
             isActive={isActive("/panorama")}
@@ -241,7 +242,7 @@ export function Sidebar({ estaAberta, aoFechar }: PropriedadesSidebar) {
           />
           <ItemMenu
             icone={<InsightsIcon />}
-            rotulo="Relatorios"
+            rotulo="Relatórios"
             para="/relatorio"
             estaAberta={estaAberta}
             isActive={isActive("/relatorio")}
@@ -249,23 +250,26 @@ export function Sidebar({ estaAberta, aoFechar }: PropriedadesSidebar) {
           />
           <ItemMenu
             icone={<ForumIcon />}
-            rotulo="Relatorio de opinioes"
+            rotulo="Relatório de opiniões"
             para="/relatorio-opiniao"
             estaAberta={estaAberta}
             isActive={isActive("/relatorio-opiniao")}
             onClick={aoFechar}
           />
+          {(hasManagementSection || themeRoutes.length) && (
+            <li className={styles.divider} aria-hidden="true" />
+          )}
 
           {isSuperAdmin ? (
             <>
               <ItemMenu
-                rotulo="Aparencia e Conteudo"
+                rotulo="Aparência e Conteúdo"
                 isTitle
                 estaAberta={estaAberta}
               />
               <ItemMenu
                 icone={<PaletteIcon />}
-                rotulo="Aparencia e Conteudo"
+                rotulo="Aparência e Conteúdo"
                 para="/cadastro-thema"
                 estaAberta={estaAberta}
                 isActive={isActive("/cadastro-thema")}
@@ -273,7 +277,7 @@ export function Sidebar({ estaAberta, aoFechar }: PropriedadesSidebar) {
               />
               <ItemMenu
                 icone={<DynamicFormIcon />}
-                rotulo="cadastro de formulario"
+                rotulo="Cadastro de formulário"
                 para="/constructor-forms"
                 estaAberta={estaAberta}
                 isActive={isActive("/constructor-forms")}
@@ -285,7 +289,7 @@ export function Sidebar({ estaAberta, aoFechar }: PropriedadesSidebar) {
           {isAdmin ? (
             <ItemMenu
               icone={<DynamicFormIcon />}
-              rotulo="cadastro de formulario"
+              rotulo="Cadastro de formulário"
               para="/constructor-forms"
               estaAberta={estaAberta}
               isActive={isActive("/constructor-forms")}
@@ -294,8 +298,11 @@ export function Sidebar({ estaAberta, aoFechar }: PropriedadesSidebar) {
           ) : null}
           {themeRoutes.length ? (
             <>
+              {hasManagementSection ? (
+                <li className={styles.divider} aria-hidden="true" />
+              ) : null}
               <ItemMenu
-                rotulo="Relatorios por tema"
+                rotulo="Relatórios por tema"
                 isTitle
                 estaAberta={estaAberta}
               />
@@ -317,4 +324,5 @@ export function Sidebar({ estaAberta, aoFechar }: PropriedadesSidebar) {
     </nav>
   );
 }
+
 

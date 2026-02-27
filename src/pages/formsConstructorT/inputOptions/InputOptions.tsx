@@ -55,10 +55,10 @@ const STYLE_INPUTS: Array<{
   key: keyof FormStyleOptions;
   label: string;
 }> = [
-  { key: "formBackgroundColor", label: "Fundo do formulario" },
-  { key: "formBorderColor", label: "Borda do formulario" },
-  { key: "titleColor", label: "Titulo" },
-  { key: "descriptionColor", label: "Descricao" },
+  { key: "formBackgroundColor", label: "Fundo do formulário" },
+  { key: "formBorderColor", label: "Borda do formulário" },
+  { key: "titleColor", label: "Título" },
+  { key: "descriptionColor", label: "Descrição" },
   { key: "buttonBackgroundColor", label: "Fundo do botao" },
   { key: "buttonTextColor", label: "Texto do botao" },
 ];
@@ -320,7 +320,7 @@ export default function InputOptions({
       const response = await getFormsById(parsedProjectId);
       setFormsOptions(Array.isArray(response) ? response : []);
     } catch (error) {
-      console.log("Erro ao carregar formularios", error);
+      console.log("Erro ao carregar formulários", error);
       setFormsOptions([]);
     }
   }
@@ -476,7 +476,7 @@ export default function InputOptions({
             Informacoes padrao do Forms
           </Typography>
           <Typography className={styles.sectionHint}>
-            Configure metadados, abas e campos do formulario.
+            Configure metadados, abas e campos do formulário.
           </Typography>
         </Box>
         <Button onClick={onTogglePreview} className={styles.previewButton}>
@@ -485,7 +485,7 @@ export default function InputOptions({
       </Box>
       <Box className={styles.metaSection}>
         <SelectButton
-          label="Formularios do projeto"
+          label="Formulários do projeto"
           options={selectOptions}
           value={selectedFormId}
           onChange={(value) =>
@@ -496,7 +496,7 @@ export default function InputOptions({
         {isEditingForm ? (
           <Box className={styles.selectedFormActions}>
             <Typography className={styles.sectionHint}>
-              Modo edicao ativo. Limpe a selecao para criar um novo formulario.
+              Modo edição ativo. Limpe a seleção para criar um novo formulário.
             </Typography>
             <Button
               onClick={handleClearSelectedForm}
@@ -515,14 +515,14 @@ export default function InputOptions({
         <Box className={styles.formInfo}>
           <Box>
             <InputText
-              label="Titulo do formulario"
+              label="Título do formulário"
               value={titleForm}
               onChange={(event) => setTitleForm(event.target.value)}
             />
           </Box>
           <Box>
             <TextArea
-              label="Descricao do formulario"
+              label="Descrição do formulário"
               value={descriptionForm}
               onChange={(event) => setDescriptionForm(event.target.value)}
             />
@@ -559,7 +559,7 @@ export default function InputOptions({
       </ExpandableCard>
 
       <ExpandableCard
-        title="Links dos formularios"
+        title="Links dos formulários"
         expanded={expandedLinks}
         onToggle={(next) => setExpandedLinks(next)}
         className={styles.card}
@@ -621,13 +621,13 @@ export default function InputOptions({
           </Box>
         ) : (
           <Typography className={styles.helperText}>
-            Nenhum formulario disponivel para gerar link.
+            Nenhum formulário disponível para gerar link.
           </Typography>
         )}
       </ExpandableCard>
 
       <ExpandableCard
-        title="Abas do Formulario"
+        title="Abas do Formulário"
         expanded={expandedTabs}
         onToggle={(next) => setExpandedTabs(next)}
         className={styles.card}
@@ -709,7 +709,7 @@ export default function InputOptions({
       </ExpandableCard>
 
       <ExpandableCard
-        title="Opcoes do Formulario"
+        title="Opcoes do Formulário"
         expanded={expanded}
         onToggle={(next) => setExpanded(next)}
         className={styles.card}
@@ -775,8 +775,9 @@ export default function InputOptions({
         isLoading={isSavingForm}
         className={styles.previewButtonMain}
       >
-        {isEditingForm ? "Atualizar formulario" : "Cadastrar formulario"}
+        {isEditingForm ? "Atualizar formulário" : "Cadastrar formulário"}
       </Button>
     </Box>
   );
 }
+

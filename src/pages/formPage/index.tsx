@@ -333,7 +333,7 @@ export default function FormsPage() {
         const response = await getForms(formSlug, projectSlug);
         console.log("Form data fetched:", response.data);
       } catch (error) {
-        console.error("Erro ao buscar dados do formulario:", error);
+        console.error("Erro ao buscar dados do formulário:", error);
       }
     };
     fetchFormData();

@@ -452,7 +452,7 @@ export default function ProjetoThemeTab() {
         setAlert({
           show: true,
           category: "error",
-          title: "Nenhum projeto vinculado ao usuario.",
+          title: "Nenhum projeto vinculado ao usuário.",
         });
         return;
       }
@@ -478,7 +478,7 @@ export default function ProjetoThemeTab() {
   };
 
   return (
-    <Layout titulo="Aparencia e Conteudo">
+    <Layout titulo="Aparência e Conteúdo">
       {alert.show && (
         <CustomAlert
           category={alert.category}
@@ -538,4 +538,5 @@ export default function ProjetoThemeTab() {
     </Layout>
   );
 }
+
 

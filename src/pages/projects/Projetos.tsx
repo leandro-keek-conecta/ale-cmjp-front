@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+﻿import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Box,
   Button,
@@ -295,7 +295,7 @@ export default function Projetos() {
             : fallbackSources,
         );
       } catch (error) {
-        console.error("Erro ao atualizar projetos vinculados do usuario:", error);
+        console.error("Erro ao atualizar projetos vinculados do usuário:", error);
         if (!mounted) return;
         setProjectSources(fallbackSources);
       } finally {
@@ -480,7 +480,7 @@ export default function Projetos() {
           <Box className={styles.emptyState}>
             {normalizedSearchTerm.length >= 3
               ? "Nenhum projeto encontrado para a busca."
-              : "Nenhum projeto disponivel para este usuario."}
+              : "Nenhum projeto disponível para este usuário."}
           </Box>
         )}
       </Box>
@@ -504,3 +504,4 @@ export default function Projetos() {
     </Box>
   );
 }
+

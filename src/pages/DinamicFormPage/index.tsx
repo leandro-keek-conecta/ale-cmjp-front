@@ -1,4 +1,4 @@
-import { Box, Button, CircularProgress, IconButton } from "@mui/material";
+﻿import { Box, Button, CircularProgress, IconButton } from "@mui/material";
 import styles from "./FormsPage.module.css";
 import HorizontalLinearAlternativeLabelStepper from "../../components/stepper";
 import { useEffect, useMemo, useState } from "react";
@@ -402,7 +402,7 @@ function getRequestErrorMessage(error: unknown) {
     if (message) return message;
   }
 
-  return "Nao foi possivel carregar os dados do formulario.";
+  return "Não foi possível carregar os dados do formulário.";
 }
 
 export default function DinamicFormsPage() {
@@ -418,7 +418,7 @@ export default function DinamicFormsPage() {
   );
   const steps = useMemo(() => {
     const labels = pages.map((p) => p.title);
-    return labels.length ? [...labels, "Concluído"] : [];
+    return labels.length ? [...labels, "Concluí­do"] : [];
   }, [pages]);
   const [showOutraOpiniao, setShowOutraOpiniao] = useState(false);
   const [summary, setSummary] = useState<SubmitSummary | null>(null);
@@ -497,7 +497,7 @@ export default function DinamicFormsPage() {
       console.error("Erro ao validar dados do usuário:", error);
       setUserAlert({
         severity: "error",
-        message: "Não foi possível validar os dados do usuário. Tente novamente.",
+        message: "Não foi possí­vel validar os dados do usuário. Tente novamente.",
       });
     }
   }
@@ -508,7 +508,7 @@ export default function DinamicFormsPage() {
       if (!projectId || !formVersionId) {
         setOpinionAlert({
           severity: "error",
-          message: "Nao foi possivel identificar projeto ou versao do formulario.",
+          message: "Não foi possível identificar projeto ou versão do formulário.",
         });
         return;
       }
@@ -537,7 +537,7 @@ export default function DinamicFormsPage() {
       });
       setOpinionAlert({
         severity: "success",
-        message: "Opinião enviada com sucesso.",
+        message: "opinião enviada com sucesso.",
       });
 
       setCurrentStep(pages.length);
@@ -545,7 +545,7 @@ export default function DinamicFormsPage() {
       console.error("Erro ao enviar opinião:", err);
       setOpinionAlert({
         severity: "error",
-        message: "Não foi possível enviar a opinião. Tente novamente.",
+        message: "Não foi possí­vel enviar a opinião. Tente novamente.",
       });
     }
   }
@@ -578,7 +578,7 @@ export default function DinamicFormsPage() {
       colSpan: 12,
       ...(placeholder ? { placeholder } : {}),
       rules: isRequired
-        ? { required: `${label} e obrigatorio` }
+        ? { required: `${label} é obrigatório` }
         : undefined,
     };
 
@@ -672,7 +672,7 @@ export default function DinamicFormsPage() {
 
     if (unassignedFields.length) {
       mappedPages.push({
-        title: "Formulario",
+        title: "Formulário",
         inputs: unassignedFields.reduce<InputType<any>[]>(
           (accumulator, field) => {
             const fieldName = toTrimmedString(field.name);
@@ -697,14 +697,14 @@ export default function DinamicFormsPage() {
         if (!formSlug) {
           setPages([]);
           setCurrentStep(0);
-          setFormLoadError("Link do formulario invalido.");
+          setFormLoadError("Link do formulário inválido.");
           return;
         }
 
         if (!projectName) {
           setPages([]);
           setCurrentStep(0);
-          setFormLoadError("Projeto nao identificado para carregar o formulario.");
+          setFormLoadError("Projeto não identificado para carregar o formulário.");
           return;
         }
 
@@ -783,7 +783,7 @@ export default function DinamicFormsPage() {
         setCurrentStep(0);
         setFormVersionId(null);
         setFormLoadError(getRequestErrorMessage(error));
-        console.error("Erro ao buscar dados do formulario:", error);
+        console.error("Erro ao buscar dados do formulário:", error);
       } finally {
         setIsFormLoading(false);
       }
@@ -890,13 +890,13 @@ export default function DinamicFormsPage() {
             >
               <CircularProgress size={28} />
               <Typography variant="body2" color="text.secondary">
-                Carregando formulario...
+                Carregando formulário...
               </Typography>
             </Box>
           ) : formLoadError ? (
             <Alert severity="error">{formLoadError}</Alert>
           ) : !pages.length ? (
-            <Alert severity="info">Formulario indisponivel no momento.</Alert>
+            <Alert severity="info">Formulário indisponível no momento.</Alert>
           ) : (
             <>
               {page && resolvedPageInputs.length > 0 && (
@@ -946,7 +946,7 @@ export default function DinamicFormsPage() {
                       {primaryButtonLabel}
                     </Button>
                     <IconButton
-                      aria-label="Voltar para cadastro do usuario"
+                      aria-label="Voltar para cadastro do usuário"
                       onClick={() =>
                         setCurrentStep((prev) => Math.max(prev - 1, 0))
                       }

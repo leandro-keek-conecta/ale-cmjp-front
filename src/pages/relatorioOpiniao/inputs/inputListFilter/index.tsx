@@ -1,4 +1,4 @@
-import type { FormValues } from "../../../../types/filter";
+﻿import type { FormValues } from "../../../../types/filter";
 import type { InputType } from "../../../../components/Forms";
 
 export type SelectOption<T = string | number> = { label: string; value: T };
@@ -18,8 +18,8 @@ const defaultSelectOptions: FilterSelectOptions = {
   tipo: [
     { label: "Denuncia", value: "Denuncia" },
     { label: "Elogio", value: "Elogio" },
-    { label: "Reclamacao", value: "Reclamacao" },
-    { label: "Sugestao", value: "Sugestao" },
+    { label: "Reclamação", value: "Reclamação" },
+    { label: "Sugestão", value: "Sugestão" },
   ],
   tema: [
     { label: "Educacao", value: "Educacao" },
@@ -32,9 +32,9 @@ const defaultSelectOptions: FilterSelectOptions = {
   genero: [
     { label: "Feminino", value: "Feminino" },
     { label: "Masculino", value: "Masculino" },
-    { label: "Nao-Binario", value: "Nao-Binario" },
+    { label: "Não-Binário", value: "Não-Binário" },
     { label: "Outros", value: "Outros" },
-    { label: "Prefiro nao responder", value: "Prefiro nao responder" },
+    { label: "Prefiro não responder", value: "Prefiro não responder" },
     { label: "Transgenero", value: "Transgenero" },
   ],
   faixaEtaria: [
@@ -122,3 +122,4 @@ export const getFilterInputs = (
 };
 
 export default getFilterInputs;
+

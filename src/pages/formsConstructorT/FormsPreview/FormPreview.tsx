@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+﻿import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { Alert, Box, Typography } from "@mui/material";
 import { useForm } from "react-hook-form";
 import Forms, { type InputType } from "@/components/Forms";
@@ -41,7 +41,7 @@ function buildFieldRules(field: BuilderFieldLayout) {
   const rules: Record<string, unknown> = {};
 
   if (field.required) {
-    rules.required = `${field.label} e obrigatorio`;
+    rules.required = `${field.label} é obrigatório`;
   }
 
   if (field.type === "number") {
@@ -216,7 +216,7 @@ export default function FormPreview({
     if (!fields.length) return [];
     return [
       {
-        title: "Formulario",
+        title: "Formulário",
         inputs: mapFieldsToInputs(fields),
       },
     ];
@@ -286,7 +286,7 @@ export default function FormPreview({
   return (
     <Box className={styles.container} style={themeStyle}>
       <Typography className={styles.title}>
-        {formSchema.title || "Formulario sem titulo"}
+        {formSchema.title || "Formulário sem titulo"}
       </Typography>
       {formSchema.description ? (
         <Typography className={styles.description}>
@@ -351,3 +351,4 @@ export default function FormPreview({
     </Box>
   );
 }
+

@@ -1,4 +1,4 @@
-import { Box } from "@mui/material";
+﻿import { Box } from "@mui/material";
 import { Layout } from "../../components/layout/Layout";
 import styles from "./RelatorioPage.module.css";
 import CardGridReflect from "../../components/card-grid-reflect";
@@ -211,7 +211,7 @@ const toChartLabel = (value: unknown): string | null => {
     return trimmed ? trimmed : null;
   }
   if (typeof value === "number" && Number.isFinite(value)) return String(value);
-  if (typeof value === "boolean") return value ? "Sim" : "Nao";
+  if (typeof value === "boolean") return value ? "Sim" : "Não";
   return null;
 };
 
@@ -457,8 +457,8 @@ export default function RelatorioOpiniao() {
     <Layout
       titulo={
         hasFixedTheme
-          ? `Tela de Relatorio de Opinioes - ${fixedTheme}`
-          : "Tela de Relatorio de Opinioes"
+          ? `Tela de Relatório de Opiniões - ${fixedTheme}`
+          : "Tela de Relatório de Opiniões"
       }
     >
       <Box className={styles.container}>
@@ -591,7 +591,7 @@ export default function RelatorioOpiniao() {
 
         <Box className={styles.gridContainerOndeLine} sx={{ marginTop: "1rem" }}>
           <CardGridReflect span={6} style={{ marginBottom: 0 }} disablePadding>
-            <h5 style={{ margin: "1rem" }}>Top 10 bairros com mais opinioes</h5>
+            <h5 style={{ margin: "1rem" }}>Top 10 bairros com mais opiniões</h5>
             <BarRaceChart
               data={topBairros}
               height={360}
@@ -619,3 +619,4 @@ export default function RelatorioOpiniao() {
     </Layout>
   );
 }
+

@@ -113,7 +113,7 @@ export default function ThemePreview({
   const heroHighlight = resolvedSettings.highlight || "tempo real";
   const heroSubtitle =
     resolvedSettings.subtitle ||
-    "Veja o que as pessoas estao falando, explore temas e acompanhe como as opinioes evoluem.";
+    "Veja o que as pessoas estão falando, explore temas e acompanhe como as opiniões evoluem.";
   const highlightTone = resolvedSettings.highlightTone || "gradient";
   const highlightColor =
     highlightTone === "accent" ? "var(--accent)" : "var(--accent-2)";
@@ -489,7 +489,7 @@ export default function ThemePreview({
               id: "clima-card",
               metric: "by_type",
               title: "Clima geral",
-              subtitle: "Distribuicao das opinioes",
+              subtitle: "Distribuição das opiniões",
             },
             12,
             styles.wideCard,
@@ -542,4 +542,5 @@ export default function ThemePreview({
     </Box>
   );
 }
+
 

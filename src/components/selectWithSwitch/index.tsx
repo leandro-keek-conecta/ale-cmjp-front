@@ -1,4 +1,4 @@
-import Autocomplete from "@mui/material/Autocomplete";
+﻿import Autocomplete from "@mui/material/Autocomplete";
 import type { AutocompleteRenderInputParams } from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import Switch from "@mui/material/Switch";
@@ -36,7 +36,7 @@ export default function SelectWithSwitch({
   helperText = "",
   loading = false,
   loadingText = "Carregando...",
-  noOptionsText = "Nenhuma opcao disponivel",
+  noOptionsText = "Nenhuma opção disponível",
 }: SelectTexProps) {
   const isMobile = useMediaQuery("(max-width:768px)");
   const size = isMobile ? "2.6rem" : "2.6rem";
@@ -134,3 +134,4 @@ export default function SelectWithSwitch({
     />
   );
 }
+

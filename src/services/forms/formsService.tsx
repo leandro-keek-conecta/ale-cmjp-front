@@ -168,7 +168,7 @@ function normalizeFormPayload(
 
   const name = toText(payload.name) || toText(payload.title);
   if (!name) {
-    throw new Error("Nome do formulario e obrigatorio.");
+    throw new Error("Nome do formulário é obrigatório.");
   }
 
   const normalizedPayload: Record<string, unknown> = {
@@ -256,7 +256,7 @@ export async function listForms(slug: string) {
       return moduleForms;
     }
   } catch {
-    // fallback para rota publica enquanto a rota autenticada nao estiver disponivel
+    // fallback para rota pública enquanto a rota autenticada não estiver disponível
   }
 
   const response = await apiPublic.get(`/public/projetos/${slug}/forms`);
@@ -274,7 +274,7 @@ export async function createForm(
 
   const projectId = getStoredProjectId();
   if (!projectId) {
-    throw new Error("Projeto ativo nao encontrado para criar formulario.");
+    throw new Error("Projeto ativo não encontrado para criar formulário.");
   }
 
   return api.post("/form/create", normalizeFormPayload(payload, projectId));
@@ -286,7 +286,7 @@ export async function updateFormById(
 ) {
   const name = toText(payload.name) || toText(payload.title);
   if (!name) {
-    throw new Error("Nome do formulario e obrigatorio.");
+    throw new Error("Nome do formulário é obrigatório.");
   }
 
   const projectId = toOptionalId(getStoredProjectId());
@@ -312,7 +312,7 @@ export async function updateFormById(
     await api.patch(`/form-version/update/${versionId}`, { schema });
   } else {
     console.warn(
-      "Atualizacao de schema ignorada: formulario sem versao selecionada.",
+      "Atualização de schema ignorada: formulário sem versão selecionada.",
     );
   }
 
@@ -359,3 +359,4 @@ export async function updateFormById(
 
   return formResponse;
 }
+

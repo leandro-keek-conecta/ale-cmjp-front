@@ -42,7 +42,7 @@ export function Layout({
     try {
       user = JSON.parse(userString);
     } catch (error) {
-      console.error("Erro ao interpretar usuario no layout:", error);
+      console.error("Erro ao interpretar usuário no layout:", error);
       user = null;
     }
   }
@@ -80,7 +80,7 @@ export function Layout({
           borderRight: "1px solid #00000014",
           overflowY: "hidden", // Scroll inicialmente escondido
           overflowX: "hidden",
-          width: barraLateralAberta ? "13.281vw" : "50px",
+          width: barraLateralAberta ? "14.281vw" : "50px",
           bgcolor: "#ffffff",
           transition: "all 0.3s ease-in-out",
           zIndex: 20,
@@ -228,7 +228,7 @@ export function Layout({
           minHeight: "100dvh",
           display: "flex",
           flexDirection: "column",
-          ml: { xs: 0, md: barraLateralAberta ? "13.281vw" : "50px" },
+          ml: { xs: 0, md: barraLateralAberta ? "14.281vw" : "50px" },
           transition: "all 0.3s ease-in-out",
           overflowX: "hidden",
         }}
@@ -238,10 +238,10 @@ export function Layout({
           sx={{
             height: APPBAR_H,
             // NÃO coloque zIndex: 0 aqui
-            left: { xs: 0, md: barraLateralAberta ? "13.281vw" : "50px" },
+            left: { xs: 0, md: barraLateralAberta ? "14.281vw" : "50px" },
             width: {
               xs: "100%",
-              md: `calc(100% - ${barraLateralAberta ? "13.281vw" : "50px"})`,
+              md: `calc(100% - ${barraLateralAberta ? "14.281vw" : "50px"})`,
             },
             borderBottom: "0.5px solid black",
             display: "flex",

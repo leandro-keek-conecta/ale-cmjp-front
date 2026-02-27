@@ -34,7 +34,7 @@ export function ItemMenu({
     <>
       {icone && (
         <div className={styles.icon}>
-          {React.cloneElement(icone, { style: { fontSize: "1rem" } })}
+          {React.cloneElement(icone, { style: { fontSize: "0.9rem" } })}
         </div>
       )}
       {estaAberta && (
@@ -55,7 +55,7 @@ export function ItemMenu({
             cursor: "default",
             padding: "0px 0px",
             fontWeight: "bold",
-            fontSize: "1rem",
+            fontSize: "0.8rem",
           }}
         >
           {content}

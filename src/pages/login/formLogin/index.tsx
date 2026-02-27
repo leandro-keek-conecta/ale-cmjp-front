@@ -1,4 +1,4 @@
-﻿import { Box, Typography } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import InputText from "../../../components/InputText";
 import Button from "../../../components/Button";
 import styles from "./formLogin.module.css";
@@ -29,7 +29,7 @@ export default function FormLogin() {
     const isEmailValid = validateEmail();
     const isPasswordValid = validatePassword();
     if (!isEmailValid) {
-      alert("Por favor, insira um email vÃ¡lido.");
+      alert("Por favor, insira um email válido.");
       return;
     }
     if (!isPasswordValid) {
