@@ -7,7 +7,6 @@ import { useCallback, useMemo } from "react";
 import LogoutIcon from "@mui/icons-material/Logout";
 import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
 import AddBusinessIcon from "@mui/icons-material/AddBusiness";
-import ChatIcon from "@mui/icons-material/Chat";
 import { useNavigate } from "react-router-dom";
 import Logo from "../assets/logo-horizontal-n.png";
 import UserMenuMinimal, { type MenuOption } from "./SplitButton";
