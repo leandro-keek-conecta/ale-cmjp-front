@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import styles from "./login.module.css";
+import keekLogo from "@/assets/logo-horizontal-n.png";
 import {
   Visibility,
   VisibilityOff,
@@ -16,7 +17,6 @@ import {
   InputAdornment,
   IconButton,
   CircularProgress,
-  Tooltip,
 } from "@mui/material";
 import { login, logout } from "../../services/auth/authService";
 import { useAuth } from "../../context/AuthContext";
@@ -30,8 +30,14 @@ type AlertState = {
   title?: string;
 };
 
+type FieldErrors = {
+  email?: string;
+  password?: string;
+};
+
 export default function LoginPage() {
   const [formData, setFormData] = useState({ email: "", password: "" });
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [mostraSenha, setMostraSenha] = useState(false);
   const [loading, setLoading] = useState(false);
   const [alert, setAlert] = useState<AlertState>({ show: false });
@@ -44,22 +50,21 @@ export default function LoginPage() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+
+    if (fieldErrors[name as keyof FieldErrors]) {
+      setFieldErrors((prev) => ({ ...prev, [name]: undefined }));
+    }
   };
 
   useEffect(() => {
-    
     isMountedRef.current = true;
-    logout(); // limpa com seguran?a, sem hooks fora de componente
+    logout();
     setFormData({ email: "", password: "" });
+
     return () => {
-      
       isMountedRef.current = false;
     };
   }, []);
-
-  useEffect(() => {
-    
-  }, [loading]);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -67,27 +72,36 @@ export default function LoginPage() {
 
     setAlert({ show: false });
 
-    if (!formData.email || !formData.password) {
-      setAlert({
-        show: true,
-        category: "error",
-        title: "Preencha e-mail e senha antes de acessar.",
-      });
+    const nextErrors: FieldErrors = {};
+
+    if (!formData.email.trim()) {
+      nextErrors.email = "Informe seu e-mail.";
+    } else if (!/^\S+@\S+\.\S+$/.test(formData.email)) {
+      nextErrors.email = "Informe um e-mail válido.";
+    }
+
+    if (!formData.password.trim()) {
+      nextErrors.password = "Informe sua senha.";
+    }
+
+    if (Object.keys(nextErrors).length > 0) {
+      setFieldErrors(nextErrors);
       return;
     }
 
-    
+    setFieldErrors({});
     setLoading(true);
 
     const data: UserLogin = {
       email: formData.email,
       password: formData.password,
     };
+
     try {
       const response = await login(data);
-      
       const user = response.data?.response?.user;
       const token = response.data?.response?.accessToken;
+
       if (!user || !token) {
         throw new Error("Falha ao autenticar. Tente novamente.");
       }
@@ -97,29 +111,22 @@ export default function LoginPage() {
         setAlert({
           show: true,
           category: "success",
-          title: "Login Feito Com Sucesso!",
+          title: "Login feito com sucesso!",
         });
       }
 
-      if (user.role === "ADMIN") {
+      if (user.role === "ADMIN" || user.role === "SUPERADMIN") {
         navigate("/projetos");
         return;
       }
-
-      
-      if (user.role === "SUPERADMIN") {
-        navigate("/projetos");
-        return;
-      }
-    
 
       navigate("/panorama");
     } catch (error) {
-
       const errorMessage =
         error instanceof Error && error.message
           ? error.message
           : "Falha ao autenticar. Tente novamente.";
+
       if (isMountedRef.current) {
         setAlert({
           show: true,
@@ -128,7 +135,6 @@ export default function LoginPage() {
         });
       }
     } finally {
-      
       if (isMountedRef.current) {
         setLoading(false);
       }
@@ -144,17 +150,22 @@ export default function LoginPage() {
           onClose={() => setAlert({ show: false })}
         />
       )}
+
       <Box className={styles.leftSide}>
-        <Box className={styles.heroImage}></Box>
+        <Box className={styles.heroImage} />
+
         <Box className={styles.brandContent}>
           <h1 className={styles.brandHeadline}>
             Dê voz à sua cidade com inteligência de dados.
           </h1>
+          <p className={styles.brandSubline}>
+            Transforme opiniões em decisões com monitoramento em tempo real.
+          </p>
         </Box>
 
         <Box className={styles.glassCard}>
           <h3>
-            <span className={styles.statusDot}></span> Monitoramento Ativo
+            <span className={styles.statusDot}></span> Monitoramento ativo
           </h3>
           <p>
             <strong>320 novas opiniões</strong> coletadas em Mangabeira e
@@ -162,166 +173,111 @@ export default function LoginPage() {
           </p>
         </Box>
       </Box>
+
       <Box className={styles.rightSide}>
         <Box className={styles.loginContainer}>
-          <Box className={styles.logoArea}>
-            <Box className={styles.logoSymbol}>K</Box>
-            <Box className={styles.logoText}>keek</Box>
+          <Box className={styles.cardHeader}>
+            <img src={keekLogo} className={styles.logoLarge} alt="Keek" />
+
+            <Box className={styles.welcomeText}>
+              <h2>Bem-vindo 👋</h2>
+            </Box>
           </Box>
 
-          <Box className={styles.welcomeText}>
-            <h2>Olá, Gestor! 👋</h2>
-            <p>
-              Insira suas credenciais para acessar o painel de inteligência.
-            </p>
-          </Box>
-
-          <form className={styles.form} onSubmit={onSubmit}>
+          <form className={styles.form} onSubmit={onSubmit} noValidate>
             <TextField
+              className={styles.inputField}
               fullWidth
-              label="Seu e-mail"
+              label="E-mail"
               type="email"
-              margin="normal"
               name="email"
               variant="outlined"
               size="medium"
               value={formData.email}
               onChange={handleChange}
-              onFocus={(e) => e.target.setAttribute("autocomplete", "email")}
-              autoComplete="off"
-              sx={{ backgroundColor: "white", borderRadius: "4px" }}
+              autoComplete="email"
+              error={Boolean(fieldErrors.email)}
+              helperText={fieldErrors.email}
               InputProps={{
-                style: { color: "#333" },
                 startAdornment: (
                   <InputAdornment position="start">
-                    <Tooltip
-                      title="Preencha com seu e-mail"
-                      placement="top"
-                      arrow
-                      enterTouchDelay={0}
-                    >
-                      <PersonOutline
-                        sx={{ fontSize: "1rem", color: "text.secondary" }}
-                      />
-                    </Tooltip>
+                    <PersonOutline className={styles.fieldIcon} />
                   </InputAdornment>
                 ),
-              }}
-              InputLabelProps={{
-                shrink: true,
-                style: {
-                  color: "#333",
-                  fontSize: "1rem",
-                  fontWeight: 500,
-                  borderRadius: "8px",
-                },
               }}
             />
 
             <TextField
+              className={styles.inputField}
               fullWidth
-              label="Sua senha"
+              label="Senha"
               type={mostraSenha ? "text" : "password"}
               name="password"
-              margin="normal"
               variant="outlined"
               size="medium"
               value={formData.password}
               onChange={handleChange}
-              sx={{ backgroundColor: "white", borderRadius: "4px" }}
+              autoComplete="current-password"
+              error={Boolean(fieldErrors.password)}
+              helperText={fieldErrors.password}
               InputProps={{
-                style: { color: "#333" },
                 startAdornment: (
                   <InputAdornment position="start">
-                    <Tooltip
-                      title="Digite sua senha"
-                      placement="top"
-                      arrow
-                      enterTouchDelay={0}
-                    >
-                      <LockOutlined
-                        sx={{ fontSize: "1rem", color: "text.secondary" }}
-                      />
-                    </Tooltip>
+                    <LockOutlined className={styles.fieldIcon} />
                   </InputAdornment>
                 ),
                 endAdornment: (
                   <InputAdornment position="end">
-                    <Tooltip
-                      title={mostraSenha ? "Ocultar senha" : "Mostrar senha"}
-                      placement="top"
-                      arrow
-                      enterTouchDelay={0}
+                    <IconButton
+                      className={styles.passwordToggle}
+                      onClick={toggleMostraSenha}
+                      edge="end"
+                      aria-label={
+                        mostraSenha ? "Ocultar senha" : "Mostrar senha"
+                      }
                     >
-                      <IconButton
-                        onClick={toggleMostraSenha}
-                        edge="end"
-                        aria-label={
-                          mostraSenha ? "Ocultar senha" : "Mostrar senha"
-                        }
-                      >
-                        {mostraSenha ? <VisibilityOff /> : <Visibility />}
-                      </IconButton>
-                    </Tooltip>
+                      {mostraSenha ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
                   </InputAdornment>
                 ),
               }}
-              InputLabelProps={{
-                shrink: true,
-                style: {
-                  color: "#333",
-                  fontSize: "1rem",
-                  fontWeight: 500,
-                  borderRadius: "8px",
-                },
-              }}
             />
 
-            <Box
-              display="flex"
-              justifyContent="space-between"
-              alignItems="center"
-              mt={1}
-              mb={2}
-            >
+            <Box className={styles.actionsRow}>
               <FormControlLabel
+                className={styles.rememberControl}
                 control={<Checkbox size="small" />}
-                sx={{ fontSize: "0.7rem" }}
-                label="Lembre de mim"
+                label="Manter sessão ativa"
               />
               <Link
-                href="forgot-password"
-                fontSize="0.7rem"
-                color="#FFFFF"
-                sx={{
-                  textDecoration: "none",
-                  fontSize: "0.9rem",
-                }}
+                className={styles.forgotLink}
+                href="/forgot-password"
+                underline="none"
               >
-                Esqueceu a senha?
+                Esqueceu sua senha?
               </Link>
             </Box>
 
             <Button
+              className={styles.submitButton}
               variant="contained"
               fullWidth
-              style={{ backgroundColor: "#5070dd" }}
-              sx={{ py: 1.2 }}
               type="submit"
               disabled={loading}
             >
               {loading ? (
-                <CircularProgress size={24} sx={{ color: "white" }} />
+                <span className={styles.loadingInline}>
+                  <CircularProgress size={18} sx={{ color: "white" }} />
+                  Entrando...
+                </span>
               ) : (
-                <p style={{ color: "#FFFFFF", fontSize: "1rem" }}>Acessar</p>
+                "Entrar no painel"
               )}
             </Button>
           </form>
 
           <div className={styles.footerCopy}>
-            &copy; 2026 Keek Inteligê
-            ncia de Dados. Todos os direitos
-            reservados.
+            &copy; 2026 Keek Inteligência de Dados
           </div>
         </Box>
       </Box>
