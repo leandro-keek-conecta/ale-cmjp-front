@@ -14,6 +14,7 @@ export interface ProjetoUserPivot {
   projeto: Projeto;
   access?: ProjetoAccessLevel;
   hiddenTabs?: string[];
+  allowedThemes?: string[];
 }
 
 export interface UserHiddenScreen {

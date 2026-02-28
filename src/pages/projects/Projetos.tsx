@@ -20,6 +20,7 @@ import { listAllProjects } from "@/services/projeto/ProjetoService";
 import type { ThemeChipDatum } from "./cardProject/chips";
 import SearchProjects from "./searchOfProjects";
 import CabecalhoEstilizado from "@/components/CabecalhoEstilizado";
+import { normalizeStringList } from "@/utils/userProjectAccess";
 
 export type ProjectCardData = {
   id: number;
@@ -35,6 +36,7 @@ export type ProjectCardData = {
     name: string;
     access: ProjetoAccessLevel;
     hiddenTabs: string[];
+    allowedThemes: string[];
     token?: string;
   };
 };
@@ -49,6 +51,7 @@ type RawProjectUser = {
   id?: unknown;
   access?: unknown;
   hiddenTabs?: unknown;
+  allowedThemes?: unknown;
 };
 
 type RawProjectSource = {
@@ -59,6 +62,7 @@ type RawProjectSource = {
   ativo?: unknown;
   access?: unknown;
   hiddenTabs?: unknown;
+  allowedThemes?: unknown;
   token?: unknown;
   metrics?: unknown;
   users?: unknown;
@@ -347,6 +351,10 @@ export default function Projetos() {
               users.find((projectUser) => projectUser?.id === user?.id)?.hiddenTabs,
             )
           : normalizeHiddenTabs(source.hiddenTabs);
+      const allowedThemes = normalizeStringList(
+        users.find((projectUser) => projectUser?.id === user?.id)?.allowedThemes ??
+          source.allowedThemes,
+      );
 
       const name =
         toSafeString(source.name) ||
@@ -369,6 +377,7 @@ export default function Projetos() {
           name,
           access,
           hiddenTabs,
+          allowedThemes,
           token: toSafeString(source.token),
         },
       });

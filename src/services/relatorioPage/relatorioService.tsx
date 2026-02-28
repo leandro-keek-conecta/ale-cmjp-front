@@ -1,5 +1,9 @@
 ﻿import { api } from "../api/api";
 import { getStoredProjectId } from "../../utils/project";
+import {
+  getStoredAllowedThemes,
+  mergeRequestedThemesWithScope,
+} from "../../utils/userProjectAccess";
 
 export type ResponseStatus = "STARTED" | "COMPLETED" | "ABANDONED";
 
@@ -134,7 +138,11 @@ const cleanParams = (params: Record<string, unknown>) =>
 
 const withProjectScope = (params: MetricsParams = {}): MetricsParams => {
   if (params.projetoId || params.formVersionId) {
-    return params;
+    const allowedThemes = getStoredAllowedThemes(params.projetoId);
+    return {
+      ...params,
+      temas: mergeRequestedThemesWithScope(params.temas, allowedThemes),
+    };
   }
 
   const projetoId = getStoredProjectId();
@@ -142,9 +150,12 @@ const withProjectScope = (params: MetricsParams = {}): MetricsParams => {
     throw new Error("Projeto não encontrado para buscar relatórios.");
   }
 
+  const allowedThemes = getStoredAllowedThemes(projetoId);
+
   return {
     ...params,
     projetoId,
+    temas: mergeRequestedThemesWithScope(params.temas, allowedThemes),
   };
 };
 

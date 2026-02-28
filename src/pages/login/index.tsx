@@ -13,10 +13,10 @@ import {
   Checkbox,
   FormControlLabel,
   TextField,
-  Link,
   InputAdornment,
   IconButton,
   CircularProgress,
+  Typography,
 } from "@mui/material";
 import { login, logout } from "../../services/auth/authService";
 import { useAuth } from "../../context/AuthContext";
@@ -249,13 +249,7 @@ export default function LoginPage() {
                 control={<Checkbox size="small" />}
                 label="Manter sessão ativa"
               />
-              <Link
-                className={styles.forgotLink}
-                href="/forgot-password"
-                underline="none"
-              >
-                Esqueceu sua senha?
-              </Link>
+              <Typography>Esqueci minha senha</Typography>
             </Box>
 
             <Button

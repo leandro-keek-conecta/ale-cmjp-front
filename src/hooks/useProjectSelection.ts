@@ -6,6 +6,7 @@ import {
   type ProjectSelectionPayload,
 } from "@/utils/projectSelection";
 import type { ProjetoAccessLevel } from "@/types/IUserType";
+import { normalizeStringList } from "@/utils/userProjectAccess";
 
 export type { ProjectSelectionPayload } from "@/utils/projectSelection";
 
@@ -14,6 +15,7 @@ type StoredProjectContext = {
   name: string;
   token: string;
   hiddenTabs: string[];
+  allowedThemes: string[];
   access: ProjetoAccessLevel;
 };
 
@@ -37,6 +39,7 @@ const normalizeProjectPayload = (
   const name = typeof payload?.name === "string" ? payload.name : "";
   const token = typeof payload?.token === "string" ? payload.token : "";
   const hiddenTabs = normalizeHiddenTabs(payload?.hiddenTabs);
+  const allowedThemes = normalizeStringList(payload?.allowedThemes);
   const access = isProjetoAccessLevel(payload?.access)
     ? payload.access
     : DEFAULT_ACCESS;
@@ -46,6 +49,7 @@ const normalizeProjectPayload = (
     name,
     token,
     hiddenTabs,
+    allowedThemes,
     access,
   };
 };
@@ -121,6 +125,7 @@ const syncSelectedProjectOnUser = (selection: StoredProjectContext) => {
         name,
         token: selection.token || baseProject?.token || "",
         hiddenTabs: selection.hiddenTabs,
+        allowedThemes: selection.allowedThemes,
         access: selection.access,
       },
     };

@@ -13,6 +13,7 @@ export type ProjectLike = {
   corHex?: string | null;
   url?: string | null;
   hiddenTabs?: string[] | null;
+  allowedThemes?: string[] | null;
   access?: unknown;
   projeto?: ProjectLike | null;
   [key: string]: unknown;

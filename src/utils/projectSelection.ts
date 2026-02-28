@@ -1,4 +1,5 @@
 import type { ProjetoAccessLevel } from "../types/IUserType";
+import { normalizeStringList } from "./userProjectAccess";
 
 export type RawUserProject = {
   id?: number | null;
@@ -8,6 +9,7 @@ export type RawUserProject = {
   url?: string | null;
   token?: string | null;
   hiddenTabs?: string[] | null;
+  allowedThemes?: string[] | null;
   access?: ProjetoAccessLevel | null;
   projeto?: RawUserProject | null;
 };
@@ -17,6 +19,7 @@ export interface ProjectSelectionPayload {
   name?: string | null;
   token?: string | null;
   hiddenTabs?: string[] | null;
+  allowedThemes?: string[] | null;
   access?: ProjetoAccessLevel | null;
 }
 
@@ -68,6 +71,8 @@ export const normalizeProjectFromUser = (
 
   const hiddenTabs =
     project.hiddenTabs ?? nested?.hiddenTabs ?? fallback?.hiddenTabs ?? [];
+  const allowedThemes =
+    project.allowedThemes ?? nested?.allowedThemes ?? fallback?.allowedThemes ?? [];
 
   return {
     id,
@@ -79,6 +84,7 @@ export const normalizeProjectFromUser = (
           nested?.access ??
           fallback?.access) as ProjetoAccessLevel)
       : "FULL_ACCESS",
-    hiddenTabs,
+    hiddenTabs: normalizeStringList(hiddenTabs),
+    allowedThemes: normalizeStringList(allowedThemes),
   };
 };

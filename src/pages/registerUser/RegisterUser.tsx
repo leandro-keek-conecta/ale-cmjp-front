@@ -12,12 +12,13 @@ import Forms from "@/components/Forms";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import {
+  getAssignableRoleOptions,
   getUserInputs,
   levelAccessOptions,
   type SelectOption,
 } from "./inputs/userInput";
 import { useEffect, useMemo, useState, useCallback, useRef } from "react";
-import { Controller, useForm, useFieldArray } from "react-hook-form";
+import { Controller, useFieldArray, useForm, useWatch } from "react-hook-form";
 import type { ProjetoAccessLevel } from "@/types/IUserType";
 import type User from "@/types/IUserType";
 import CardGrid from "../../components/card-grid";
@@ -32,11 +33,21 @@ import type Projeto from "@/types/IProjetoType";
 import { createUser, fetchUsers, updateUser } from "@/services/user/userService";
 import CustomAlert from "@/components/Alert";
 import { ModalUserDelete } from "./modalDelete";
+import { useAuth } from "@/context/AuthContext";
+import { getOpinionFilterOptions } from "@/services/relatorioPage/relatorioService";
+import {
+  buildThemeRoutePath,
+  extractThemesFromProject,
+  getAccessibleProjectIds,
+  normalizeStringList,
+  toScreenToken,
+} from "@/utils/userProjectAccess";
 
 export type ProjetoFormValue = {
   projetoId: number | null;
   access: ProjetoAccessLevel | null;
   hiddenTabs?: string[];
+  allowedThemes?: string[];
 };
 
 export type FormValues = {
@@ -61,6 +72,7 @@ type ProjetoRequestPayload = {
   id: number;
   access: ProjetoAccessLevel;
   hiddenTabs?: string[];
+  allowedThemes?: string[];
 };
 
 const buildDefaultValues = (): FormValues => ({
@@ -79,6 +91,7 @@ const createEmptyProjetoSelection = (): ProjetoFormValue => ({
   projetoId: null,
   access: null,
   hiddenTabs: [],
+  allowedThemes: [],
 });
 
 const SYSTEM_SCREENS: SelectOption<string>[] = [
@@ -108,6 +121,7 @@ const normalizeProjetosForRequest = (
         hiddenTabs: Array.isArray(project?.hiddenTabs)
           ? project.hiddenTabs
           : [],
+        allowedThemes: normalizeStringList(project?.allowedThemes),
       };
     })
     .filter(Boolean) as ProjetoRequestPayload[];
@@ -155,6 +169,7 @@ const mapUserProjects = (user: User): ProjetoFormValue[] => {
           projetoId: id,
           access: project?.access ?? null,
           hiddenTabs: project?.hiddenTabs ?? [],
+          allowedThemes: normalizeStringList(project?.allowedThemes),
         };
       })
       .filter(Boolean) as ProjetoFormValue[];
@@ -169,6 +184,7 @@ const mapUserProjects = (user: User): ProjetoFormValue[] => {
         projetoId: fallbackId,
         access: null,
         hiddenTabs: [],
+        allowedThemes: [],
       },
     ];
   }
@@ -190,6 +206,7 @@ const mapUserToFormValues = (user: User): FormValues => ({
 
 export default function RegisterUser() {
   const isMountedRef = useRef(true);
+  const { user } = useAuth();
   const {
     control,
     formState: { errors },
@@ -205,6 +222,12 @@ export default function RegisterUser() {
   const [isEditing, setIsEditing] = useState(false);
   const [users, setUsers] = useState<FormValues[]>([]);
   const [projects, setProjects] = useState<Projeto[]>([]);
+  const [projectThemesById, setProjectThemesById] = useState<
+    Record<number, SelectOption<string>[]>
+  >({});
+  const [loadingThemeProjectIds, setLoadingThemeProjectIds] = useState<number[]>(
+    [],
+  );
   const [alert, setAlert] = useState<AlertState>({ show: false });
   const [userFormExpanded, setUserFormExpanded] = useState(true);
   const [tableExpanded, setTableExpanded] = useState(false);
@@ -214,11 +237,26 @@ export default function RegisterUser() {
     control,
     name: "projetos",
   });
+  const watchedProjects = useWatch({
+    control,
+    name: "projetos",
+  });
+  const roleOptions = useMemo(
+    () => getAssignableRoleOptions(user?.role),
+    [user?.role],
+  );
+  const accessibleProjectIds = useMemo(
+    () => getAccessibleProjectIds(user),
+    [user],
+  );
   const projectOptions = useMemo<SelectOption<number>[]>(() => {
     const options: SelectOption<number>[] = [];
     const seen = new Set<number>();
     projects.forEach((project) => {
       const id = project?.id;
+      if (user?.role !== "SUPERADMIN" && !accessibleProjectIds.includes(id)) {
+        return;
+      }
       if (typeof id !== "number" || seen.has(id)) return;
       const label =
         project?.name && project.name.trim() ? project.name : `Projeto ${id}`;
@@ -226,7 +264,7 @@ export default function RegisterUser() {
       seen.add(id);
     });
     return options;
-  }, [projects]);
+  }, [accessibleProjectIds, projects, user?.role]);
 
   const validateProjetoDuplicado = useCallback(
     (value: number | null, index: number) => {
@@ -243,6 +281,141 @@ export default function RegisterUser() {
     [getValues],
   );
 
+  const canManageProject = useCallback(
+    (projectId: number | null | undefined) => {
+      if (user?.role === "SUPERADMIN") {
+        return true;
+      }
+
+      if (typeof projectId !== "number") {
+        return false;
+      }
+
+      return accessibleProjectIds.includes(projectId);
+    },
+    [accessibleProjectIds, user?.role],
+  );
+
+  const canManageRole = useCallback(
+    (targetRole?: FormValues["role"]) => {
+      if (!targetRole) return true;
+      if (user?.role === "SUPERADMIN") return true;
+      if (user?.role === "ADMIN") {
+        return targetRole === "USER" || targetRole === "ADMIN";
+      }
+      return targetRole === "USER";
+    },
+    [user?.role],
+  );
+
+  const canManageUserProjects = useCallback(
+    (projectLinks: ProjetoFormValue[] | undefined) => {
+      if (user?.role === "SUPERADMIN") {
+        return true;
+      }
+
+      if (!Array.isArray(projectLinks) || !projectLinks.length) {
+        return false;
+      }
+
+      return projectLinks.some((projectLink) =>
+        canManageProject(projectLink?.projetoId),
+      );
+    },
+    [canManageProject, user?.role],
+  );
+
+  const toThemeOptions = useCallback(
+    (themes: string[]): SelectOption<string>[] =>
+      themes.map((theme) => ({
+        label: theme,
+        value: theme,
+      })),
+    [],
+  );
+
+  const loadThemesForProject = useCallback(
+    async (projectId: number) => {
+      if (
+        !canManageProject(projectId) ||
+        projectThemesById[projectId] ||
+        loadingThemeProjectIds.includes(projectId)
+      ) {
+        return;
+      }
+
+      setLoadingThemeProjectIds((current) => [...current, projectId]);
+
+      const fallbackProject =
+        projects.find((project) => project.id === projectId) ?? null;
+      const fallbackThemes = extractThemesFromProject(fallbackProject);
+
+      try {
+        const response = await getOpinionFilterOptions({ projetoId: projectId });
+        const apiThemes = normalizeStringList(
+          (response?.temas ?? []).flatMap((theme) => [
+            theme?.label ?? "",
+            theme?.value ?? "",
+          ]),
+        );
+
+        const resolvedThemes = apiThemes.length ? apiThemes : fallbackThemes;
+        setProjectThemesById((current) => ({
+          ...current,
+          [projectId]: toThemeOptions(resolvedThemes),
+        }));
+      } catch (error) {
+        console.error("Erro ao carregar temas do projeto.", error);
+        setProjectThemesById((current) => ({
+          ...current,
+          [projectId]: toThemeOptions(fallbackThemes),
+        }));
+      } finally {
+        setLoadingThemeProjectIds((current) =>
+          current.filter((currentProjectId) => currentProjectId !== projectId),
+        );
+      }
+    },
+    [
+      canManageProject,
+      loadingThemeProjectIds,
+      projectThemesById,
+      projects,
+      toThemeOptions,
+    ],
+  );
+
+  const getThemeOptionsForProject = useCallback(
+    (projectId: number | null | undefined) => {
+      if (typeof projectId !== "number") {
+        return [];
+      }
+
+      return projectThemesById[projectId] ?? [];
+    },
+    [projectThemesById],
+  );
+
+  const getScreenOptionsForProject = useCallback(
+    (projectId: number | null | undefined) => {
+      const baseOptions = [...SYSTEM_SCREENS];
+      const themeOptions = getThemeOptionsForProject(projectId);
+
+      if (!themeOptions.length) {
+        return baseOptions;
+      }
+
+      return [
+        ...baseOptions,
+        ...themeOptions.map((theme) => ({
+          label: `Relatorio de opinioes - ${theme.label}`,
+          value: toScreenToken(buildThemeRoutePath(theme.value)),
+        })),
+      ];
+    },
+    [getThemeOptionsForProject],
+  );
+
   useEffect(() => {
     isMountedRef.current = true;
     return () => {
@@ -254,7 +427,13 @@ export default function RegisterUser() {
     try {
       const response = await fetchUsers();
       const list = normalizeUsersPayload(response);
-      const mapped = list.map(mapUserToFormValues);
+      const mapped = list
+        .map(mapUserToFormValues)
+        .filter(
+          (userEntry) =>
+            canManageRole(userEntry.role) &&
+            canManageUserProjects(userEntry.projetos),
+        );
       if (isMountedRef.current) {
         setUsers(mapped);
       }
@@ -264,7 +443,7 @@ export default function RegisterUser() {
         setUsers([]);
       }
     }
-  }, []);
+  }, [canManageRole, canManageUserProjects]);
 
   useEffect(() => {
     const elements = document.querySelectorAll<HTMLElement>("[data-reveal]");
@@ -315,6 +494,18 @@ export default function RegisterUser() {
   useEffect(() => {
     loadUsers();
   }, [loadUsers]);
+
+  useEffect(() => {
+    if (!Array.isArray(watchedProjects)) {
+      return;
+    }
+
+    watchedProjects.forEach((projectEntry) => {
+      if (typeof projectEntry?.projetoId === "number") {
+        void loadThemesForProject(projectEntry.projetoId);
+      }
+    });
+  }, [loadThemesForProject, watchedProjects]);
 
   const tableRows = useMemo(() => {
     const optionsById = new Map(
@@ -405,6 +596,12 @@ export default function RegisterUser() {
       setLoading(true);
       setAlert({ show: false });
       const { projetos, ...rest } = data;
+      const hasUnmanageableProject = (projetos ?? []).some(
+        (project) => !canManageProject(project?.projetoId),
+      );
+      if (hasUnmanageableProject) {
+        throw new Error("Voce nao pode cadastrar usuarios neste projeto.");
+      }
       const projetosPayload = normalizeProjetosForRequest(projetos);
 
       if (projetosPayload.length === 0) {
@@ -467,6 +664,13 @@ export default function RegisterUser() {
       const id = rest.id;
       if (typeof id !== "number") {
         throw new Error("Usuário inválido para atualização.");
+      }
+
+      const hasUnmanageableProject = (projetos ?? []).some(
+        (project) => !canManageProject(project?.projetoId),
+      );
+      if (hasUnmanageableProject) {
+        throw new Error("Voce nao pode editar usuarios neste projeto.");
       }
 
       const projetosPayload = normalizeProjetosForRequest(projetos);
@@ -567,7 +771,7 @@ export default function RegisterUser() {
               {isEditing ? "Editar Usuário" : "Dados do Usuário"}
             </Typography>
             <Forms
-              inputsList={getUserInputs(isEditing)}
+              inputsList={getUserInputs(isEditing, roleOptions)}
               control={control}
               errors={errors}
             />
@@ -600,6 +804,10 @@ export default function RegisterUser() {
                             value={campo.value ?? null}
                             onChange={(selected) => {
                               campo.onChange(selected);
+                              if (typeof selected === "number") {
+                                void loadThemesForProject(selected);
+                              }
+                              setValue(`projetos.${index}.allowedThemes`, []);
                               setValue(`projetos.${index}.hiddenTabs`, []);
                             }}
                             error={Boolean(fieldState.error)}
@@ -628,13 +836,55 @@ export default function RegisterUser() {
                     </Box>
                     <Box sx={{ flex: 1 }}>
                       <Controller
+                        name={`projetos.${index}.allowedThemes`}
+                        control={control}
+                        render={({ field: campo }) => {
+                          const selectedProjectId =
+                            watchedProjects?.[index]?.projetoId ?? null;
+                          const themeOptions =
+                            getThemeOptionsForProject(selectedProjectId);
+
+                          return (
+                            <SelectButton
+                              label="Temas permitidos"
+                              placeholder="Selecione os temas acessiveis"
+                              options={themeOptions}
+                              value={campo.value ?? []}
+                              isMulti
+                              onChange={(selected) =>
+                                campo.onChange(
+                                  Array.isArray(selected) ? selected : [],
+                                )
+                              }
+                              helperText={
+                                typeof selectedProjectId === "number" &&
+                                themeOptions.length === 0
+                                  ? "Nenhum tema encontrado para este projeto."
+                                  : undefined
+                              }
+                            />
+                          );
+                        }}
+                      />
+                    </Box>
+                    <Box sx={{ flex: 1 }}>
+                      <Controller
                         name={`projetos.${index}.hiddenTabs`}
                         control={control}
                         render={({ field: campo }) => (
                           <SelectWithSwitch
                             label="Telas do sistema (desmarque para esconder)"
-                            options={SYSTEM_SCREENS}
+                            options={getScreenOptionsForProject(
+                              watchedProjects?.[index]?.projetoId ?? null,
+                            )}
                             value={campo.value ?? []}
+                            loading={
+                              typeof watchedProjects?.[index]?.projetoId ===
+                                "number" &&
+                              loadingThemeProjectIds.includes(
+                                watchedProjects?.[index]?.projetoId ?? -1,
+                              )
+                            }
                             noOptionsText="Nenhuma tela disponível"
                             onChange={(selected) =>
                               campo.onChange(

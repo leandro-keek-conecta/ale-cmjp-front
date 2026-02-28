@@ -1,5 +1,5 @@
-
 import type { InputType } from "@/components/Forms";
+import type { Role } from "@/types/IRoleType";
 import type { ProjetoAccessLevel } from "../../../types/IUserType";
 import type { FormValues } from "../RegisterUser";
 
@@ -11,7 +11,30 @@ export const levelAccessOptions: SelectOption<ProjetoAccessLevel>[] = [
   { label: "Apenas Dashboard", value: "DASH_ONLY" },
 ];
 
-export const getUserInputs = (isEditing = false): InputType<FormValues>[] => {
+const allRoleOptions: SelectOption<FormValues["role"]>[] = [
+  { label: "Usuário Comum", value: "USER" },
+  { label: "Administrador", value: "ADMIN" },
+  { label: "Administrador Geral", value: "SUPERADMIN" },
+];
+
+export const getAssignableRoleOptions = (
+  currentUserRole?: Role,
+): SelectOption<FormValues["role"]>[] => {
+  if (currentUserRole === "SUPERADMIN") {
+    return allRoleOptions;
+  }
+
+  if (currentUserRole === "ADMIN") {
+    return allRoleOptions.filter((option) => option.value !== "SUPERADMIN");
+  }
+
+  return allRoleOptions.filter((option) => option.value === "USER");
+};
+
+export const getUserInputs = (
+  isEditing = false,
+  roleOptions = allRoleOptions,
+): InputType<FormValues>[] => {
   const inputs: InputType<FormValues>[] = [
     {
       name: "name",
@@ -41,13 +64,9 @@ export const getUserInputs = (isEditing = false): InputType<FormValues>[] => {
       placeholder: "Selecione o papel global",
       type: "Select",
       colSpan: 4,
-      selectOptions: [
-        { label: "Usuário Comum", value: "USER" },
-        { label: "Administrador", value: "ADMIN" },
-        { label: "Administrador Geral", value: "SUPERADMIN" },
-      ],
+      selectOptions: roleOptions,
       rules: { required: "Função é obrigatória" },
-    }
+    },
   ];
 
   if (!isEditing) {
@@ -72,10 +91,9 @@ export const getUserInputs = (isEditing = false): InputType<FormValues>[] => {
         type: "text",
         colSpan: 6,
         rules: { required: "Confirmação de senha é obrigatória" },
-      }
+      },
     );
   }
 
   return inputs;
 };
-

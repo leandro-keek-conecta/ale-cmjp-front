@@ -7,5 +7,10 @@ export interface UpdateUserDTO {
   name?: string;
   role?: string;
   profession?: string;
-  projetos?: { id: number; access: ProjetoAccessLevel; hiddenTabs?: string[] }[];
+  projetos?: {
+    id: number;
+    access: ProjetoAccessLevel;
+    hiddenTabs?: string[];
+    allowedThemes?: string[];
+  }[];
 }
