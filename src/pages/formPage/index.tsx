@@ -300,9 +300,7 @@ export default function FormsPage() {
                 (row.form as Record<string, unknown> | undefined) ?? undefined;
               const formSlug =
                 (typeof row.slug === "string" ? row.slug.trim() : "") ||
-                (typeof row.formSlug === "string"
-                  ? row.formSlug.trim()
-                  : "") ||
+                (typeof row.formSlug === "string" ? row.formSlug.trim() : "") ||
                 (typeof nestedForm?.slug === "string"
                   ? nestedForm.slug.trim()
                   : "");
@@ -316,7 +314,8 @@ export default function FormsPage() {
 
         const selectedForm = firstFormWithSlug as Record<string, unknown>;
         const nestedForm =
-          (selectedForm.form as Record<string, unknown> | undefined) ?? undefined;
+          (selectedForm.form as Record<string, unknown> | undefined) ??
+          undefined;
         const formSlug =
           (typeof selectedForm.slug === "string"
             ? selectedForm.slug.trim()
@@ -464,7 +463,7 @@ export default function FormsPage() {
                       )}
                       {summary?.texto_opiniao && (
                         <Chip
-                          label={`Texto da opinião: ${getOpinionPreviewText(
+                          label={`Pesquisa por palavra chave”: ${getOpinionPreviewText(
                             summary.texto_opiniao,
                           )}`}
                           onClick={() => setIsOpinionTextModalOpen(true)}
@@ -491,7 +490,7 @@ export default function FormsPage() {
                       fullWidth
                       maxWidth="sm"
                     >
-                      <DialogTitle>Texto da opinião</DialogTitle>
+                      <DialogTitle>Pesquisa por palavra chave”</DialogTitle>
                       <DialogContentText component="div" sx={{ px: 2, pb: 2 }}>
                         {summary?.texto_opiniao || "Sem texto"}
                       </DialogContentText>
@@ -552,4 +551,3 @@ export default function FormsPage() {
     </Box>
   );
 }
-

@@ -110,7 +110,7 @@ export const getFilterInputs = (
     },
     {
       name: "texto_opiniao",
-      title: "Texto da opinião",
+      title: "Pesquisa por palavra chave”",
       placeholder: "Busque por palavra-chave",
       type: "text",
       colSpan: 12,
