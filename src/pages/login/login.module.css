@@ -1,388 +1,413 @@
 :root {
-  --primary-color: #4f46e5; /* Azul Keek aproximado */
-  --primary-hover: #4338ca;
-  --text-main: #1e293b;
-  --text-secondary: #64748b;
-  --bg-light: #f8fafc;
-  --white: #ffffff;
-  --glass-bg: rgba(255, 255, 255, 0.15);
-  --glass-border: rgba(255, 255, 255, 0.2);
-  --radius-md: 12px;
-  --radius-lg: 24px;
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-lg:
-    0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --login-primary: #2563eb;
+  --login-primary-dark: #1d4ed8;
+  --login-text: #101828;
+  --login-muted: #667085;
+  --login-label: #344054;
+  --login-border: #e4e7ec;
+  --login-border-hover: #d0d5dd;
+  --login-error: #f04438;
+  --login-error-bg: #fef3f2;
+  --login-error-text: #b42318;
 }
 
 .container {
   display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  height: 100dvh;
-  background-color: #ffff;
+  min-height: 100dvh;
+  background: #ffffff;
 }
 
 .leftSide {
-  flex: 1;
-  background: linear-gradient(135deg, #4f46e5 0%, #312e81 100%);
+  width: 50%;
   position: relative;
+  overflow: hidden;
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  color: #ffffff;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 1rem;
-  color: var(--white);
-  overflow: hidden;
-  height: 100%;
-  color: white;
-  padding: 2rem;
+}
+
+.leftSide::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    145deg,
+    rgba(30, 41, 119, 0.72),
+    rgba(15, 23, 42, 0.56)
+  );
+  z-index: 1;
 }
 
 .heroImage {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: 0.4; /* Mistura com o azul do fundo */
-  z-index: 0;
-  background-image: url("https://images.unsplash.com/photo-1519389950473-47ba0277781c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1740&q=80");
+  inset: 0;
+  background-image: url("https://s3.keekconecta.com.br/ale-cmjp/Login/Login Nuvem.png");
   background-size: cover;
   background-position: center;
+  transform: scale(1.02);
+}
+
+.brandContent {
+  position: relative;
+  z-index: 2;
+  max-width: 640px;
+}
+
+.brandHeadline {
+  margin: 0;
+  font-size: clamp(2rem, 3.3vw, 3.2rem);
+  line-height: 1.1;
+  font-weight: 800;
+}
+
+.brandSubline {
+  margin-top: 0.9rem;
+  font-size: clamp(0.95rem, 1.2vw, 1.08rem);
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.9);
+  max-width: 40ch;
 }
 
 .glassCard {
   position: relative;
-  z-index: 10;
-  background: var(--glass-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--glass-border);
-  padding: 1.5rem;
-  border-radius: var(--radius-md);
-  max-width: 320px;
-  margin-top: auto; /* Empurra para baixo */
-  margin-bottom: 2rem;
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-  animation: float 6s ease-in-out infinite;
+  z-index: 2;
+  max-width: 360px;
+  padding: 1.1rem 1.2rem;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 14px;
 }
 
 .glassCard h3 {
-  font-size: 0.875rem;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
+  margin: 0;
+  font-size: 0.96rem;
+  font-weight: 700;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0.55rem;
 }
 
 .statusDot {
   width: 8px;
   height: 8px;
-  background-color: #22c55e; /* Verde online */
-  border-radius: 50%;
-  box-shadow: 0 0 8px #22c55e;
+  border-radius: 999px;
+  background: #22c55e;
+  box-shadow: 0 0 10px #22c55e;
 }
 
 .glassCard p {
-  font-size: 0.8rem;
-  opacity: 0.9;
-  line-height: 1.4;
-}
-
-.brandContent {
-  position: relative;
-  z-index: 10;
-}
-
-.brandHeadline {
-  font-size: 2.5rem;
-  font-weight: 700;
-  line-height: 1.2;
-  margin-bottom: 1rem;
+  margin: 0.75rem 0 0;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.95);
 }
 
 .rightSide {
-  flex: 1;
+  width: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 100%;
-  width: 50%;
+  background: #ffffff;
+  padding: 1.5rem;
 }
 
 .loginContainer {
+  width: min(440px, 100%);
+  padding: 44px;
+  border-radius: 24px;
+  background: #ffffff;
+  box-shadow:
+    0 20px 60px rgba(16, 24, 40, 0.08),
+    0 8px 24px rgba(16, 24, 40, 0.06);
+  border: 1px solid #f2f4f7;
+}
+
+.cardHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 1rem;
   width: 100%;
-  max-width: 400px;
-  animation: slideIn 0.8s ease-out;
-}
-
-.logoArea {
-  margin-bottom: 2.5rem;
   display: flex;
   align-items: center;
-  gap: 10px;
 }
 
-/* Simulação do Logo Keek */
-.logoSymbol {
-  width: 40px;
-  height: 40px;
-  background: var(--text-main);
-  color: white;
-  border-radius: 50%;
+.logoLarge {
+  width: 120px;
+  height: auto;
+}
+
+.cardHeader {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  font-size: 1.2rem;
-}
-
-.logoText {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--text-main);
-  letter-spacing: -0.5px;
-}
-
-.welcomeText h2 {
-  font-size: 1.5rem;
-  color: var(--text-main);
-  margin-bottom: 0.5rem;
+  flex-direction: column;
+  gap: 20px;
 }
 
 .welcomeText p {
-  color: var(--text-secondary);
-  font-size: 0.95rem;
-  margin-bottom: 2rem;
+  font-size: 14px;
+  color: #667085;
+  max-width: 34ch;
+  margin-bottom: 1rem;
 }
 
-/* Estilo dos Inputs */
-.formGroup {
-  margin-bottom: 1.5rem;
+.image {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
 }
 
-.formGroup :global(.MuiInputBase-root) {
-  height: 2.6rem !important;
+.welcomeText {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.formGroup :global(.MuiOutlinedInput-input) {
-  padding: 12px 14px !important;
-  height: 2.6rem !important;
+.welcomeText h2 {
+  margin: 0;
+  font-size: 28px;
+  line-height: 1.2;
+  font-weight: 600;
+  color: var(--login-text);
 }
 
-.formLabel {
-  display: block;
-  font-size: 0.875rem;
+.welcomeText p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.5;
+  font-weight: 400;
+  color: var(--login-muted);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.inputField {
+  margin: 0;
+}
+
+.fieldIcon {
+  font-size: 18px;
+  color: #98a2b3;
+}
+
+.inputField :global(.MuiInputLabel-root) {
+  font-size: 13px;
   font-weight: 500;
-  color: var(--text-main);
-  margin-bottom: 0.5rem;
+  color: var(--login-label);
 }
 
-.inputWrapper {
-  position: relative;
+.inputField :global(.MuiInputLabel-root.Mui-focused) {
+  color: var(--login-label);
 }
 
-.formInput {
-  width: 100%;
-  padding: 0.875rem 1rem 0.875rem 2.5rem; /* Espaço para ícone */
-  border: 1px solid #e2e8f0;
-  border-radius: var(--radius-md);
-  font-size: 1rem;
-  color: var(--text-main);
-  transition: all 0.2s;
-  background-color: var(--bg-light);
+.inputField :global(.MuiOutlinedInput-root) {
+  height: 48px;
+  border-radius: 12px;
+  background: #ffffff;
+  font-size: 15px;
+  transition: all 0.15s ease;
 }
 
-/* Ícones dentro do input (Simulados com CSS ou Emoji para demo) */
-.inputIcon {
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #94a3b8;
-  font-size: 1rem;
+.inputField :global(.MuiOutlinedInput-notchedOutline) {
+  border-color: var(--login-border);
 }
 
-.formInput:focus {
-  outline: none;
-  border-color: var(--primary-color);
-  background-color: var(--white);
-  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+.inputField
+  :global(.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline) {
+  border-color: var(--login-border-hover);
 }
 
-.formFooter {
+.inputField :global(.MuiOutlinedInput-root.Mui-focused) {
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.inputField
+  :global(.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline) {
+  border-color: var(--login-primary);
+  border-width: 1px;
+}
+
+.inputField :global(.MuiOutlinedInput-root.Mui-error) {
+  background: var(--login-error-bg);
+}
+
+.inputField
+  :global(.MuiOutlinedInput-root.Mui-error .MuiOutlinedInput-notchedOutline) {
+  border-color: var(--login-error);
+}
+
+.inputField :global(.MuiFormHelperText-root) {
+  margin-left: 2px;
+  font-size: 12px;
+}
+
+.inputField :global(.MuiFormHelperText-root.Mui-error) {
+  color: var(--login-error-text);
+}
+
+.passwordToggle {
+  color: #98a2b3;
+  transition: color 0.15s ease;
+}
+
+.passwordToggle:hover {
+  color: #344054;
+}
+
+.passwordToggle :global(svg) {
+  font-size: 18px;
+  transition:
+    opacity 0.15s ease,
+    color 0.15s ease;
+}
+
+.actionsRow {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
-  font-size: 0.875rem;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+  flex-wrap: wrap;
 }
 
-.rememberMe {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--text-secondary);
+.rememberControl {
+  margin: 0;
+  min-width: 0;
+  flex: 1 1 220px;
+}
+
+.rememberControl :global(.MuiCheckbox-root) {
+  padding: 0;
+  margin-right: 8px;
+  color: #98a2b3;
+}
+
+.rememberControl :global(.MuiSvgIcon-root) {
+  font-size: 20px;
+}
+
+.rememberControl :global(.MuiCheckbox-root.Mui-focusVisible) {
+  outline: 2px solid var(--login-primary);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.rememberControl :global(.MuiFormControlLabel-label) {
+  font-size: 14px;
+  color: #344054;
   cursor: pointer;
+  overflow-wrap: anywhere;
 }
 
 .forgotLink {
-  color: var(--primary-color);
-  text-decoration: none;
-  font-weight: 600;
-  transition: color 0.2s;
+  font-size: 14px;
+  color: var(--login-primary);
+  margin-left: auto;
+  white-space: nowrap;
 }
 
 .forgotLink:hover {
-  color: var(--primary-hover);
   text-decoration: underline;
 }
 
-/* Botão Principal */
-.btnPrimary {
-  width: 100%;
-  padding: 0.875rem;
-  background-color: var(--primary-color);
-  color: white;
+.submitButton {
+  height: 48px;
+  border-radius: 12px;
   border: none;
-  border-radius: var(--radius-md);
-  font-size: 1rem;
+  color: #ffffff;
+  text-transform: none;
+  font-size: 15px;
   font-weight: 600;
+  background: linear-gradient(90deg, #2563eb, #1d4ed8);
   cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
+  transition:
+    filter 0.15s ease,
+    transform 0.15s ease;
 }
 
-.btnPrimary:hover {
-  background-color: var(--primary-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
+.submitButton:hover {
+  filter: brightness(1.05);
 }
 
-.btnPrimary:active {
-  transform: translateY(0);
+.submitButton:active {
+  transform: scale(0.99);
 }
 
-/* Copyright */
+.submitButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  color: #ffffff;
+}
+
+.loadingInline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.securityNote {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--login-muted);
+}
+
+.securityIcon {
+  font-size: 16px;
+  color: #98a2b3;
+}
+
 .footerCopy {
-  margin-top: 3rem;
   text-align: center;
-  font-size: 0.75rem;
-  color: #94a3b8;
+  font-size: 12px;
+  color: #98a2b3;
+  margin-top: 16px;
 }
 
-/* --- ANIMAÇÕES --- */
-@keyframes float {
-  0% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-  100% {
-    transform: translateY(0px);
-  }
-}
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateX(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-/* --- RESPONSIVIDADE --- */
 @media (max-width: 900px) {
-  .container {
-    flex-direction: column;
-    height: auto;
-    min-height: 100dvh;
-  }
-
   .leftSide {
-    width: 100%;
-    height: 38vh;
-    min-height: 260px;
-    padding: 1.5rem;
-  }
-
-  .brandHeadline {
-    font-size: 1.8rem;
-  }
-
-  .glassCard {
     display: none;
   }
 
   .rightSide {
     width: 100%;
-    height: auto;
-    padding: 2rem 1.5rem 2.5rem;
+    min-height: 100dvh;
+    padding: 24px;
   }
 
   .loginContainer {
-    max-width: 420px;
+    width: 100%;
+    max-width: 520px;
+    padding: 24px;
   }
 
   .logoArea {
-    margin-bottom: 1.5rem;
-  }
-
-  .welcomeText p {
-    margin-bottom: 1.5rem;
-  }
-
-  .formFooter {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.75rem;
-  }
-}
-
-@media (max-width: 600px) {
-  .leftSide {
-    height: 32vh;
-    min-height: 220px;
-    padding: 1.25rem;
-  }
-
-  .brandHeadline {
-    font-size: 1.6rem;
-  }
-
-  .logoSymbol {
-    width: 36px;
-    height: 36px;
-    font-size: 1rem;
-  }
-
-  .logoText {
-    font-size: 1.3rem;
+    justify-content: center;
   }
 
   .welcomeText h2 {
-    font-size: 1.3rem;
+    font-size: 24px;
+    text-align: center;
   }
 
   .welcomeText p {
-    font-size: 0.9rem;
+    font-size: 14px;
+    text-align: center;
   }
 
-  .formGroup {
-    margin-bottom: 1rem;
+  .actionsRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
   }
 
-  .btnPrimary {
-    padding: 0.8rem;
-  }
-
-  .footerCopy {
-    margin-top: 2rem;
+  .forgotLink {
+    margin-left: 0;
   }
 }
