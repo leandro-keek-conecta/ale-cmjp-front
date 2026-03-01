@@ -28,6 +28,8 @@ import getForms, {
   createUSer,
   getFormsById,
 } from "@/services/forms/formsService";
+import { getProjectById } from "@/services/projeto/ProjetoService";
+import { buildPageThemeStyle, type FormThemeStyle } from "@/utils/formTheme";
 import { getStoredProjectId, getStoredProjectSlug } from "@/utils/project";
 
 const steps = ["Dados do Usuário", "Dados da Opinião", "Concluído"];
@@ -107,6 +109,9 @@ export default function FormsPage() {
     severity: "success" | "error";
     message: string;
   } | null>(null);
+  const [pageStyle, setPageStyle] = useState<FormThemeStyle>(() =>
+    buildPageThemeStyle(),
+  );
   const navigate = useNavigate();
 
   const {
@@ -283,6 +288,36 @@ export default function FormsPage() {
   }, [showOutraOpiniao, userId]);
 
   useEffect(() => {
+    let isMounted = true;
+    const loadTheme = async () => {
+      const projectId = getStoredProjectId();
+      if (!projectId) {
+        if (isMounted) {
+          setPageStyle(buildPageThemeStyle());
+        }
+        return;
+      }
+
+      try {
+        const project = await getProjectById(projectId);
+        if (isMounted) {
+          setPageStyle(buildPageThemeStyle(project?.themeConfig));
+        }
+      } catch (error) {
+        console.error("Erro ao carregar tema do projeto:", error);
+        if (isMounted) {
+          setPageStyle(buildPageThemeStyle());
+        }
+      }
+    };
+
+    loadTheme();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
     const fetchFormData = async () => {
       try {
         const projectId = getStoredProjectId();
@@ -342,7 +377,7 @@ export default function FormsPage() {
     text.length > 70 ? `${text.slice(0, 70)}...` : text;
 
   return (
-    <Box className={styles.container}>
+    <Box className={styles.container} style={pageStyle}>
       <Box className={styles.formBox}>
         <Typography
           variant="h5"

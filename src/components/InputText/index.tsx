@@ -1,5 +1,6 @@
 import { TextField } from "@mui/material";
 import { useMediaQuery } from "@mui/material"; // Importa o hook
+import { buildThemedInputSx } from "@/utils/formTheme";
 
 interface InputTextProps {
   label: string;
@@ -42,16 +43,7 @@ export default function InputText({
       InputLabelProps={{
         shrink: true,
       }}
-      sx={{
-        "& .MuiOutlinedInput-root": {
-          height: size, // Altura do input
-        },
-        "& .MuiInputBase-input": {
-          padding: "12px 14px",
-          borderRadius: "8px",
-          fontSize: "0.9rem",
-        },
-      }}
+      sx={buildThemedInputSx({ height: size })}
     />
   );
 }

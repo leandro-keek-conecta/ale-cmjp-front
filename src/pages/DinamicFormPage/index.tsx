@@ -20,7 +20,9 @@ import {
 import { useNavigate, useParams } from "react-router-dom";
 import getForms from "@/services/forms/formsService";
 import { submitOpiniionTest } from "@/services/opiniao/opiniaoService";
+import { getProjectById } from "@/services/projeto/ProjetoService";
 import { useAuth } from "@/context/AuthContext";
+import { buildPageThemeStyle, type FormThemeStyle } from "@/utils/formTheme";
 import { getStoredProjectId, getStoredProjectSlug } from "@/utils/project";
 
 type FormPage = {
@@ -416,6 +418,9 @@ export default function DinamicFormsPage() {
   const [projectId, setProjectId] = useState<number | null>(() =>
     getStoredProjectId(),
   );
+  const [pageStyle, setPageStyle] = useState<FormThemeStyle>(() =>
+    buildPageThemeStyle(),
+  );
   const steps = useMemo(() => {
     const labels = pages.map((p) => p.title);
     return labels.length ? [...labels, "Concluí­do"] : [];
@@ -690,6 +695,35 @@ export default function DinamicFormsPage() {
     return mappedPages.filter((page) => page.inputs.length > 0);
   }
   useEffect(() => {
+    let isMounted = true;
+    const loadTheme = async () => {
+      if (!projectId) {
+        if (isMounted) {
+          setPageStyle(buildPageThemeStyle());
+        }
+        return;
+      }
+
+      try {
+        const project = await getProjectById(projectId);
+        if (isMounted) {
+          setPageStyle(buildPageThemeStyle(project?.themeConfig));
+        }
+      } catch (error) {
+        console.error("Erro ao carregar tema do projeto:", error);
+        if (isMounted) {
+          setPageStyle(buildPageThemeStyle());
+        }
+      }
+    };
+
+    loadTheme();
+    return () => {
+      isMounted = false;
+    };
+  }, [projectId]);
+
+  useEffect(() => {
     const fetchFormData = async () => {
       setIsFormLoading(true);
       setFormLoadError(null);
@@ -849,7 +883,7 @@ export default function DinamicFormsPage() {
   const shouldRenderFormFlow =
     !isFormLoading && !formLoadError && pages.length > 0;
   return (
-    <Box className={styles.container}>
+    <Box className={styles.container} style={pageStyle}>
       <Box className={styles.formBox}>
         <Typography
           variant="h5"

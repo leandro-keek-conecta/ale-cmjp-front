@@ -101,7 +101,7 @@ export default function ProjetoThemeTab() {
 
   const selectedMetrics = cardValues
     .slice(0, cardsCount)
-    .map((card) => card.metric);
+    .map((card) => card.metric ?? "");
   const climaMetric = formValues.clima_metric;
 
   const slideInputsList = useMemo(
@@ -112,6 +112,7 @@ export default function ProjetoThemeTab() {
   const themeInputsList = useMemo(
     () =>
       getThemeInputs({
+        selectedMetrics,
         climaMetric,
         cardsCount,
       }),
@@ -127,6 +128,9 @@ export default function ProjetoThemeTab() {
       highlightTone: formValues.highlightTone,
       subtitle: formValues.subtitle,
       fontFamily: formValues.fontFamily,
+      inputBackground: formValues.inputBackground,
+      inputBorderColor: formValues.inputBorderColor,
+      inputTransparent: formValues.inputTransparent,
       slideBadge: formValues.slideBadge,
       slideMapTitle: formValues.slideMapTitle,
       slideMapSubtitle: formValues.slideMapSubtitle,
@@ -148,6 +152,9 @@ export default function ProjetoThemeTab() {
       formValues.highlightTone,
       formValues.subtitle,
       formValues.fontFamily,
+      formValues.inputBackground,
+      formValues.inputBorderColor,
+      formValues.inputTransparent,
       formValues.slideBadge,
       formValues.slideMapTitle,
       formValues.slideMapSubtitle,
@@ -259,6 +266,9 @@ export default function ProjetoThemeTab() {
         background: data.background,
         fontFamily: data.fontFamily,
         highlightTone: data.highlightTone,
+        inputBackground: data.inputBackground,
+        inputBorderColor: data.inputBorderColor,
+        inputTransparent: data.inputTransparent,
       },
       heroConfig: {
         showHero: data.showHero,
@@ -337,6 +347,18 @@ export default function ProjetoThemeTab() {
           fontFamily: getText(themeConfig.fontFamily, defaultValues.fontFamily),
           highlightTone: (themeConfig.highlightTone ??
             defaultValues.highlightTone) as ThemeFormValues["highlightTone"],
+          inputBackground: getText(
+            themeConfig.inputBackground,
+            defaultValues.inputBackground,
+          ),
+          inputBorderColor: getText(
+            themeConfig.inputBorderColor,
+            defaultValues.inputBorderColor,
+          ),
+          inputTransparent:
+            typeof themeConfig.inputTransparent === "boolean"
+              ? themeConfig.inputTransparent
+              : defaultValues.inputTransparent,
           kicker: getText(copy.kicker, defaultValues.kicker),
           title: getText(copy.title, defaultValues.title),
           highlight: getText(copy.highlight, defaultValues.highlight),

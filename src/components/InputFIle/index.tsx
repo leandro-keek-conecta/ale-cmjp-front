@@ -2,6 +2,7 @@ import * as React from "react";
 import { styled } from "@mui/material/styles";
 import { Box, TextField } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import { buildThemedInputSx } from "@/utils/formTheme";
 
 const VisuallyHiddenInput = styled("input")({
   position: "absolute",
@@ -61,18 +62,11 @@ export default function InputFile({
         InputLabelProps={{
           shrink: true,
         }}
-        sx={{
-          "& .MuiOutlinedInput-root": {
-            height: "45px", // Altura do input
-          },
-          "& .MuiInputBase-input": {
-            padding: "12px 14px",
-            borderRadius: "8px",
-            fontSize: "0.9rem",
-            fontWeight: 500,
-            cursor: "pointer",
-          },
-        }}
+        sx={buildThemedInputSx({
+          height: "45px",
+          fontWeight: 500,
+          cursor: "pointer",
+        })}
       />
       <VisuallyHiddenInput
         type="file"

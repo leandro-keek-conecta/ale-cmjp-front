@@ -80,6 +80,9 @@ export type ThemeFormValues = {
   showHero: boolean;
   background: string;
   fontFamily: string;
+  inputBackground: string;
+  inputBorderColor: string;
+  inputTransparent: boolean;
   kicker: string;
   title: string;
   highlight: string;
@@ -149,6 +152,9 @@ export const buildThemeDefaultValues = (): ThemeFormValues => ({
   showHero: true,
   background: "linear-gradient(180deg, #f4f4f4 0%, #f4f4f4 100%)",
   fontFamily: "Inter",
+  inputBackground: "#ffffff",
+  inputBorderColor: "rgba(15, 23, 42, 0.16)",
+  inputTransparent: false,
   kicker: "Monitorando a voz da cidade",
   title: "Opinião em",
   highlight: "tempo real",
@@ -358,6 +364,27 @@ export const getThemeInputs = (
       title: "Fonte",
       type: "Select",
       selectOptions: fontOptions,
+      colSpan: 12,
+    },
+    {
+      name: "inputBackground",
+      title: "Fundo dos inputs",
+      placeholder: "#ffffff ou rgba(...)",
+      type: "text",
+      colSpan: 6,
+      sectionTitle: "Inputs",
+    },
+    {
+      name: "inputBorderColor",
+      title: "Borda dos inputs",
+      placeholder: "#d0d7de",
+      type: "text",
+      colSpan: 6,
+    },
+    {
+      name: "inputTransparent",
+      title: "Remover fundo dos inputs",
+      type: "switch",
       colSpan: 12,
     },
     {

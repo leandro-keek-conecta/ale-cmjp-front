@@ -4,6 +4,7 @@ import TextField from "@mui/material/TextField";
 import Switch from "@mui/material/Switch";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import CircularProgress from "@mui/material/CircularProgress";
+import { buildThemedInputSx } from "@/utils/formTheme";
 
 type PrimitiveSelectValue = string | number | boolean;
 type SelectValue = PrimitiveSelectValue | PrimitiveSelectValue[] | null;
@@ -64,14 +65,7 @@ export default function SelectWithSwitch({
           </>
         ),
       }}
-      sx={{
-        "& .MuiOutlinedInput-root": { height: size },
-        "& .MuiInputBase-input": {
-          padding: "12px 14px",
-          borderRadius: "8px",
-          fontSize: "16px",
-        },
-      }}
+      sx={buildThemedInputSx({ height: size, fontSize: "16px" })}
     />
   );
 
@@ -126,11 +120,7 @@ export default function SelectWithSwitch({
       }}
       isOptionEqualToValue={(opt, val) => opt.value === val.value}
       renderInput={renderInput}
-      sx={{
-        "& .MuiOutlinedInput-root": {
-          minHeight: size,
-        },
-      }}
+      sx={buildThemedInputSx({ minHeight: size })}
     />
   );
 }

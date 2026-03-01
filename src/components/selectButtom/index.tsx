@@ -3,6 +3,7 @@ import type { AutocompleteRenderInputParams } from "@mui/material/Autocomplete";
 import Chip from "@mui/material/Chip";
 import TextField from "@mui/material/TextField";
 import useMediaQuery from "@mui/material/useMediaQuery";
+import { buildThemedInputSx } from "@/utils/formTheme";
 
 type PrimitiveSelectValue = string | number | boolean;
 type SelectValue = PrimitiveSelectValue | PrimitiveSelectValue[] | null;
@@ -56,17 +57,7 @@ export default function SelectButton({
       InputLabelProps={{
         shrink: true,
       }}
-      sx={{
-        "& .MuiOutlinedInput-root": {
-          height: size, // Altura do input
-        },
-        "& .MuiInputBase-input": {
-          padding: "12px 14px",
-          borderRadius: "8px",
-          fontWeight: 500,
-          fontSize: "0.9rem",
-        },
-      }}
+      sx={buildThemedInputSx({ height: size, fontWeight: 500 })}
     />
   );
 
@@ -97,11 +88,7 @@ export default function SelectButton({
           option.value === selected.value
         }
         renderInput={renderInput}
-        sx={{
-          "& .MuiOutlinedInput-root": {
-            minHeight: size,
-          },
-        }}
+        sx={buildThemedInputSx({ minHeight: size })}
       />
     );
   }
@@ -118,11 +105,7 @@ export default function SelectButton({
         option.value === selected.value
       }
       renderInput={renderInput}
-      sx={{
-        "& .MuiOutlinedInput-root": {
-          minHeight: size,
-        },
-      }}
+      sx={buildThemedInputSx({ minHeight: size })}
     />
   );
 }
