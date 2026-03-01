@@ -366,6 +366,9 @@ export default function InputOptions({
       const { label, idNumber } = resolveFormOptionMeta(form);
       const formName = label;
       if (!formName || idNumber === null) return accumulator;
+      if (selectedFormId !== null && idNumber !== selectedFormId) {
+        return accumulator;
+      }
 
       const resolvedProjectSlug =
         resolveProjectSlug(form) || getStoredProjectSlug();
@@ -409,7 +412,7 @@ export default function InputOptions({
 
       return accumulator;
     }, []);
-  }, [formsOptions, projectId]);
+  }, [formsOptions, projectId, selectedFormId]);
 
   const selectedBlockFieldNames = selectedBlock?.fields ?? [];
   const fieldsFromSelectedBlock = availableFieldNames.filter((name) =>

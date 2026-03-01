@@ -162,7 +162,6 @@ export async function getMetricFilters(
         formVersionId: params.formVersionId,
         start: toIso(params.start),
         end: toIso(params.end),
-        limit: params.limit ?? 200,
       }),
       signal,
     },

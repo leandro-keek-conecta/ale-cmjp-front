@@ -264,10 +264,7 @@ export async function getOpinionReportMetrics(params: MetricsParams = {}) {
         monthEnd: requestParams.monthEnd ?? end ?? defaultMonthEnd,
         dayStart: requestParams.dayStart ?? start ?? defaultDayStart,
         dayEnd: requestParams.dayEnd ?? end ?? defaultDayEnd,
-        limits: requestParams.limits ?? {
-          opiniao: 10,
-          bairro: 10,
-        },
+
       }),
     },
   );
