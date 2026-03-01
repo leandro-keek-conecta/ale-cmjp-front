@@ -59,7 +59,7 @@ export const buildThemedInputSx = ({
   fontWeight,
   cursor,
 }: InputSxOptions = {}) => ({
-  "& .MuiOutlinedInput-root": {
+  "& .MuiInputBase-root, & .MuiOutlinedInput-root": {
     ...(height ? { height } : {}),
     ...(minHeight ? { minHeight } : {}),
     borderRadius: "8px",
@@ -81,5 +81,8 @@ export const buildThemedInputSx = ({
     fontSize,
     ...(fontWeight ? { fontWeight } : {}),
     ...(cursor ? { cursor } : {}),
+  },
+  "& .MuiInputBase-input::placeholder": {
+    opacity: 1,
   },
 });

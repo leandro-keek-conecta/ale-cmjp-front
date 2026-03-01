@@ -430,6 +430,7 @@ export function FormsDraggable({
   const themeStyle = {
     "--canvas-bg": formStyles.formBackgroundColor,
     "--canvas-border": formStyles.formBorderColor,
+    "--canvas-input-bg": formStyles.inputBackgroundColor,
     "--canvas-title": formStyles.titleColor,
     "--canvas-description": formStyles.descriptionColor,
   } as CSSProperties;

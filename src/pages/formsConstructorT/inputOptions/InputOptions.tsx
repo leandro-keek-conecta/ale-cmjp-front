@@ -63,6 +63,11 @@ const STYLE_INPUTS: Array<{
   { key: "buttonTextColor", label: "Texto do botao" },
 ];
 
+STYLE_INPUTS.splice(2, 0, {
+  key: "inputBackgroundColor",
+  label: "Fundo dos inputs",
+});
+
 function resolveFormOptionMeta(form: FormOptionItem) {
   const nestedForm =
     (form.form as Record<string, unknown> | undefined) ?? undefined;

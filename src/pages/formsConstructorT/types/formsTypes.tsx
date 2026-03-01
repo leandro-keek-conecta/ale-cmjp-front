@@ -45,6 +45,7 @@ export type BuilderBlock = {
 export type FormStyleOptions = {
   formBackgroundColor: string;
   formBorderColor: string;
+  inputBackgroundColor: string;
   titleColor: string;
   descriptionColor: string;
   buttonBackgroundColor: string;
@@ -54,6 +55,7 @@ export type FormStyleOptions = {
 export const DEFAULT_FORM_STYLE_OPTIONS: FormStyleOptions = {
   formBackgroundColor: "#f8fafc",
   formBorderColor: "#dbe4ef",
+  inputBackgroundColor: "#ffffff",
   titleColor: "#0f172a",
   descriptionColor: "#475569",
   buttonBackgroundColor: "#5070dd",

@@ -1,6 +1,7 @@
 .canvas {
   --canvas-bg: #f8fafc;
   --canvas-border: #dbe4ef;
+  --canvas-input-bg: #ffffff;
   --canvas-title: #0f172a;
   --canvas-description: #475569;
   display: grid;
@@ -175,7 +176,7 @@
   padding: 8px 10px;
   color: #64748b;
   font-size: 0.82rem;
-  background: #ffffff;
+  background: var(--canvas-input-bg);
 }
 
 .position {

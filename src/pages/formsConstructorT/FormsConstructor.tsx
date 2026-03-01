@@ -476,6 +476,10 @@ function normalizeFormStyles(value: unknown): FormStyleOptions {
       source.formBorderColor,
       DEFAULT_FORM_STYLE_OPTIONS.formBorderColor,
     ),
+    inputBackgroundColor: normalizeHexColor(
+      source.inputBackgroundColor,
+      DEFAULT_FORM_STYLE_OPTIONS.inputBackgroundColor,
+    ),
     titleColor: normalizeHexColor(
       source.titleColor,
       DEFAULT_FORM_STYLE_OPTIONS.titleColor,
