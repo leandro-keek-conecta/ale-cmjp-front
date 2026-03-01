@@ -59,6 +59,16 @@ const MONTH_NAMES = [
   "dezembro",
 ];
 
+const formatMonthLabel = (monthIndex: number, year: number | null) => {
+  const monthLabel = MONTH_SHORTS[monthIndex];
+
+  if (typeof year !== "number" || !Number.isFinite(year)) {
+    return monthLabel;
+  }
+
+  return `${monthLabel}/${String(year).slice(-2)}`;
+};
+
 type MonthKey = {
   year: number | null;
   monthIndex: number;
@@ -373,7 +383,7 @@ export function groupOpinionsByMonthOnly(
       return a.year * 12 + a.monthIndex - (b.year * 12 + b.monthIndex);
     })
     .map((item) => ({
-      label: MONTH_SHORTS[item.monthIndex],
+      label: formatMonthLabel(item.monthIndex, item.year),
       value: item.value,
     }));
 }
