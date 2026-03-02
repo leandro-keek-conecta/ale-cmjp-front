@@ -18,7 +18,7 @@ export function buildLineChartOption({
   return {
     grid: {
       left: 0,
-      right: 8,
+      right: 25,
       top: 25,
       bottom: 0,
       containLabel: true,

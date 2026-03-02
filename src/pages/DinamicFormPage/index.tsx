@@ -27,7 +27,10 @@ import {
   buildOpinionSummaryFields,
   normalizeOpinionFieldValues,
 } from "@/utils/opinionFieldMapping";
-import { getStoredProjectId, getStoredProjectSlug } from "@/utils/project";
+import {
+  getStoredProjectIdForSlug,
+  getStoredProjectSlug,
+} from "@/utils/project";
 
 type FormPage = {
   title: string;
@@ -412,6 +415,14 @@ function getRequestErrorMessage(error: unknown) {
 }
 
 export default function DinamicFormsPage() {
+  const navigate = useNavigate();
+  const { project: projectParam, slug: slugParam } = useParams<{
+    project?: string;
+    slug?: string;
+  }>();
+  const projectName = (projectParam ?? getStoredProjectSlug() ?? "").trim();
+  const formSlug = slugParam ?? "";
+  const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(0);
   const [pages, setPages] = useState<FormPage[]>([]);
   const [isFormLoading, setIsFormLoading] = useState(true);
@@ -420,7 +431,7 @@ export default function DinamicFormsPage() {
   const [formDescription, setFormDescription] = useState("");
   const [formVersionId, setFormVersionId] = useState<number | null>(null);
   const [projectId, setProjectId] = useState<number | null>(() =>
-    getStoredProjectId(),
+    getStoredProjectIdForSlug(projectName),
   );
   const [pageStyle, setPageStyle] = useState<FormThemeStyle>(() =>
     buildPageThemeStyle(),
@@ -440,14 +451,6 @@ export default function DinamicFormsPage() {
     severity: "success" | "error";
     message: string;
   } | null>(null);
-  const navigate = useNavigate();
-  const { project: projectParam, slug: slugParam } = useParams<{
-    project?: string;
-    slug?: string;
-  }>();
-  const projectName = (projectParam ?? getStoredProjectSlug() ?? "").trim();
-  const formSlug = slugParam ?? "";
-  const { user } = useAuth();
   const responseContext = useMemo(() => buildFormResponseContext(), []);
 
   const {
@@ -812,10 +815,13 @@ export default function DinamicFormsPage() {
             responseData.projetoId ??
             formFromResponse.projetoId,
         );
+        const fallbackProjectId = getStoredProjectIdForSlug(
+          toTrimmedString(projectFromResponse.slug) || projectName,
+        );
         setProjectId(
           typeof resolvedProjectId === "number"
             ? resolvedProjectId
-            : (getStoredProjectId() ?? null),
+            : fallbackProjectId,
         );
       } catch (error) {
         setPages([]);

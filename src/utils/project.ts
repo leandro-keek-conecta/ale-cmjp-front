@@ -119,6 +119,15 @@ export function getProjectSlug(
   return null;
 }
 
+function normalizeProjectSlugValue(value: string | null | undefined) {
+  if (typeof value !== "string") return "";
+
+  return value
+    .trim()
+    .replace(/^\/+|\/+$/g, "")
+    .toLowerCase();
+}
+
 export function storeProjectContext(project: ProjectLike | null | undefined) {
   if (typeof window === "undefined") {
     return null;
@@ -210,6 +219,22 @@ export function getStoredProjectSlug(): string | null {
   } catch {
     return null;
   }
+}
+
+export function getStoredProjectIdForSlug(
+  slug: string | null | undefined,
+): number | null {
+  const normalizedTargetSlug = normalizeProjectSlugValue(slug);
+  if (!normalizedTargetSlug) {
+    return null;
+  }
+
+  const storedSlug = normalizeProjectSlugValue(getStoredProjectSlug());
+  if (storedSlug !== normalizedTargetSlug) {
+    return null;
+  }
+
+  return getStoredProjectId();
 }
 
 export function ensureThemeColor(color: unknown, fallback: string): string {
