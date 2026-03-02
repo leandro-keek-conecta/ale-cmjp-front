@@ -247,6 +247,112 @@ function chunkFields(fields: BuilderField[], size = 3): BuilderFieldRow[] {
   return chunks;
 }
 
+function formatFieldLabel(fieldName: string) {
+  const cleaned = fieldName
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+[a-f0-9]{8,}$/i, "")
+    .trim();
+
+  if (!cleaned) return "Campo";
+
+  return cleaned
+    .split(" ")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function buildImportedFieldFromSchema(
+  fieldName: string,
+  schemaRule?: Record<string, unknown>,
+): Record<string, unknown> | null {
+  const normalizedName = toTrimmedString(fieldName);
+  if (!normalizedName) return null;
+
+  const options =
+    (schemaRule?.options as Record<string, unknown> | undefined) ?? undefined;
+  const layout =
+    (options?.layout as Record<string, unknown> | undefined) ?? undefined;
+
+  return {
+    name: normalizedName,
+    label: toTrimmedString(schemaRule?.label) || formatFieldLabel(normalizedName),
+    type: toTrimmedString(schemaRule?.type) || "text",
+    required: Boolean(schemaRule?.required),
+    ...(toTrimmedString(schemaRule?.placeholder)
+      ? { placeholder: toTrimmedString(schemaRule?.placeholder) }
+      : {}),
+    ...(toTrimmedString(schemaRule?.helpText)
+      ? { helpText: toTrimmedString(schemaRule?.helpText) }
+      : {}),
+    ...(schemaRule?.helpStyle === "default" || schemaRule?.helpStyle === "highlight"
+      ? { helpStyle: schemaRule.helpStyle }
+      : {}),
+    ...(typeof toOptionalNumber(schemaRule?.min) === "number"
+      ? { min: toOptionalNumber(schemaRule?.min) }
+      : {}),
+    ...(typeof toOptionalNumber(schemaRule?.max) === "number"
+      ? { max: toOptionalNumber(schemaRule?.max) }
+      : {}),
+    ...(typeof toOptionalNumber(schemaRule?.rows) === "number"
+      ? { rows: toOptionalNumber(schemaRule?.rows) }
+      : {}),
+    ...(options ? { options } : {}),
+    ...(layout ? { layout } : {}),
+  };
+}
+
+function mergeImportedFieldsWithSchema(
+  importedFields: Record<string, unknown>[],
+  blocks: Record<string, unknown>[],
+  schemaRulesByName: Record<string, Record<string, unknown>>,
+) {
+  const existingNames = new Set(
+    importedFields
+      .map((field) => toTrimmedString(field.name))
+      .filter(Boolean),
+  );
+
+  const orderedNames: string[] = [];
+  const appendName = (value: unknown) => {
+    const normalizedName = toTrimmedString(value);
+    if (!normalizedName || orderedNames.includes(normalizedName)) return;
+    orderedNames.push(normalizedName);
+  };
+
+  blocks.forEach((block) => {
+    const names = Array.isArray(block.fields) ? block.fields : [];
+    names.forEach(appendName);
+  });
+
+  Object.keys(schemaRulesByName).forEach(appendName);
+
+  const nextFields = [...importedFields];
+  let nextOrder = importedFields.reduce(
+    (max, field, index) => Math.max(max, toOptionalNumber(field.ordem) ?? index + 1),
+    0,
+  );
+
+  orderedNames.forEach((fieldName) => {
+    if (existingNames.has(fieldName)) return;
+
+    const syntheticField = buildImportedFieldFromSchema(
+      fieldName,
+      schemaRulesByName[fieldName],
+    );
+
+    if (!syntheticField) return;
+
+    nextOrder += 1;
+    nextFields.push({
+      ...syntheticField,
+      ordem: nextOrder,
+    });
+  });
+
+  return nextFields;
+}
+
 function mapImportedFieldsToRows(
   importedFields: Record<string, unknown>[],
   blocks: Record<string, unknown>[],
@@ -1128,10 +1234,15 @@ export default function ConstructorForm() {
         ? (schema.blocks as Record<string, unknown>[])
         : [];
       const schemaRulesByName = extractSchemaRulesByName(schema);
+      const mergedFields = mergeImportedFieldsWithSchema(
+        importedFields,
+        blocks,
+        schemaRulesByName,
+      );
 
       setFormBlocks(mapImportedBlocks(blocks));
       setSelectedBlockIndex(0);
-      setFieldRows(mapImportedFieldsToRows(importedFields, blocks, schemaRulesByName));
+      setFieldRows(mapImportedFieldsToRows(mergedFields, blocks, schemaRulesByName));
       setFormStyles(normalizeFormStyles(schema.styles));
 
       const loadedTitle = pickFirstText(
@@ -1169,13 +1280,18 @@ export default function ConstructorForm() {
       ? (schema.blocks as Record<string, unknown>[])
       : [];
     const schemaRulesByName = extractSchemaRulesByName(schema);
+    const mergedFields = mergeImportedFieldsWithSchema(
+      importedFields,
+      blocks,
+      schemaRulesByName,
+    );
 
     setSelectedFormId(null);
     setSelectedFormVersionId(null);
     setSelectedFieldIdByName({});
     setSelectedBlockIndex(0);
     setFormBlocks(mapImportedBlocks(blocks));
-    setFieldRows(mapImportedFieldsToRows(importedFields, blocks, schemaRulesByName));
+    setFieldRows(mapImportedFieldsToRows(mergedFields, blocks, schemaRulesByName));
     setFormStyles(normalizeFormStyles(schema.styles));
     setTitleForm(
       pickFirstText(
@@ -1196,6 +1312,7 @@ export default function ConstructorForm() {
   return (
     <Box className={styles.container}>
       <CabecalhoEstilizado
+        menuMode="withProjects"
         position="relative"
         sx={{
           zIndex: 0,

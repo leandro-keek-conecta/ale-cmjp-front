@@ -19,7 +19,7 @@ import {
 } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import getForms from "@/services/forms/formsService";
-import { submitOpiniionTest } from "@/services/opiniao/opiniaoService";
+import { submitPublicFormResponse } from "@/services/opiniao/opiniaoService";
 import { getProjectById } from "@/services/projeto/ProjetoService";
 import { useAuth } from "@/context/AuthContext";
 import { buildPageThemeStyle, type FormThemeStyle } from "@/utils/formTheme";
@@ -429,7 +429,6 @@ export default function DinamicFormsPage() {
   const [formLoadError, setFormLoadError] = useState<string | null>(null);
   const [formTitle, setFormTitle] = useState("Registre Sua Opinião");
   const [formDescription, setFormDescription] = useState("");
-  const [formVersionId, setFormVersionId] = useState<number | null>(null);
   const [projectId, setProjectId] = useState<number | null>(() =>
     getStoredProjectIdForSlug(projectName),
   );
@@ -522,10 +521,10 @@ export default function DinamicFormsPage() {
   async function onSubmitOpinion(values: Record<string, any>) {
     setOpinionAlert(null);
     try {
-      if (!projectId || !formVersionId) {
+      if (!projectName || !formSlug) {
         setOpinionAlert({
           severity: "error",
-          message: "Não foi possível identificar projeto ou versão do formulário.",
+          message: "Não foi possível identificar a URL pública do formulário.",
         });
         return;
       }
@@ -536,9 +535,7 @@ export default function DinamicFormsPage() {
       );
       const normalizedFields = normalizeOpinionFieldValues(allInputs, fields);
       const now = new Date().toISOString();
-      await submitOpiniionTest({
-        formVersionId,
-        projetoId: projectId,
+      await submitPublicFormResponse(projectName, formSlug, {
         status: "COMPLETED",
         submittedAt: now,
         completedAt: now,
@@ -805,11 +802,6 @@ export default function DinamicFormsPage() {
         setFormTitle(formName);
         setFormDescription(description);
 
-        const resolvedFormVersionId = toOptionalNumber(activeVersion.id);
-        setFormVersionId(
-          typeof resolvedFormVersionId === "number" ? resolvedFormVersionId : null,
-        );
-
         const resolvedProjectId = toOptionalNumber(
           projectFromResponse.id ??
             responseData.projetoId ??
@@ -826,7 +818,6 @@ export default function DinamicFormsPage() {
       } catch (error) {
         setPages([]);
         setCurrentStep(0);
-        setFormVersionId(null);
         setFormLoadError(getRequestErrorMessage(error));
         console.error("Erro ao buscar dados do formulário:", error);
       } finally {

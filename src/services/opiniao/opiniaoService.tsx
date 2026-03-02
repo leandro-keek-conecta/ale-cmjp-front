@@ -78,6 +78,11 @@ export type SubmitFormPayload = {
   metadata?: Record<string, unknown> | null;
 };
 
+export type SubmitPublicFormPayload = Omit<
+  SubmitFormPayload,
+  "projetoId" | "formVersionId"
+>;
+
 export async function getAllOpinions(projectId: number) {
   const response = await api.get(
     `/form-response/raw?projetoId=${projectId}&select=nome,telefone,ano_nascimento,genero,bairro,campanha,opiniao,outra_opiniao,tipo_opiniao,texto_opiniao,startedAt,submittedAt,createdAt`,
@@ -118,6 +123,19 @@ export async function submitOpiniionTest(payload: SubmitFormPayload) {
   const response = await apiPublic.post("/form-response/create", {
     ...payload,
   });
+
+  return response.data;
+}
+
+export async function submitPublicFormResponse(
+  projetoSlug: string,
+  formSlug: string,
+  payload: SubmitPublicFormPayload,
+) {
+  const response = await apiPublic.post(
+    `/public/projetos/${encodeURIComponent(projetoSlug)}/forms/slug/${encodeURIComponent(formSlug)}/responses`,
+    payload,
+  );
 
   return response.data;
 }
