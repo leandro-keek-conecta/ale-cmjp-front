@@ -23,6 +23,10 @@ import { submitOpiniionTest } from "@/services/opiniao/opiniaoService";
 import { getProjectById } from "@/services/projeto/ProjetoService";
 import { useAuth } from "@/context/AuthContext";
 import { buildPageThemeStyle, type FormThemeStyle } from "@/utils/formTheme";
+import {
+  buildOpinionSummaryFields,
+  normalizeOpinionFieldValues,
+} from "@/utils/opinionFieldMapping";
 import { getStoredProjectId, getStoredProjectSlug } from "@/utils/project";
 
 type FormPage = {
@@ -457,6 +461,11 @@ export default function DinamicFormsPage() {
     defaultValues: buildDefaultValuesFromPages(pages),
   });
 
+  const allInputs = useMemo(
+    () => pages.flatMap((pageItem) => pageItem.inputs),
+    [pages],
+  );
+
   const buildFieldsPayloadForInputs = (
     values: Record<string, any>,
     inputs: InputType<any>[],
@@ -490,7 +499,7 @@ export default function DinamicFormsPage() {
     try {
       const fields = buildFieldsPayloadForInputs(
         values,
-        pages.flatMap((pageItem) => pageItem.inputs),
+        allInputs,
       );
       console.log("Payload parcial acumulado para envio final:", fields);
       setUserAlert({
@@ -520,8 +529,9 @@ export default function DinamicFormsPage() {
 
       const fields = buildFieldsPayloadForInputs(
         values,
-        pages.flatMap((p) => p.inputs),
+        allInputs,
       );
+      const normalizedFields = normalizeOpinionFieldValues(allInputs, fields);
       const now = new Date().toISOString();
       await submitOpiniionTest({
         formVersionId,
@@ -529,17 +539,12 @@ export default function DinamicFormsPage() {
         status: "COMPLETED",
         submittedAt: now,
         completedAt: now,
-        fields,
+        fields: normalizedFields,
         userId: user?.id,
         ...responseContext,
       });
 
-      setSummary({
-        tema:
-          fields.opiniao === "Outros" ? fields.outra_opiniao : fields.opiniao,
-        tipo: fields.tipo_opiniao,
-        texto_opiniao: fields.texto_opiniao,
-      });
+      setSummary(buildOpinionSummaryFields(allInputs, normalizedFields));
       setOpinionAlert({
         severity: "success",
         message: "opinião enviada com sucesso.",
