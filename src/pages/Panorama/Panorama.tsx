@@ -11,7 +11,7 @@ import {
 } from "@mui/icons-material";
 
 import styles from "./PanoramaPage.module.css";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import CardGrid from "../../components/card-grid";
 import CardGridReflect from "../../components/card-grid-reflect";
 import CardDetails from "../../components/cardDetails";
@@ -38,8 +38,9 @@ import {
   getFiltros,
   getMetricas,
 } from "../../services/metricas/metricasService";
-import { getStoredProjectId } from "../../utils/project";
 import { getProjectById } from "../../services/projeto/ProjetoService";
+import { useProjectContext } from "@/context/ProjectContext";
+import { useProjectRealtime } from "@/hooks/useRealtimeSubscription";
 import {
   filterOptionsByAllowedThemes,
   getStoredAllowedThemes,
@@ -246,7 +247,7 @@ const buildTopDistricts = (items: Opinion[]) => {
 
 export default function Panorama() {
   const PRESENTATION_SEEN_KEY = "home:presentationSeen";
-  const selectedProjectId = getStoredProjectId();
+  const { projectId: selectedProjectId } = useProjectContext();
   const allowedThemes = useMemo(
     () => getStoredAllowedThemes(selectedProjectId),
     [selectedProjectId],
@@ -276,7 +277,6 @@ export default function Panorama() {
   const [groupOpinions, setGroupOpinions] = useState<
     { id: number; tema: string; total: number }[]
   >([]);
-  const hasFetched = useRef(false);
   const heroTitleRef = useRef<HTMLSpanElement | null>(null);
   const [heroCopyWidth, setHeroCopyWidth] = useState<number | null>(null);
   /*   const navigate = useNavigate(); */
@@ -322,7 +322,7 @@ export default function Panorama() {
     defaultValues: buildFilternDefaultValues(),
   });
 
-  async function fetchProjectTheme() {
+  const fetchProjectTheme = useCallback(async () => {
     try {
       const projectId = selectedProjectId;
       if (!projectId) {
@@ -381,9 +381,9 @@ export default function Panorama() {
     } catch (err) {
       console.error("Erro ao carregar configuracao da pagina panorama.", err);
     }
-  }
+  }, [selectedProjectId]);
 
-  async function fetchOpinions() {
+  const fetchOpinions = useCallback(async () => {
     try {
       const projectId = selectedProjectId;
       if (!projectId) {
@@ -395,9 +395,9 @@ export default function Panorama() {
     } catch (err) {
       setError("Erro ao carregar opiniões.");
     }
-  }
+  }, [selectedProjectId]);
 
-  async function fetchFilterOptions() {
+  const fetchFilterOptions = useCallback(async () => {
     try {
       const projectId = selectedProjectId;
       if (!projectId) {
@@ -418,9 +418,9 @@ export default function Panorama() {
     } catch (err) {
       console.error("Erro ao carregar filtros.", err);
     }
-  }
+  }, [allowedThemes, selectedProjectId]);
 
-  async function handleGetMetricas() {
+  const handleGetMetricas = useCallback(async () => {
     const projectId = selectedProjectId;
     if (!projectId) {
       setError("Nenhum projeto vinculado ao usuário.");
@@ -432,17 +432,28 @@ export default function Panorama() {
     setTodayOpinions(response.data.data.totalOpinionsToday || 0);
     setTopDistricts(response.data.data.topBairros || []);
     setTopTemas(response.data.data.topTemas || []);
-  }
+  }, [selectedProjectId]);
+
+  useProjectRealtime({
+    projetoId: selectedProjectId,
+    entities: ["form", "formVersion", "formField", "formResponse"],
+    debounceMs: 500,
+    onChange: (event) => {
+      void fetchFilterOptions();
+      void fetchOpinions();
+
+      if (event.entity === "formResponse") {
+        void handleGetMetricas();
+      }
+    },
+  });
 
   useEffect(() => {
-    if (hasFetched.current) return;
-    hasFetched.current = true;
-    fetchProjectTheme();
-    fetchFilterOptions();
-    fetchOpinions();
-  }, [allowedThemes, selectedProjectId]);
-
-  void handleGetMetricas;
+    void fetchProjectTheme();
+    void fetchFilterOptions();
+    void fetchOpinions();
+    void handleGetMetricas();
+  }, [fetchFilterOptions, fetchOpinions, fetchProjectTheme, handleGetMetricas]);
 
   useEffect(() => {
     const scopedOpinions = allowedThemes.length
