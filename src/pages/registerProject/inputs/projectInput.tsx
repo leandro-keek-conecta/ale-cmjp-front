@@ -16,7 +16,7 @@ export const getProjetoBasicInputs = (
       title: "Nome do Projeto",
       placeholder: "Digite o nome do projeto",
       type: "text",
-      colSpan: 4,
+      colSpan: 6,
       rules: {
         required: "Nome é obrigatório",
       },
@@ -26,7 +26,7 @@ export const getProjetoBasicInputs = (
       title: "Slug do Projeto",
       placeholder: "ex: escuta-cidada-2026",
       type: "text",
-      colSpan: 4,
+      colSpan: 6,
       rules: {
         required: "Slug é obrigatório",
         pattern: {
@@ -42,14 +42,14 @@ export const getProjetoBasicInputs = (
       placeholder: "Nome do cliente",
       type: "Select",
       selectOptions: userOptions,
-      colSpan: 4,
+      colSpan: 6,
     },
     {
       name: "corHex",
       title: "Cor Principal (Hex)",
       placeholder: "#0b5cff",
       type: "text",
-      colSpan: 4,
+      colSpan: 6,
       rules: {
         pattern: {
           value: /^#([0-9A-Fa-f]{6})$/,

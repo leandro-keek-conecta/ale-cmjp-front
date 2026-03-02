@@ -1,4 +1,5 @@
 import { normalizeProjectFromUser, type RawUserProject } from "./projectSelection";
+import { PROJECT_CONTEXT_CHANGED_EVENT } from "@/constants/events";
 
 export const PROJECT_CONTEXT_KEY = "projectContext";
 
@@ -140,6 +141,7 @@ export function storeProjectContext(project: ProjectLike | null | undefined) {
 
   try {
     localStorage.setItem(PROJECT_CONTEXT_KEY, JSON.stringify(normalized));
+    window.dispatchEvent(new Event(PROJECT_CONTEXT_CHANGED_EVENT));
   } catch {
     return null;
   }

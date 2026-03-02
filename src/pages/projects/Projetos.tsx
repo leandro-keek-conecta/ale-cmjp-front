@@ -34,6 +34,7 @@ export type ProjectCardData = {
   payload: {
     id: number;
     name: string;
+    slug: string;
     access: ProjetoAccessLevel;
     hiddenTabs: string[];
     allowedThemes: string[];
@@ -64,6 +65,8 @@ type RawProjectSource = {
   hiddenTabs?: unknown;
   allowedThemes?: unknown;
   token?: unknown;
+  slug?: unknown;
+  url?: unknown;
   metrics?: unknown;
   users?: unknown;
 };
@@ -85,6 +88,17 @@ const toSafeString = (value: unknown, fallback = "") => {
     return trimmed || fallback;
   }
   return fallback;
+};
+
+const toProjectSlug = (value: unknown) => {
+  if (typeof value !== "string") {
+    return "";
+  }
+
+  return value
+    .trim()
+    .replace(/^https?:\/\/[^/]+\/form\//i, "")
+    .replace(/^\/+|\/+$/g, "");
 };
 
 const normalizeHiddenTabs = (value: unknown): string[] => {
@@ -379,6 +393,7 @@ export default function Projetos() {
         toSafeString(source.name) ||
         toSafeString(source.nome) ||
         `Projeto ${projectId}`;
+      const slug = toProjectSlug(source.slug ?? source.url);
 
       list.push({
         id: projectId,
@@ -394,6 +409,7 @@ export default function Projetos() {
         payload: {
           id: projectId,
           name,
+          slug,
           access,
           hiddenTabs,
           allowedThemes,

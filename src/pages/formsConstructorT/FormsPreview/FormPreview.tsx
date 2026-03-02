@@ -205,7 +205,7 @@ export default function FormPreview({
         .filter((page) => page.fields.length > 0)
         .map((page) => ({
           title: page.title,
-          inputs: mapFieldsToInputs(page.fields),
+          inputs: mapFieldsToInputs([...page.fields].sort(sortFields)),
         }));
 
       if (blockPages.length) {

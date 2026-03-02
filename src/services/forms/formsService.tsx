@@ -168,7 +168,7 @@ function normalizeFormPayload(
 
   const name = toText(payload.name) || toText(payload.title);
   if (!name) {
-    throw new Error("Nome do formulário é obrigatório.");
+    throw new Error("Nome do formulario e obrigatorio.");
   }
 
   const normalizedPayload: Record<string, unknown> = {
@@ -194,6 +194,7 @@ export default function getForms(slug: string, projectName: string) {
   );
   return response;
 }
+
 export async function getFormsById(id: number) {
   const response = await api.get("/form/list", {
     params: { projetoId: id },
@@ -209,7 +210,6 @@ export async function getFormsById(id: number) {
   return Array.isArray(normalized) ? normalized : [];
 }
 
-
 export async function createUSer(user: UserFormValues): Promise<Opinion[]> {
   const response = await apiPublic.post("", {
     action: "create",
@@ -217,7 +217,7 @@ export async function createUSer(user: UserFormValues): Promise<Opinion[]> {
     payload: user,
   });
   const data = response?.data;
-  return Array.isArray(data) ? data : []; // garante array mesmo quando a API não retornar lista
+  return Array.isArray(data) ? data : [];
 }
 
 export async function listForms(slug: string) {
@@ -256,7 +256,7 @@ export async function listForms(slug: string) {
       return moduleForms;
     }
   } catch {
-    // fallback para rota pública enquanto a rota autenticada não estiver disponível
+    // fallback para rota publica enquanto a rota autenticada nao estiver disponivel
   }
 
   const response = await apiPublic.get(`/public/projetos/${slug}/forms`);
@@ -274,19 +274,25 @@ export async function createForm(
 
   const projectId = getStoredProjectId();
   if (!projectId) {
-    throw new Error("Projeto ativo não encontrado para criar formulário.");
+    throw new Error("Projeto ativo nao encontrado para criar formulario.");
   }
 
   return api.post("/form/create", normalizeFormPayload(payload, projectId));
 }
 
+export type UpdateFormResult = {
+  response: Awaited<ReturnType<typeof api.patch>>;
+  syncedFieldIdByName: Record<string, number>;
+  syncedFieldIdByClientId: Record<string, number>;
+};
+
 export async function updateFormById(
   formId: number | string,
   payload: Record<string, unknown>,
-) {
+): Promise<UpdateFormResult> {
   const name = toText(payload.name) || toText(payload.title);
   if (!name) {
-    throw new Error("Nome do formulário é obrigatório.");
+    throw new Error("Nome do formulario e obrigatorio.");
   }
 
   const projectId = toOptionalId(getStoredProjectId());
@@ -306,15 +312,12 @@ export async function updateFormById(
     toOptionalId(
       (payload.activeVersion as Record<string, unknown> | undefined)?.id,
     );
-  const schema = normalizeSchema(payload.schema, payload.blocks);
-
-  if (versionId !== null) {
-    await api.patch(`/form-version/update/${versionId}`, { schema });
-  } else {
-    console.warn(
-      "Atualização de schema ignorada: formulário sem versão selecionada.",
-    );
+  if (versionId === null) {
+    throw new Error("Versao ativa do formulario nao encontrada para atualizacao.");
   }
+
+  const schema = normalizeSchema(payload.schema, payload.blocks);
+  await api.patch(`/form-version/update/${versionId}`, { schema });
 
   const fieldIdByName = Object.entries(
     ((payload.fieldIdByName as Record<string, unknown> | undefined) ?? {}),
@@ -331,32 +334,66 @@ export async function updateFormById(
     ? (payload.fields as Record<string, unknown>[])
     : [];
   const normalizedFields = normalizeFields(rawFields, { includeFieldId: false });
-  const skippedFieldNames: string[] = [];
+  const originalFieldIds = new Set(Object.values(fieldIdByName));
+  const currentPersistedFieldIds = new Set<number>();
+  const syncedFieldIdByName = { ...fieldIdByName };
+  const syncedFieldIdByClientId: Record<string, number> = {};
 
   for (const [index, field] of normalizedFields.entries()) {
     const rawField = rawFields[index] ?? {};
+    const clientFieldId = toText(rawField.id);
     const fieldId =
       toOptionalId(rawField.id) ??
       fieldIdByName[field.name] ??
       null;
+    const fieldPayload: Record<string, unknown> = {
+      formVersionId: versionId,
+      name: field.name,
+      label: field.label,
+      type: field.type,
+      required: field.required,
+      options: field.options,
+      ordem: field.ordem,
+    };
 
     if (fieldId === null) {
-      skippedFieldNames.push(field.name);
+      const createdFieldResponse = await api.post("/form-field/create", fieldPayload);
+      const createdFieldId = toOptionalId(
+        createdFieldResponse?.data?.data?.id ??
+          createdFieldResponse?.data?.id,
+      );
+
+      if (createdFieldId === null) {
+        throw new Error(`Campo criado sem id retornado: ${field.name}`);
+      }
+
+      syncedFieldIdByName[field.name] = createdFieldId;
+      if (clientFieldId) {
+        syncedFieldIdByClientId[clientFieldId] = createdFieldId;
+      }
+      currentPersistedFieldIds.add(createdFieldId);
       continue;
     }
 
-    await api.patch(`/form-field/update/${fieldId}`, {
-      ordem: field.ordem,
-      options: field.options,
-    });
+    await api.patch(`/form-field/update/${fieldId}`, fieldPayload);
+    syncedFieldIdByName[field.name] = fieldId;
+    if (clientFieldId) {
+      syncedFieldIdByClientId[clientFieldId] = fieldId;
+    }
+    currentPersistedFieldIds.add(fieldId);
   }
 
-  if (skippedFieldNames.length) {
-    console.warn(
-      `Campos sem fieldId no update (ignorados): ${skippedFieldNames.join(", ")}`,
-    );
+  const removedFieldIds = [...originalFieldIds].filter(
+    (fieldId) => !currentPersistedFieldIds.has(fieldId),
+  );
+
+  for (const fieldId of removedFieldIds) {
+    await api.delete(`/form-field/delete/${fieldId}`);
   }
 
-  return formResponse;
+  return {
+    response: formResponse,
+    syncedFieldIdByName,
+    syncedFieldIdByClientId,
+  };
 }
-

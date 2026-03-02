@@ -16,7 +16,7 @@ import SelectButton from "@/components/selectButtom";
 import { useEffect, useMemo, useState } from "react";
 import Button from "@/components/Button";
 import ExpandableCard from "@/components/expandable-card";
-import { getStoredProjectId, getStoredProjectSlug } from "@/utils/project";
+import { useProjectContext } from "@/context/ProjectContext";
 import { getFormsById } from "@/services/forms/formsService";
 import buildLink from "@/utils/buildLinksWithSlug.ts";
 
@@ -296,7 +296,7 @@ export default function InputOptions({
   const [expandedTemplates, setExpandedTemplates] = useState(false);
   const [expandedBasicInfo, setExpandedBasicInfo] = useState(false);
   const [expandedTabs, setExpandedTabs] = useState(false);
-  const projectId = getStoredProjectId();
+  const { projectId, projectSlug } = useProjectContext();
 
   const selectOptions = (Array.isArray(formsOptions) ? formsOptions : [])
     .map((form) => {
@@ -370,8 +370,7 @@ export default function InputOptions({
         return accumulator;
       }
 
-      const resolvedProjectSlug =
-        resolveProjectSlug(form) || getStoredProjectSlug();
+      const resolvedProjectSlug = projectSlug || resolveProjectSlug(form);
       if (!resolvedProjectSlug) return accumulator;
 
       const href = buildLink(formName, resolvedProjectSlug);

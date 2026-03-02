@@ -22,7 +22,11 @@ import {
 import { FormsDraggable } from "./FormsDraggable/FormsDraggable";
 import { DragDropProvider } from "@dnd-kit/react";
 import FormPreview from "./FormsPreview/FormPreview";
-import getForms, { createForm, updateFormById } from "@/services/forms/formsService";
+import getForms, {
+  createForm,
+  type UpdateFormResult,
+  updateFormById,
+} from "@/services/forms/formsService";
 import { triggerAlert } from "@/services/alert/alertService";
 import { getStoredProjectSlug } from "@/utils/project";
 import formTemplatesData from "@/templates/form-templates.json";
@@ -548,6 +552,29 @@ function extractPersistedFormId(
   );
 }
 
+function syncFieldRowsWithPersistedIds(
+  rows: BuilderFieldRow[],
+  fieldIdByClientId: Record<string, number>,
+) {
+  if (!Object.keys(fieldIdByClientId).length) {
+    return rows;
+  }
+
+  return rows.map((row) =>
+    row.map((field) => {
+      const persistedId = fieldIdByClientId[field.id];
+      if (persistedId === undefined) {
+        return field;
+      }
+
+      return {
+        ...field,
+        id: String(persistedId),
+      };
+    }),
+  );
+}
+
 function extractSchemaRulesByName(schema: Record<string, unknown>) {
   return Object.entries(schema).reduce<Record<string, Record<string, unknown>>>(
     (accumulator, [key, value]) => {
@@ -749,22 +776,28 @@ function syncBlocksWithFieldNames(
   if (!previousBlocks.length) return buildDefaultBlock(fieldNames);
 
   const availableNames = new Set(fieldNames);
-  const seenNames = new Set<string>();
+  const blockIndexByFieldName = new Map<string, number>();
+
+  previousBlocks.forEach((block, blockIndex) => {
+    block.fields.forEach((name) => {
+      if (!availableNames.has(name) || blockIndexByFieldName.has(name)) return;
+      blockIndexByFieldName.set(name, blockIndex);
+    });
+  });
+
   const nextBlocks = previousBlocks.map((block, index) => ({
-      title: toTrimmedString(block.title) || `Aba ${index + 1}`,
-      fields: block.fields.filter((name) => {
-        if (!availableNames.has(name)) return false;
-        if (seenNames.has(name)) return false;
-        seenNames.add(name);
-        return true;
-      }),
-    }));
+    title: toTrimmedString(block.title) || `Aba ${index + 1}`,
+    fields: fieldNames.filter((name) => blockIndexByFieldName.get(name) === index),
+  }));
 
   if (!nextBlocks.length) {
     return buildDefaultBlock(fieldNames);
   }
 
-  const unassignedNames = fieldNames.filter((name) => !seenNames.has(name));
+  const assignedNames = new Set(
+    nextBlocks.flatMap((block) => block.fields),
+  );
+  const unassignedNames = fieldNames.filter((name) => !assignedNames.has(name));
 
   if (unassignedNames.length) {
     const firstFilledBlockIndex = nextBlocks.findIndex((block) => block.fields.length > 0);
@@ -1143,12 +1176,27 @@ export default function ConstructorForm() {
     try {
       setIsSavingForm(true);
       const isUpdating = selectedFormId !== null;
-      const response =
+      const result =
         isUpdating
           ? await updateFormById(selectedFormId, payload)
           : await createForm(payload);
+      const response = isUpdating
+        ? (result as UpdateFormResult).response
+        : result;
       const persistedId = extractPersistedFormId(response, selectedFormId);
       setSelectedFormId(persistedId);
+
+      if (isUpdating) {
+        const updateResult = result as UpdateFormResult;
+        setSelectedFieldIdByName(updateResult.syncedFieldIdByName);
+        setFieldRows((previous) =>
+          syncFieldRowsWithPersistedIds(
+            previous,
+            updateResult.syncedFieldIdByClientId,
+          ),
+        );
+      }
+
       triggerAlert({
         category: "success",
         title: isUpdating
