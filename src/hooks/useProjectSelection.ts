@@ -1,19 +1,25 @@
 import { useCallback } from "react";
-import { CLEAR_PROJECT_SELECTION_EVENT } from "@/constants/events";
+import {
+  CLEAR_PROJECT_SELECTION_EVENT,
+  PROJECT_CONTEXT_CHANGED_EVENT,
+} from "@/constants/events";
 import { PROJECT_CONTEXT_KEY } from "@/utils/project";
 import {
   isProjetoAccessLevel,
   type ProjectSelectionPayload,
 } from "@/utils/projectSelection";
 import type { ProjetoAccessLevel } from "@/types/IUserType";
+import { normalizeStringList } from "@/utils/userProjectAccess";
 
 export type { ProjectSelectionPayload } from "@/utils/projectSelection";
 
 type StoredProjectContext = {
   id: number | null;
   name: string;
+  slug: string;
   token: string;
   hiddenTabs: string[];
+  allowedThemes: string[];
   access: ProjetoAccessLevel;
 };
 
@@ -35,8 +41,10 @@ const normalizeProjectPayload = (
 ): StoredProjectContext => {
   const id = typeof payload?.id === "number" ? payload.id : null;
   const name = typeof payload?.name === "string" ? payload.name : "";
+  const slug = typeof payload?.slug === "string" ? payload.slug.trim() : "";
   const token = typeof payload?.token === "string" ? payload.token : "";
   const hiddenTabs = normalizeHiddenTabs(payload?.hiddenTabs);
+  const allowedThemes = normalizeStringList(payload?.allowedThemes);
   const access = isProjetoAccessLevel(payload?.access)
     ? payload.access
     : DEFAULT_ACCESS;
@@ -44,8 +52,10 @@ const normalizeProjectPayload = (
   return {
     id,
     name,
+    slug,
     token,
     hiddenTabs,
+    allowedThemes,
     access,
   };
 };
@@ -119,8 +129,14 @@ const syncSelectedProjectOnUser = (selection: StoredProjectContext) => {
         projetoId: selection.id,
         nome: name,
         name,
+        slug: selection.slug || baseProject?.slug || baseProject?.url || "",
+        projetoSlug:
+          selection.slug || baseProject?.projetoSlug || baseProject?.slug || "",
+        projectSlug:
+          selection.slug || baseProject?.projectSlug || baseProject?.slug || "",
         token: selection.token || baseProject?.token || "",
         hiddenTabs: selection.hiddenTabs,
+        allowedThemes: selection.allowedThemes,
         access: selection.access,
       },
     };
@@ -143,8 +159,10 @@ export function useProjectSelection() {
       if (typeof normalized.id === "number") {
         localStorage.setItem(PROJECT_CONTEXT_KEY, JSON.stringify(normalized));
         syncSelectedProjectOnUser(normalized);
+        window.dispatchEvent(new Event(PROJECT_CONTEXT_CHANGED_EVENT));
       } else {
         localStorage.removeItem(PROJECT_CONTEXT_KEY);
+        window.dispatchEvent(new Event(PROJECT_CONTEXT_CHANGED_EVENT));
       }
 
       return normalized;
@@ -159,6 +177,7 @@ export function useProjectSelection() {
 
     localStorage.removeItem(PROJECT_CONTEXT_KEY);
     window.dispatchEvent(new Event(CLEAR_PROJECT_SELECTION_EVENT));
+    window.dispatchEvent(new Event(PROJECT_CONTEXT_CHANGED_EVENT));
   }, []);
 
   const getSelectedProject = useCallback((): StoredProjectContext | null => {

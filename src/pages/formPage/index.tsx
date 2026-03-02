@@ -28,6 +28,8 @@ import getForms, {
   createUSer,
   getFormsById,
 } from "@/services/forms/formsService";
+import { getProjectById } from "@/services/projeto/ProjetoService";
+import { buildPageThemeStyle, type FormThemeStyle } from "@/utils/formTheme";
 import { getStoredProjectId, getStoredProjectSlug } from "@/utils/project";
 
 const steps = ["Dados do Usuário", "Dados da Opinião", "Concluído"];
@@ -107,6 +109,9 @@ export default function FormsPage() {
     severity: "success" | "error";
     message: string;
   } | null>(null);
+  const [pageStyle, setPageStyle] = useState<FormThemeStyle>(() =>
+    buildPageThemeStyle(),
+  );
   const navigate = useNavigate();
 
   const {
@@ -283,6 +288,36 @@ export default function FormsPage() {
   }, [showOutraOpiniao, userId]);
 
   useEffect(() => {
+    let isMounted = true;
+    const loadTheme = async () => {
+      const projectId = getStoredProjectId();
+      if (!projectId) {
+        if (isMounted) {
+          setPageStyle(buildPageThemeStyle());
+        }
+        return;
+      }
+
+      try {
+        const project = await getProjectById(projectId);
+        if (isMounted) {
+          setPageStyle(buildPageThemeStyle(project?.themeConfig));
+        }
+      } catch (error) {
+        console.error("Erro ao carregar tema do projeto:", error);
+        if (isMounted) {
+          setPageStyle(buildPageThemeStyle());
+        }
+      }
+    };
+
+    loadTheme();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
     const fetchFormData = async () => {
       try {
         const projectId = getStoredProjectId();
@@ -300,9 +335,7 @@ export default function FormsPage() {
                 (row.form as Record<string, unknown> | undefined) ?? undefined;
               const formSlug =
                 (typeof row.slug === "string" ? row.slug.trim() : "") ||
-                (typeof row.formSlug === "string"
-                  ? row.formSlug.trim()
-                  : "") ||
+                (typeof row.formSlug === "string" ? row.formSlug.trim() : "") ||
                 (typeof nestedForm?.slug === "string"
                   ? nestedForm.slug.trim()
                   : "");
@@ -316,7 +349,8 @@ export default function FormsPage() {
 
         const selectedForm = firstFormWithSlug as Record<string, unknown>;
         const nestedForm =
-          (selectedForm.form as Record<string, unknown> | undefined) ?? undefined;
+          (selectedForm.form as Record<string, unknown> | undefined) ??
+          undefined;
         const formSlug =
           (typeof selectedForm.slug === "string"
             ? selectedForm.slug.trim()
@@ -343,7 +377,7 @@ export default function FormsPage() {
     text.length > 70 ? `${text.slice(0, 70)}...` : text;
 
   return (
-    <Box className={styles.container}>
+    <Box className={styles.container} style={pageStyle}>
       <Box className={styles.formBox}>
         <Typography
           variant="h5"
@@ -464,7 +498,7 @@ export default function FormsPage() {
                       )}
                       {summary?.texto_opiniao && (
                         <Chip
-                          label={`Texto da opinião: ${getOpinionPreviewText(
+                          label={`Pesquisa por palavra chave”: ${getOpinionPreviewText(
                             summary.texto_opiniao,
                           )}`}
                           onClick={() => setIsOpinionTextModalOpen(true)}
@@ -491,7 +525,7 @@ export default function FormsPage() {
                       fullWidth
                       maxWidth="sm"
                     >
-                      <DialogTitle>Texto da opinião</DialogTitle>
+                      <DialogTitle>Pesquisa por palavra chave”</DialogTitle>
                       <DialogContentText component="div" sx={{ px: 2, pb: 2 }}>
                         {summary?.texto_opiniao || "Sem texto"}
                       </DialogContentText>
@@ -552,4 +586,3 @@ export default function FormsPage() {
     </Box>
   );
 }
-

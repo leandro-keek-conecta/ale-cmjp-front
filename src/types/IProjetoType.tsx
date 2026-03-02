@@ -4,6 +4,9 @@ export type ThemeConfig = {
   background?: string;
   fontFamily?: string;
   highlightTone?: string;
+  inputBackground?: string;
+  inputBorderColor?: string;
+  inputTransparent?: boolean;
   // adicione outros tokens globais se o front usar
 };
 

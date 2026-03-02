@@ -13,10 +13,11 @@ import {
 } from "../types/formsTypes";
 import { Draggable } from "@/components/Draggable/Draggable";
 import SelectButton from "@/components/selectButtom";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Button from "@/components/Button";
 import ExpandableCard from "@/components/expandable-card";
-import { getStoredProjectId, getStoredProjectSlug } from "@/utils/project";
+import { useProjectContext } from "@/context/ProjectContext";
+import { useProjectRealtime } from "@/hooks/useRealtimeSubscription";
 import { getFormsById } from "@/services/forms/formsService";
 import buildLink from "@/utils/buildLinksWithSlug.ts";
 
@@ -62,6 +63,11 @@ const STYLE_INPUTS: Array<{
   { key: "buttonBackgroundColor", label: "Fundo do botao" },
   { key: "buttonTextColor", label: "Texto do botao" },
 ];
+
+STYLE_INPUTS.splice(2, 0, {
+  key: "inputBackgroundColor",
+  label: "Fundo dos inputs",
+});
 
 function resolveFormOptionMeta(form: FormOptionItem) {
   const nestedForm =
@@ -291,7 +297,11 @@ export default function InputOptions({
   const [expandedTemplates, setExpandedTemplates] = useState(false);
   const [expandedBasicInfo, setExpandedBasicInfo] = useState(false);
   const [expandedTabs, setExpandedTabs] = useState(false);
-  const projectId = getStoredProjectId();
+  const { projectId, projectSlug } = useProjectContext();
+  const formStructureEntities = useMemo(
+    () => ["form", "formVersion", "formField"] as const,
+    [],
+  );
 
   const selectOptions = (Array.isArray(formsOptions) ? formsOptions : [])
     .map((form) => {
@@ -309,7 +319,7 @@ export default function InputOptions({
         Boolean(option),
     );
 
-  async function fetchOptions() {
+  const fetchOptions = useCallback(async () => {
     try {
       const parsedProjectId = Number(projectId);
       if (!Number.isFinite(parsedProjectId) || parsedProjectId <= 0) {
@@ -323,11 +333,20 @@ export default function InputOptions({
       console.log("Erro ao carregar formulários", error);
       setFormsOptions([]);
     }
-  }
+  }, [projectId]);
 
   useEffect(() => {
     void fetchOptions();
-  }, [projectId]);
+  }, [fetchOptions]);
+
+  useProjectRealtime({
+    projetoId: projectId,
+    entities: [...formStructureEntities],
+    debounceMs: 400,
+    onChange: () => {
+      void fetchOptions();
+    },
+  });
 
   const blockSelectOptions = useMemo(
     () =>
@@ -361,9 +380,11 @@ export default function InputOptions({
       const { label, idNumber } = resolveFormOptionMeta(form);
       const formName = label;
       if (!formName || idNumber === null) return accumulator;
+      if (selectedFormId !== null && idNumber !== selectedFormId) {
+        return accumulator;
+      }
 
-      const resolvedProjectSlug =
-        resolveProjectSlug(form) || getStoredProjectSlug();
+      const resolvedProjectSlug = projectSlug || resolveProjectSlug(form);
       if (!resolvedProjectSlug) return accumulator;
 
       const href = buildLink(formName, resolvedProjectSlug);
@@ -404,7 +425,7 @@ export default function InputOptions({
 
       return accumulator;
     }, []);
-  }, [formsOptions, projectId]);
+  }, [formsOptions, projectId, projectSlug, selectedFormId]);
 
   const selectedBlockFieldNames = selectedBlock?.fields ?? [];
   const fieldsFromSelectedBlock = availableFieldNames.filter((name) =>

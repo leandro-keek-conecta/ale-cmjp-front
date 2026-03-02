@@ -267,41 +267,8 @@
 
 .actionsRow {
   display: flex;
-  justify-content: space-between;
+  flex-direction: row;
   align-items: center;
-  gap: 12px;
-  width: 100%;
-  min-width: 0;
-  flex-wrap: wrap;
-}
-
-.rememberControl {
-  margin: 0;
-  min-width: 0;
-  flex: 1 1 220px;
-}
-
-.rememberControl :global(.MuiCheckbox-root) {
-  padding: 0;
-  margin-right: 8px;
-  color: #98a2b3;
-}
-
-.rememberControl :global(.MuiSvgIcon-root) {
-  font-size: 20px;
-}
-
-.rememberControl :global(.MuiCheckbox-root.Mui-focusVisible) {
-  outline: 2px solid var(--login-primary);
-  outline-offset: 2px;
-  border-radius: 6px;
-}
-
-.rememberControl :global(.MuiFormControlLabel-label) {
-  font-size: 14px;
-  color: #344054;
-  cursor: pointer;
-  overflow-wrap: anywhere;
 }
 
 .forgotLink {

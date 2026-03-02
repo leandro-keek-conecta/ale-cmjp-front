@@ -116,7 +116,6 @@ export function usePanoramaData<T = Record<string, unknown>>({
               formVersionId: selectedFormVersion?.id,
               start: rangeStart,
               end: rangeEnd,
-              limit: 200,
             },
             controller.signal,
           ),

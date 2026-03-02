@@ -19,9 +19,18 @@ import {
 } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import getForms from "@/services/forms/formsService";
-import { submitOpiniionTest } from "@/services/opiniao/opiniaoService";
+import { submitPublicFormResponse } from "@/services/opiniao/opiniaoService";
+import { getProjectById } from "@/services/projeto/ProjetoService";
 import { useAuth } from "@/context/AuthContext";
-import { getStoredProjectId, getStoredProjectSlug } from "@/utils/project";
+import { buildPageThemeStyle, type FormThemeStyle } from "@/utils/formTheme";
+import {
+  buildOpinionSummaryFields,
+  normalizeOpinionFieldValues,
+} from "@/utils/opinionFieldMapping";
+import {
+  getStoredProjectIdForSlug,
+  getStoredProjectSlug,
+} from "@/utils/project";
 
 type FormPage = {
   title: string;
@@ -406,15 +415,25 @@ function getRequestErrorMessage(error: unknown) {
 }
 
 export default function DinamicFormsPage() {
+  const navigate = useNavigate();
+  const { project: projectParam, slug: slugParam } = useParams<{
+    project?: string;
+    slug?: string;
+  }>();
+  const projectName = (projectParam ?? getStoredProjectSlug() ?? "").trim();
+  const formSlug = slugParam ?? "";
+  const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(0);
   const [pages, setPages] = useState<FormPage[]>([]);
   const [isFormLoading, setIsFormLoading] = useState(true);
   const [formLoadError, setFormLoadError] = useState<string | null>(null);
   const [formTitle, setFormTitle] = useState("Registre Sua Opinião");
   const [formDescription, setFormDescription] = useState("");
-  const [formVersionId, setFormVersionId] = useState<number | null>(null);
   const [projectId, setProjectId] = useState<number | null>(() =>
-    getStoredProjectId(),
+    getStoredProjectIdForSlug(projectName),
+  );
+  const [pageStyle, setPageStyle] = useState<FormThemeStyle>(() =>
+    buildPageThemeStyle(),
   );
   const steps = useMemo(() => {
     const labels = pages.map((p) => p.title);
@@ -431,14 +450,6 @@ export default function DinamicFormsPage() {
     severity: "success" | "error";
     message: string;
   } | null>(null);
-  const navigate = useNavigate();
-  const { project: projectParam, slug: slugParam } = useParams<{
-    project?: string;
-    slug?: string;
-  }>();
-  const projectName = (projectParam ?? getStoredProjectSlug() ?? "").trim();
-  const formSlug = slugParam ?? "";
-  const { user } = useAuth();
   const responseContext = useMemo(() => buildFormResponseContext(), []);
 
   const {
@@ -451,6 +462,11 @@ export default function DinamicFormsPage() {
   } = useForm({
     defaultValues: buildDefaultValuesFromPages(pages),
   });
+
+  const allInputs = useMemo(
+    () => pages.flatMap((pageItem) => pageItem.inputs),
+    [pages],
+  );
 
   const buildFieldsPayloadForInputs = (
     values: Record<string, any>,
@@ -485,7 +501,7 @@ export default function DinamicFormsPage() {
     try {
       const fields = buildFieldsPayloadForInputs(
         values,
-        pages.flatMap((pageItem) => pageItem.inputs),
+        allInputs,
       );
       console.log("Payload parcial acumulado para envio final:", fields);
       setUserAlert({
@@ -505,36 +521,30 @@ export default function DinamicFormsPage() {
   async function onSubmitOpinion(values: Record<string, any>) {
     setOpinionAlert(null);
     try {
-      if (!projectId || !formVersionId) {
+      if (!projectName || !formSlug) {
         setOpinionAlert({
           severity: "error",
-          message: "Não foi possível identificar projeto ou versão do formulário.",
+          message: "Não foi possível identificar a URL pública do formulário.",
         });
         return;
       }
 
       const fields = buildFieldsPayloadForInputs(
         values,
-        pages.flatMap((p) => p.inputs),
+        allInputs,
       );
+      const normalizedFields = normalizeOpinionFieldValues(allInputs, fields);
       const now = new Date().toISOString();
-      await submitOpiniionTest({
-        formVersionId,
-        projetoId: projectId,
+      await submitPublicFormResponse(projectName, formSlug, {
         status: "COMPLETED",
         submittedAt: now,
         completedAt: now,
-        fields,
+        fields: normalizedFields,
         userId: user?.id,
         ...responseContext,
       });
 
-      setSummary({
-        tema:
-          fields.opiniao === "Outros" ? fields.outra_opiniao : fields.opiniao,
-        tipo: fields.tipo_opiniao,
-        texto_opiniao: fields.texto_opiniao,
-      });
+      setSummary(buildOpinionSummaryFields(allInputs, normalizedFields));
       setOpinionAlert({
         severity: "success",
         message: "opinião enviada com sucesso.",
@@ -690,6 +700,35 @@ export default function DinamicFormsPage() {
     return mappedPages.filter((page) => page.inputs.length > 0);
   }
   useEffect(() => {
+    let isMounted = true;
+    const loadTheme = async () => {
+      if (!projectId) {
+        if (isMounted) {
+          setPageStyle(buildPageThemeStyle());
+        }
+        return;
+      }
+
+      try {
+        const project = await getProjectById(projectId);
+        if (isMounted) {
+          setPageStyle(buildPageThemeStyle(project?.themeConfig));
+        }
+      } catch (error) {
+        console.error("Erro ao carregar tema do projeto:", error);
+        if (isMounted) {
+          setPageStyle(buildPageThemeStyle());
+        }
+      }
+    };
+
+    loadTheme();
+    return () => {
+      isMounted = false;
+    };
+  }, [projectId]);
+
+  useEffect(() => {
     const fetchFormData = async () => {
       setIsFormLoading(true);
       setFormLoadError(null);
@@ -763,25 +802,22 @@ export default function DinamicFormsPage() {
         setFormTitle(formName);
         setFormDescription(description);
 
-        const resolvedFormVersionId = toOptionalNumber(activeVersion.id);
-        setFormVersionId(
-          typeof resolvedFormVersionId === "number" ? resolvedFormVersionId : null,
-        );
-
         const resolvedProjectId = toOptionalNumber(
           projectFromResponse.id ??
             responseData.projetoId ??
             formFromResponse.projetoId,
         );
+        const fallbackProjectId = getStoredProjectIdForSlug(
+          toTrimmedString(projectFromResponse.slug) || projectName,
+        );
         setProjectId(
           typeof resolvedProjectId === "number"
             ? resolvedProjectId
-            : (getStoredProjectId() ?? null),
+            : fallbackProjectId,
         );
       } catch (error) {
         setPages([]);
         setCurrentStep(0);
-        setFormVersionId(null);
         setFormLoadError(getRequestErrorMessage(error));
         console.error("Erro ao buscar dados do formulário:", error);
       } finally {
@@ -849,7 +885,7 @@ export default function DinamicFormsPage() {
   const shouldRenderFormFlow =
     !isFormLoading && !formLoadError && pages.length > 0;
   return (
-    <Box className={styles.container}>
+    <Box className={styles.container} style={pageStyle}>
       <Box className={styles.formBox}>
         <Typography
           variant="h5"

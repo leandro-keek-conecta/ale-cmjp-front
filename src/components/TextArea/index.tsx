@@ -1,5 +1,6 @@
 import { TextField } from "@mui/material";
 import useMediaQuery from "@mui/material/useMediaQuery";
+import { buildThemedInputSx } from "@/utils/formTheme";
 
 interface TextAreaProps {
   label: string;
@@ -45,9 +46,10 @@ export default function TextArea({
         "& .MuiInputBase-root": {
           fontSize,
         },
-        "& .MuiInputBase-input": {
-          padding: "2px 0px",
-        },
+        ...buildThemedInputSx({
+          fontSize,
+          padding: "10px 14px",
+        }),
       }}
     />
   );

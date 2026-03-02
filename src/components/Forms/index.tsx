@@ -72,6 +72,23 @@ export default function Forms<TFieldValues extends FieldValues = FieldValues>({
         gridTemplateColumns: "repeat(12, 1fr)",
         gap: 2,
         fontSize: "1.0.9rem",
+        "& .MuiInputBase-root, & .MuiOutlinedInput-root": {
+          backgroundColor:
+            "var(--form-input-background, #ffffff) !important",
+        },
+        "& .MuiOutlinedInput-notchedOutline, & .MuiOutlinedInput-root fieldset":
+          {
+            borderColor:
+              "var(--form-input-border, rgba(15, 23, 42, 0.16)) !important",
+          },
+        "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline, & .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline":
+          {
+            borderColor:
+              "var(--form-input-border, rgba(15, 23, 42, 0.16)) !important",
+          },
+        "& .MuiInputBase-input, & input, & textarea": {
+          backgroundColor: "transparent",
+        },
         "& input, & .MuiInputBase-input": {
           fontSize: "1.0.9rem",
         },

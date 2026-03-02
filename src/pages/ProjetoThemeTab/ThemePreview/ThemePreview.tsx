@@ -22,6 +22,7 @@ import { ArrowDown } from "@/icons/arrowDonw";
 import { ClimaIcon } from "@/icons/Filter";
 import Forms from "@/components/Forms";
 import { mapFilterFormToState } from "@/utils/createDynamicFilter";
+import { buildPageThemeStyle } from "@/utils/formTheme";
 import type { FilterFormValues, FiltersState } from "@/types/filter";
 import { useForm } from "react-hook-form";
 import {
@@ -38,6 +39,9 @@ export type ThemePreviewSettings = {
   highlightTone?: "primary" | "accent" | "gradient";
   subtitle?: string;
   fontFamily?: string;
+  inputBackground?: string;
+  inputBorderColor?: string;
+  inputTransparent?: boolean;
   slideBadge?: string;
   slideMapTitle?: string;
   slideMapSubtitle?: string;
@@ -331,14 +335,13 @@ export default function ThemePreview({
   };
   const metricCardSpan = getCardSpan(resolvedMetricCards.length);
 
-  const containerStyle: CSSProperties = {
-    ...(resolvedSettings.background?.trim()
-      ? { background: resolvedSettings.background }
-      : {}),
-    ...(resolvedSettings.fontFamily?.trim()
-      ? { fontFamily: resolvedSettings.fontFamily }
-      : {}),
-  };
+  const containerStyle: CSSProperties = buildPageThemeStyle({
+    background: resolvedSettings.background,
+    fontFamily: resolvedSettings.fontFamily,
+    inputBackground: resolvedSettings.inputBackground,
+    inputBorderColor: resolvedSettings.inputBorderColor,
+    inputTransparent: resolvedSettings.inputTransparent,
+  });
 
   const renderMetricCard = (
     card: ThemeMetricCard,

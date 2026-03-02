@@ -1,7 +1,11 @@
 import type UserLogin from "../../types/userLogin";
 import { api } from "../../services/api/api";
 import { getActiveProject, storeProjectContext } from "../../utils/project";
-import { AUTH_LOGOUT_EVENT, CLEAR_PROJECT_SELECTION_EVENT } from "../../constants/events";
+import {
+  AUTH_LOGOUT_EVENT,
+  CLEAR_PROJECT_SELECTION_EVENT,
+  PROJECT_CONTEXT_CHANGED_EVENT,
+} from "../../constants/events";
 
 export async function login(
   data: UserLogin
@@ -70,6 +74,7 @@ export async function logout() {
 
     if (typeof window !== "undefined") {
       window.dispatchEvent(new Event(CLEAR_PROJECT_SELECTION_EVENT));
+      window.dispatchEvent(new Event(PROJECT_CONTEXT_CHANGED_EVENT));
       window.dispatchEvent(new Event(AUTH_LOGOUT_EVENT));
     }
 

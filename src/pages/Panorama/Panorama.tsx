@@ -11,7 +11,7 @@ import {
 } from "@mui/icons-material";
 
 import styles from "./PanoramaPage.module.css";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import CardGrid from "../../components/card-grid";
 import CardGridReflect from "../../components/card-grid-reflect";
 import CardDetails from "../../components/cardDetails";
@@ -38,8 +38,15 @@ import {
   getFiltros,
   getMetricas,
 } from "../../services/metricas/metricasService";
-import { getStoredProjectId } from "../../utils/project";
 import { getProjectById } from "../../services/projeto/ProjetoService";
+import { useProjectContext } from "@/context/ProjectContext";
+import { useProjectRealtime } from "@/hooks/useRealtimeSubscription";
+import {
+  filterOptionsByAllowedThemes,
+  getStoredAllowedThemes,
+  hasThemeAccess,
+  normalizeAccessKey,
+} from "@/utils/userProjectAccess";
 
 export type Opinion = {
   id: number | string;
@@ -152,8 +159,99 @@ const normalizeOptionKey = (value: string) =>
     .replace(/\s+/g, " ")
     .trim();
 
+const getOpinionDate = (opinion: Opinion) => {
+  const rawDate =
+    opinion.submittedAt ??
+    opinion.startedAt ??
+    opinion.createdAt ??
+    opinion.horario ??
+    null;
+
+  if (!rawDate) {
+    return null;
+  }
+
+  const parsedDate = new Date(rawDate);
+  return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
+};
+
+const isTodayOpinion = (opinion: Opinion) => {
+  const date = getOpinionDate(opinion);
+  if (!date) {
+    return false;
+  }
+
+  const today = new Date();
+  return (
+    date.getFullYear() === today.getFullYear() &&
+    date.getMonth() === today.getMonth() &&
+    date.getDate() === today.getDate()
+  );
+};
+
+const buildTopThemes = (items: Opinion[]) => {
+  const grouped = new Map<string, { id: number; tema: string; total: number }>();
+
+  items.forEach((item, index) => {
+    const theme = typeof item.opiniao === "string" ? item.opiniao.trim() : "";
+    if (!theme) {
+      return;
+    }
+
+    const key = normalizeAccessKey(theme);
+    const current = grouped.get(key);
+    if (current) {
+      current.total += 1;
+      return;
+    }
+
+    grouped.set(key, {
+      id: index + 1,
+      tema: theme,
+      total: 1,
+    });
+  });
+
+  return Array.from(grouped.values())
+    .sort((left, right) => right.total - left.total)
+    .slice(0, 5);
+};
+
+const buildTopDistricts = (items: Opinion[]) => {
+  const grouped = new Map<string, { key: string; label: string; value: number }>();
+
+  items.forEach((item) => {
+    const district = typeof item.bairro === "string" ? item.bairro.trim() : "";
+    if (!district) {
+      return;
+    }
+
+    const key = normalizeAccessKey(district);
+    const current = grouped.get(key);
+    if (current) {
+      current.value += 1;
+      return;
+    }
+
+    grouped.set(key, {
+      key,
+      label: district,
+      value: 1,
+    });
+  });
+
+  return Array.from(grouped.values())
+    .sort((left, right) => right.value - left.value)
+    .slice(0, 5);
+};
+
 export default function Panorama() {
   const PRESENTATION_SEEN_KEY = "home:presentationSeen";
+  const { projectId: selectedProjectId } = useProjectContext();
+  const allowedThemes = useMemo(
+    () => getStoredAllowedThemes(selectedProjectId),
+    [selectedProjectId],
+  );
   const [panoramaTheme, setPanoramaTheme] = useState<PanoramaThemeConfig>(
     DEFAULT_PANORAMA_THEME,
   );
@@ -179,7 +277,6 @@ export default function Panorama() {
   const [groupOpinions, setGroupOpinions] = useState<
     { id: number; tema: string; total: number }[]
   >([]);
-  const hasFetched = useRef(false);
   const heroTitleRef = useRef<HTMLSpanElement | null>(null);
   const [heroCopyWidth, setHeroCopyWidth] = useState<number | null>(null);
   /*   const navigate = useNavigate(); */
@@ -225,9 +322,9 @@ export default function Panorama() {
     defaultValues: buildFilternDefaultValues(),
   });
 
-  async function fetchProjectTheme() {
+  const fetchProjectTheme = useCallback(async () => {
     try {
-      const projectId = getStoredProjectId();
+      const projectId = selectedProjectId;
       if (!projectId) {
         setError("Nenhum projeto vinculado ao usuário.");
         return;
@@ -284,11 +381,11 @@ export default function Panorama() {
     } catch (err) {
       console.error("Erro ao carregar configuracao da pagina panorama.", err);
     }
-  }
+  }, [selectedProjectId]);
 
-  async function fetchOpinions() {
+  const fetchOpinions = useCallback(async () => {
     try {
-      const projectId = getStoredProjectId();
+      const projectId = selectedProjectId;
       if (!projectId) {
         setError("Nenhum projeto vinculado ao usuário.");
         return;
@@ -298,11 +395,11 @@ export default function Panorama() {
     } catch (err) {
       setError("Erro ao carregar opiniões.");
     }
-  }
+  }, [selectedProjectId]);
 
-  async function fetchFilterOptions() {
+  const fetchFilterOptions = useCallback(async () => {
     try {
-      const projectId = getStoredProjectId();
+      const projectId = selectedProjectId;
       if (!projectId) {
         setError("Nenhum projeto vinculado ao usuário.");
         return;
@@ -311,17 +408,20 @@ export default function Panorama() {
       const payload = response?.data?.data ?? response?.data ?? {};
       setFilterSelectOptions({
         tipo: mapSelectOptions(payload?.tipoOpiniao),
-        tema: mapSelectOptions(payload?.temas),
+        tema: filterOptionsByAllowedThemes(
+          mapSelectOptions(payload?.temas),
+          allowedThemes,
+        ),
         genero: mapSelectOptions(payload?.genero),
         faixaEtaria: mapSelectOptions(payload?.faixaEtaria),
       });
     } catch (err) {
       console.error("Erro ao carregar filtros.", err);
     }
-  }
+  }, [allowedThemes, selectedProjectId]);
 
-  async function handleGetMetricas() {
-    const projectId = getStoredProjectId();
+  const handleGetMetricas = useCallback(async () => {
+    const projectId = selectedProjectId;
     if (!projectId) {
       setError("Nenhum projeto vinculado ao usuário.");
       return;
@@ -332,21 +432,40 @@ export default function Panorama() {
     setTodayOpinions(response.data.data.totalOpinionsToday || 0);
     setTopDistricts(response.data.data.topBairros || []);
     setTopTemas(response.data.data.topTemas || []);
-  }
+  }, [selectedProjectId]);
+
+  useProjectRealtime({
+    projetoId: selectedProjectId,
+    entities: ["form", "formVersion", "formField", "formResponse"],
+    debounceMs: 500,
+    onChange: (event) => {
+      void fetchFilterOptions();
+      void fetchOpinions();
+
+      if (event.entity === "formResponse") {
+        void handleGetMetricas();
+      }
+    },
+  });
 
   useEffect(() => {
-    if (hasFetched.current) return;
-    hasFetched.current = true;
-    fetchProjectTheme();
-    handleGetMetricas();
-    fetchFilterOptions();
-    fetchOpinions();
-  }, []);
+    void fetchProjectTheme();
+    void fetchFilterOptions();
+    void fetchOpinions();
+    void handleGetMetricas();
+  }, [fetchFilterOptions, fetchOpinions, fetchProjectTheme, handleGetMetricas]);
 
   useEffect(() => {
-    if (opinions.length) {
-    }
-  }, [opinions]);
+    const scopedOpinions = allowedThemes.length
+      ? opinions.filter((opinion) => hasThemeAccess(opinion.opiniao, allowedThemes))
+      : opinions;
+    const todayScopedOpinions = scopedOpinions.filter(isTodayOpinion);
+
+    setTodayOpinions(todayScopedOpinions.length);
+    setTopTemas(buildTopThemes(todayScopedOpinions));
+    setGroupOpinions(buildTopThemes(todayScopedOpinions));
+    setTopDistricts(buildTopDistricts(todayScopedOpinions));
+  }, [allowedThemes, opinions]);
 
   useEffect(() => {
     const elements = document.querySelectorAll<HTMLElement>("[data-reveal]");
@@ -392,7 +511,13 @@ export default function Panorama() {
   const normalizeType = (item: Opinion) =>
     normalizeText(item.tipo_opiniao || item.opiniao);
 
-  const sourceOpinions = opinions.length ? opinions : [];
+  const sourceOpinions = useMemo(
+    () =>
+      allowedThemes.length
+        ? opinions.filter((opinion) => hasThemeAccess(opinion.opiniao, allowedThemes))
+        : opinions,
+    [allowedThemes, opinions],
+  );
 
   const filteredByForm = useMemo(
     () => applyFilters<Opinion>(sourceOpinions, filters),

@@ -1,4 +1,5 @@
 import { normalizeProjectFromUser, type RawUserProject } from "./projectSelection";
+import { PROJECT_CONTEXT_CHANGED_EVENT } from "@/constants/events";
 
 export const PROJECT_CONTEXT_KEY = "projectContext";
 
@@ -13,6 +14,7 @@ export type ProjectLike = {
   corHex?: string | null;
   url?: string | null;
   hiddenTabs?: string[] | null;
+  allowedThemes?: string[] | null;
   access?: unknown;
   projeto?: ProjectLike | null;
   [key: string]: unknown;
@@ -118,6 +120,15 @@ export function getProjectSlug(
   return null;
 }
 
+function normalizeProjectSlugValue(value: string | null | undefined) {
+  if (typeof value !== "string") return "";
+
+  return value
+    .trim()
+    .replace(/^\/+|\/+$/g, "")
+    .toLowerCase();
+}
+
 export function storeProjectContext(project: ProjectLike | null | undefined) {
   if (typeof window === "undefined") {
     return null;
@@ -130,6 +141,7 @@ export function storeProjectContext(project: ProjectLike | null | undefined) {
 
   try {
     localStorage.setItem(PROJECT_CONTEXT_KEY, JSON.stringify(normalized));
+    window.dispatchEvent(new Event(PROJECT_CONTEXT_CHANGED_EVENT));
   } catch {
     return null;
   }
@@ -209,6 +221,22 @@ export function getStoredProjectSlug(): string | null {
   } catch {
     return null;
   }
+}
+
+export function getStoredProjectIdForSlug(
+  slug: string | null | undefined,
+): number | null {
+  const normalizedTargetSlug = normalizeProjectSlugValue(slug);
+  if (!normalizedTargetSlug) {
+    return null;
+  }
+
+  const storedSlug = normalizeProjectSlugValue(getStoredProjectSlug());
+  if (storedSlug !== normalizedTargetSlug) {
+    return null;
+  }
+
+  return getStoredProjectId();
 }
 
 export function ensureThemeColor(color: unknown, fallback: string): string {

@@ -13,7 +13,12 @@ interface CreateUserParams {
   profession: string;
   gender: string;
   role: string;
-  projetos: { id: number; access: ProjetoAccessLevel; hiddenTabs?: string[] }[];
+  projetos: {
+    id: number;
+    access: ProjetoAccessLevel;
+    hiddenTabs?: string[];
+    allowedThemes?: string[];
+  }[];
 }
 
 interface ApiResponse {

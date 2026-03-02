@@ -45,6 +45,7 @@ export type BuilderBlock = {
 export type FormStyleOptions = {
   formBackgroundColor: string;
   formBorderColor: string;
+  inputBackgroundColor: string;
   titleColor: string;
   descriptionColor: string;
   buttonBackgroundColor: string;
@@ -54,6 +55,7 @@ export type FormStyleOptions = {
 export const DEFAULT_FORM_STYLE_OPTIONS: FormStyleOptions = {
   formBackgroundColor: "#f8fafc",
   formBorderColor: "#dbe4ef",
+  inputBackgroundColor: "#ffffff",
   titleColor: "#0f172a",
   descriptionColor: "#475569",
   buttonBackgroundColor: "#5070dd",
@@ -116,10 +118,27 @@ function normalizeFieldName(value: string) {
     .replace(/^_+|_+$/g, "");
 }
 
+function resolveGeneratedFieldPrefix(type: FieldType, normalizedLabel: string) {
+  if (type === "textarea") {
+    return "texto_opiniao";
+  }
+
+  if (
+    type === "text" &&
+    /(?:opiniao|descricao|comentario|mensagem|relato|detalhe)/.test(
+      normalizedLabel,
+    )
+  ) {
+    return "texto_opiniao";
+  }
+
+  return normalizedLabel || normalizeFieldName(type) || "campo";
+}
+
 export function createBuilderField(type: FieldType, label: string): BuilderField {
   const id = createFieldId();
   const normalizedLabel = normalizeFieldName(label);
-  const fallbackName = normalizeFieldName(type) || "campo";
+  const prefix = resolveGeneratedFieldPrefix(type, normalizedLabel);
   const uniqueSuffix = id
     .replace(/[^a-z0-9]/gi, "")
     .toLowerCase()
@@ -127,7 +146,7 @@ export function createBuilderField(type: FieldType, label: string): BuilderField
 
   return {
     id,
-    name: `${normalizedLabel || fallbackName}_${uniqueSuffix}`,
+    name: `${prefix}_${uniqueSuffix}`,
     type,
     label,
     placeholder: `Campo ${label.toLowerCase()}`,

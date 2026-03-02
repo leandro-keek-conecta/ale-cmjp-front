@@ -16,10 +16,11 @@ import CardProject from "./cardProject";
 import type { ChartDatum } from "@/types/ChartDatum";
 import { groupOpinionsByMonthOnly } from "@/utils/retornMonthInDate";
 import { isProjetoAccessLevel } from "@/utils/projectSelection";
-import { listAllProjects } from "@/services/projeto/ProjetoService";
+import getProjects, { listAllProjects } from "@/services/projeto/ProjetoService";
 import type { ThemeChipDatum } from "./cardProject/chips";
 import SearchProjects from "./searchOfProjects";
 import CabecalhoEstilizado from "@/components/CabecalhoEstilizado";
+import { normalizeStringList } from "@/utils/userProjectAccess";
 
 export type ProjectCardData = {
   id: number;
@@ -33,8 +34,10 @@ export type ProjectCardData = {
   payload: {
     id: number;
     name: string;
+    slug: string;
     access: ProjetoAccessLevel;
     hiddenTabs: string[];
+    allowedThemes: string[];
     token?: string;
   };
 };
@@ -49,6 +52,7 @@ type RawProjectUser = {
   id?: unknown;
   access?: unknown;
   hiddenTabs?: unknown;
+  allowedThemes?: unknown;
 };
 
 type RawProjectSource = {
@@ -59,7 +63,10 @@ type RawProjectSource = {
   ativo?: unknown;
   access?: unknown;
   hiddenTabs?: unknown;
+  allowedThemes?: unknown;
   token?: unknown;
+  slug?: unknown;
+  url?: unknown;
   metrics?: unknown;
   users?: unknown;
 };
@@ -81,6 +88,17 @@ const toSafeString = (value: unknown, fallback = "") => {
     return trimmed || fallback;
   }
   return fallback;
+};
+
+const toProjectSlug = (value: unknown) => {
+  if (typeof value !== "string") {
+    return "";
+  }
+
+  return value
+    .trim()
+    .replace(/^https?:\/\/[^/]+\/form\//i, "")
+    .replace(/^\/+|\/+$/g, "");
 };
 
 const normalizeHiddenTabs = (value: unknown): string[] => {
@@ -145,8 +163,8 @@ const normalizeMonthlyMetrics = (value: unknown): ChartDatum[] => {
       return null;
     })
     .filter(Boolean) as Array<
-      { label: string; value: number } | { date: string | Date; count: number }
-    >;
+    { label: string; value: number } | { date: string | Date; count: number }
+  >;
 
   const grouped = groupOpinionsByMonthOnly(normalizedForGrouping);
   if (grouped.length) {
@@ -167,7 +185,11 @@ const normalizeMonthlyMetrics = (value: unknown): ChartDatum[] => {
 
       const entry = item as Record<string, unknown>;
       const rawLabel =
-        entry.label ?? entry.month ?? entry.mes ?? entry.date ?? `M${index + 1}`;
+        entry.label ??
+        entry.month ??
+        entry.mes ??
+        entry.date ??
+        `M${index + 1}`;
       const rawValue =
         entry.value ??
         entry.count ??
@@ -286,16 +308,28 @@ export default function Projetos() {
       }
 
       try {
-        const freshProjects = await listAllProjects(user.id);
-
-        if (!mounted) return;
-        setProjectSources(
-          Array.isArray(freshProjects)
-            ? (freshProjects as RawProjectSource[])
-            : fallbackSources,
-        );
+        if (user?.role == "SUPERADMIN") {
+          const freshProjects = await getProjects();
+          if (!mounted) return;
+          setProjectSources(
+            Array.isArray(freshProjects)
+              ? (freshProjects as RawProjectSource[])
+              : fallbackSources,
+          );
+        } else {
+          const freshProjects = await listAllProjects(user.id);
+          if (!mounted) return;
+          setProjectSources(
+            Array.isArray(freshProjects)
+              ? (freshProjects as RawProjectSource[])
+              : fallbackSources,
+          );
+        }
       } catch (error) {
-        console.error("Erro ao atualizar projetos vinculados do usuário:", error);
+        console.error(
+          "Erro ao atualizar projetos vinculados do usuário:",
+          error,
+        );
         if (!mounted) return;
         setProjectSources(fallbackSources);
       } finally {
@@ -333,7 +367,9 @@ export default function Projetos() {
         ? (source.users as RawProjectUser[])
         : [];
 
-      const userAccess = users.find((projectUser) => projectUser?.id === user?.id)?.access;
+      const userAccess = users.find(
+        (projectUser) => projectUser?.id === user?.id,
+      )?.access;
       const rawAccess = userAccess ?? source.access;
       const access = isProjetoAccessLevel(rawAccess)
         ? rawAccess
@@ -344,14 +380,20 @@ export default function Projetos() {
           users.find((projectUser) => projectUser?.id === user?.id)?.hiddenTabs,
         ).length > 0
           ? normalizeHiddenTabs(
-              users.find((projectUser) => projectUser?.id === user?.id)?.hiddenTabs,
+              users.find((projectUser) => projectUser?.id === user?.id)
+                ?.hiddenTabs,
             )
           : normalizeHiddenTabs(source.hiddenTabs);
+      const allowedThemes = normalizeStringList(
+        users.find((projectUser) => projectUser?.id === user?.id)
+          ?.allowedThemes ?? source.allowedThemes,
+      );
 
       const name =
         toSafeString(source.name) ||
         toSafeString(source.nome) ||
         `Projeto ${projectId}`;
+      const slug = toProjectSlug(source.slug ?? source.url);
 
       list.push({
         id: projectId,
@@ -367,8 +409,10 @@ export default function Projetos() {
         payload: {
           id: projectId,
           name,
+          slug,
           access,
           hiddenTabs,
+          allowedThemes,
           token: toSafeString(source.token),
         },
       });
@@ -455,7 +499,9 @@ export default function Projetos() {
           projects={projects}
           selectedProject={selectedProject}
           searchTerm={searchTerm}
-          onProjectChange={(project) => setSelectedProjectId(project?.id ?? null)}
+          onProjectChange={(project) =>
+            setSelectedProjectId(project?.id ?? null)
+          }
           onSearchTermChange={setSearchTerm}
           onCreateProject={handleCreateProject}
         />
@@ -470,7 +516,9 @@ export default function Projetos() {
                 title={project.name}
                 actived={project.actived}
                 responsesLast7Days={project.responsesLast7Days}
-                responsesByMonthLast12Months={project.responsesByMonthLast12Months}
+                responsesByMonthLast12Months={
+                  project.responsesByMonthLast12Months
+                }
                 responsesByTheme={project.responsesByTheme}
                 onSelect={() => handleSelectProject(project)}
               />
@@ -504,4 +552,3 @@ export default function Projetos() {
     </Box>
   );
 }
-

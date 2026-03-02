@@ -1,13 +1,18 @@
 import type { ProjetoAccessLevel } from "../types/IUserType";
+import { normalizeStringList } from "./userProjectAccess";
 
 export type RawUserProject = {
   id?: number | null;
   projetoId?: number | null;
   nome?: string | null;
   name?: string | null;
+  slug?: string | null;
+  projetoSlug?: string | null;
+  projectSlug?: string | null;
   url?: string | null;
   token?: string | null;
   hiddenTabs?: string[] | null;
+  allowedThemes?: string[] | null;
   access?: ProjetoAccessLevel | null;
   projeto?: RawUserProject | null;
 };
@@ -15,8 +20,10 @@ export type RawUserProject = {
 export interface ProjectSelectionPayload {
   id?: number | null;
   name?: string | null;
+  slug?: string | null;
   token?: string | null;
   hiddenTabs?: string[] | null;
+  allowedThemes?: string[] | null;
   access?: ProjetoAccessLevel | null;
 }
 
@@ -65,13 +72,33 @@ export const normalizeProjectFromUser = (
       : rawName != null
         ? String(rawName)
         : "";
+  const rawSlug =
+    fallback?.slug ??
+    fallback?.projetoSlug ??
+    fallback?.projectSlug ??
+    fallback?.url ??
+    project.slug ??
+    project.projetoSlug ??
+    project.projectSlug ??
+    project.url ??
+    "";
+  const slug =
+    typeof rawSlug === "string"
+      ? rawSlug
+          .trim()
+          .replace(/^https?:\/\/[^/]+\/form\//i, "")
+          .replace(/^\/+|\/+$/g, "")
+      : "";
 
   const hiddenTabs =
     project.hiddenTabs ?? nested?.hiddenTabs ?? fallback?.hiddenTabs ?? [];
+  const allowedThemes =
+    project.allowedThemes ?? nested?.allowedThemes ?? fallback?.allowedThemes ?? [];
 
   return {
     id,
     name,
+    slug,
     access: isProjetoAccessLevel(
       project.access ?? nested?.access ?? fallback?.access,
     )
@@ -79,6 +106,7 @@ export const normalizeProjectFromUser = (
           nested?.access ??
           fallback?.access) as ProjetoAccessLevel)
       : "FULL_ACCESS",
-    hiddenTabs,
+    hiddenTabs: normalizeStringList(hiddenTabs),
+    allowedThemes: normalizeStringList(allowedThemes),
   };
 };

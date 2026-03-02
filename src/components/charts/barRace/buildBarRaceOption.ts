@@ -30,7 +30,7 @@ export function buildBarRaceOption({
     0
   );
   const leftPadding = Math.min(
-    12,
+    25,
     Math.max(72, Math.round(maxLabelLength * 7))
   );
 
