@@ -6,6 +6,7 @@ import {
   VisibilityOff,
   PersonOutline,
   LockOutlined,
+  CheckRounded,
 } from "@mui/icons-material";
 import {
   Box,
@@ -40,10 +41,13 @@ export default function LoginPage() {
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [mostraSenha, setMostraSenha] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isSuccessTransitioning, setIsSuccessTransitioning] = useState(false);
   const [alert, setAlert] = useState<AlertState>({ show: false });
   const isMountedRef = useRef(true);
+  const redirectTimeoutRef = useRef<number | null>(null);
   const { setUser } = useAuth();
   const navigate = useNavigate();
+  const isBusy = loading || isSuccessTransitioning;
 
   const toggleMostraSenha = () => setMostraSenha((prev) => !prev);
 
@@ -63,12 +67,16 @@ export default function LoginPage() {
 
     return () => {
       isMountedRef.current = false;
+
+      if (redirectTimeoutRef.current !== null) {
+        window.clearTimeout(redirectTimeoutRef.current);
+      }
     };
   }, []);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (loading) return;
+    if (isBusy) return;
 
     setAlert({ show: false });
 
@@ -106,21 +114,23 @@ export default function LoginPage() {
         throw new Error("Falha ao autenticar. Tente novamente.");
       }
 
+      const destination =
+        user.role === "ADMIN" || user.role === "SUPERADMIN"
+          ? "/projetos"
+          : "/panorama";
+      const prefersReducedMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+      ).matches;
+      const redirectDelay = prefersReducedMotion ? 220 : 1450;
+
       if (isMountedRef.current) {
         setUser(user);
-        setAlert({
-          show: true,
-          category: "success",
-          title: "Login feito com sucesso!",
-        });
+        setIsSuccessTransitioning(true);
       }
 
-      if (user.role === "ADMIN" || user.role === "SUPERADMIN") {
-        navigate("/projetos");
-        return;
-      }
-
-      navigate("/panorama");
+      redirectTimeoutRef.current = window.setTimeout(() => {
+        navigate(destination);
+      }, redirectDelay);
     } catch (error) {
       const errorMessage =
         error instanceof Error && error.message
@@ -175,7 +185,33 @@ export default function LoginPage() {
       </Box>
 
       <Box className={styles.rightSide}>
-        <Box className={styles.loginContainer}>
+        <Box
+          className={`${styles.loginContainer} ${
+            isSuccessTransitioning ? styles.loginContainerSuccess : ""
+          }`}
+        >
+          <Box
+            className={`${styles.successOverlay} ${
+              isSuccessTransitioning ? styles.successOverlayVisible : ""
+            }`}
+            role="status"
+            aria-live="polite"
+            aria-hidden={!isSuccessTransitioning}
+          >
+            <Box className={styles.successBadge}>
+              <CheckRounded />
+            </Box>
+            <Typography className={styles.successTitle}>
+              Login realizado com sucesso
+            </Typography>
+            <Typography className={styles.successDescription}>
+              Preparando seu painel e sincronizando o ambiente.
+            </Typography>
+            <Box className={styles.successProgressTrack}>
+              <Box className={styles.successProgressBar} />
+            </Box>
+          </Box>
+
           <Box className={styles.cardHeader}>
             <img src={keekLogo} className={styles.logoLarge} alt="Keek" />
 
@@ -196,6 +232,7 @@ export default function LoginPage() {
               value={formData.email}
               onChange={handleChange}
               autoComplete="email"
+              disabled={isBusy}
               error={Boolean(fieldErrors.email)}
               helperText={fieldErrors.email}
               InputProps={{
@@ -218,6 +255,7 @@ export default function LoginPage() {
               value={formData.password}
               onChange={handleChange}
               autoComplete="current-password"
+              disabled={isBusy}
               error={Boolean(fieldErrors.password)}
               helperText={fieldErrors.password}
               InputProps={{
@@ -232,6 +270,7 @@ export default function LoginPage() {
                       className={styles.passwordToggle}
                       onClick={toggleMostraSenha}
                       edge="end"
+                      disabled={isBusy}
                       aria-label={
                         mostraSenha ? "Ocultar senha" : "Mostrar senha"
                       }
@@ -246,7 +285,7 @@ export default function LoginPage() {
             <Box className={styles.actionsRow}>
               <FormControlLabel
                 className={styles.rememberControl}
-                control={<Checkbox size="small" />}
+                control={<Checkbox size="small" disabled={isBusy} />}
                 label="Manter sessão ativa"
               />
               <Typography>Esqueci minha senha</Typography>
@@ -257,13 +296,15 @@ export default function LoginPage() {
               variant="contained"
               fullWidth
               type="submit"
-              disabled={loading}
+              disabled={isBusy}
             >
               {loading ? (
                 <span className={styles.loadingInline}>
                   <CircularProgress size={18} sx={{ color: "white" }} />
                   Entrando...
                 </span>
+              ) : isSuccessTransitioning ? (
+                <span className={styles.loadingInline}>Abrindo painel...</span>
               ) : (
                 "Entrar no painel"
               )}
