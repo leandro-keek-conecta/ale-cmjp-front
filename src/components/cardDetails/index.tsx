@@ -37,6 +37,7 @@ function getOpinionKey(item: Opinion, index: number) {
 }
 
 export default function CardDetails({ opinions }: CardDetailsProps) {
+  console.log(opinions)
   const [selectedOpinion, setSelectedOpinion] = useState<Opinion | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [incomingOpinionKeys, setIncomingOpinionKeys] = useState<string[]>([]);

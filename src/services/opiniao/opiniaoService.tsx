@@ -83,6 +83,34 @@ export type SubmitPublicFormPayload = Omit<
   "projetoId" | "formVersionId"
 >;
 
+export type GroupedFormResponse = {
+  formId: number;
+  formName: string;
+  formVersionIds: number[];
+  totalResponses: number;
+  latestResponseAt: string | null;
+  responses: Opinion[];
+};
+
+export type GroupedProjectResponses = {
+  projectId: number;
+  selectedFormId: number | null;
+  totalResponses: number;
+  totalForms: number;
+  forms: GroupedFormResponse[];
+};
+
+export async function getGroupedOpinionsByProject(
+  projectId: number,
+  formId?: number | null,
+) {
+  const response = await api.get(`/form-response/project/${projectId}/grouped`, {
+    params: formId ? { formId } : undefined,
+  });
+
+  return response?.data;
+}
+
 export async function getAllOpinions(projectId: number) {
   const response = await api.get(
     `/form-response/raw?projetoId=${projectId}&select=nome,telefone,ano_nascimento,genero,bairro,campanha,opiniao,outra_opiniao,tipo_opiniao,texto_opiniao,startedAt,submittedAt,createdAt`,

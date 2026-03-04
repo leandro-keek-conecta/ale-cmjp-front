@@ -15,7 +15,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import CardGrid from "../../components/card-grid";
 import CardGridReflect from "../../components/card-grid-reflect";
 import CardDetails from "../../components/cardDetails";
-import { getAllOpinions } from "../../services/opiniao/opiniaoService";
+import SelectButton from "../../components/selectButtom";
+import {
+  getGroupedOpinionsByProject,
+  type GroupedFormResponse,
+} from "../../services/opiniao/opiniaoService";
 import SlideComponent, { type SlideItem } from "../../components/slide";
 import PresentationModal from "../../components/modal";
 import { readFromStorage, saveToStorage } from "../../utils/localStorage";
@@ -36,6 +40,7 @@ import type { FilterFormValues, FiltersState } from "../../types/filter";
 import { Layout } from "../../components/layout/Layout";
 import {
   getFiltros,
+  getFiltrosPorFormulario,
   getMetricas,
 } from "../../services/metricas/metricasService";
 import { getProjectById } from "../../services/projeto/ProjetoService";
@@ -66,6 +71,28 @@ export type Opinion = {
   texto_opiniao?: string;
 };
 type FilterApiItem = { label: string; value: string; count?: number };
+type TopThemeMetric = { id: number; tema: string; total: number };
+type TopDistrictMetric = { key: string; label: string; value: number };
+type FormSelectValue = number | "__all__";
+type DynamicFilterValue = {
+  label?: unknown;
+  value?: unknown;
+  count?: unknown;
+  total?: unknown;
+};
+type DynamicFilterField = {
+  fieldName?: unknown;
+  name?: unknown;
+  label?: unknown;
+  suggestedFilter?: unknown;
+  values?: unknown;
+};
+type DynamicFormFiltersPayload = {
+  forms?: unknown;
+  fields?: unknown;
+};
+
+const ALL_FORMS_VALUE = "__all__" as const;
 
 const buildFilternDefaultValues = (): FilterFormValues => ({
   dataInicio: null,
@@ -156,93 +183,143 @@ const normalizeOptionKey = (value: string) =>
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
-    .replace(/\s+/g, " ")
+    .replace(/[_\s]+/g, " ")
     .trim();
 
-const getOpinionDate = (opinion: Opinion) => {
-  const rawDate =
-    opinion.submittedAt ??
-    opinion.startedAt ??
-    opinion.createdAt ??
-    opinion.horario ??
-    null;
-
-  if (!rawDate) {
-    return null;
+const toOptionalNumber = (value: unknown) => {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
   }
 
-  const parsedDate = new Date(rawDate);
-  return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
+  if (typeof value === "string" && value.trim()) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+
+  return null;
 };
 
-const isTodayOpinion = (opinion: Opinion) => {
-  const date = getOpinionDate(opinion);
-  if (!date) {
-    return false;
+const toDynamicSelectOptions = (
+  fieldsPayload: DynamicFormFiltersPayload,
+  aliases: string[],
+): SelectOption<string>[] => {
+  const normalizedAliases = aliases.map(normalizeOptionKey);
+  const rootFields = Array.isArray(fieldsPayload.fields)
+    ? (fieldsPayload.fields as unknown[])
+    : [];
+  const nestedFields = Array.isArray(fieldsPayload.forms)
+    ? (fieldsPayload.forms as unknown[]).flatMap((formEntry) => {
+        const formData = asRecord(formEntry);
+        return Array.isArray(formData.fields) ? formData.fields : [];
+      })
+    : [];
+
+  const fields = [...rootFields, ...nestedFields].filter(
+    (entry): entry is DynamicFilterField =>
+      Boolean(entry && typeof entry === "object"),
+  );
+
+  const matchedField = fields.find((entry) => {
+    const candidates = [
+      toText(entry.suggestedFilter),
+      toText(entry.fieldName),
+      toText(entry.name),
+      toText(entry.label),
+    ]
+      .map(normalizeOptionKey)
+      .filter(Boolean);
+
+    return candidates.some((candidate) =>
+      normalizedAliases.includes(candidate),
+    );
+  });
+
+  if (!matchedField || !Array.isArray(matchedField.values)) {
+    return [];
   }
 
-  const today = new Date();
-  return (
-    date.getFullYear() === today.getFullYear() &&
-    date.getMonth() === today.getMonth() &&
-    date.getDate() === today.getDate()
+  return matchedField.values.reduce<SelectOption<string>[]>(
+    (accumulator, item) => {
+      if (!item || typeof item !== "object") {
+        return accumulator;
+      }
+
+      const valueEntry = item as DynamicFilterValue;
+      const label = toText(
+        valueEntry.label,
+        String(valueEntry.value ?? ""),
+      ).trim();
+      const value = toText(valueEntry.value, label).trim();
+
+      if (!label || !value) {
+        return accumulator;
+      }
+
+      const exists = accumulator.some(
+        (option) =>
+          normalizeOptionKey(option.value) === normalizeOptionKey(value) ||
+          normalizeOptionKey(option.label) === normalizeOptionKey(label),
+      );
+
+      if (!exists) {
+        accumulator.push({ label, value });
+      }
+
+      return accumulator;
+    },
+    [],
   );
 };
 
-const buildTopThemes = (items: Opinion[]) => {
-  const grouped = new Map<string, { id: number; tema: string; total: number }>();
+const normalizeGroupedFormResponses = (
+  value: unknown,
+): GroupedFormResponse[] => {
+  if (!Array.isArray(value)) {
+    return [];
+  }
 
-  items.forEach((item, index) => {
-    const theme = typeof item.opiniao === "string" ? item.opiniao.trim() : "";
-    if (!theme) {
-      return;
-    }
+  return value
+    .map((entry) => {
+      if (!entry || typeof entry !== "object") {
+        return null;
+      }
 
-    const key = normalizeAccessKey(theme);
-    const current = grouped.get(key);
-    if (current) {
-      current.total += 1;
-      return;
-    }
+      const data = entry as Record<string, unknown>;
+      const formId =
+        toOptionalNumber(data.formId) ??
+        toOptionalNumber(data.id) ??
+        toOptionalNumber(
+          (data.form as Record<string, unknown> | undefined)?.id,
+        );
 
-    grouped.set(key, {
-      id: index + 1,
-      tema: theme,
-      total: 1,
-    });
-  });
+      if (formId === null) {
+        return null;
+      }
 
-  return Array.from(grouped.values())
-    .sort((left, right) => right.total - left.total)
-    .slice(0, 5);
-};
+      const responses = Array.isArray(data.responses)
+        ? (data.responses as Opinion[])
+        : [];
 
-const buildTopDistricts = (items: Opinion[]) => {
-  const grouped = new Map<string, { key: string; label: string; value: number }>();
-
-  items.forEach((item) => {
-    const district = typeof item.bairro === "string" ? item.bairro.trim() : "";
-    if (!district) {
-      return;
-    }
-
-    const key = normalizeAccessKey(district);
-    const current = grouped.get(key);
-    if (current) {
-      current.value += 1;
-      return;
-    }
-
-    grouped.set(key, {
-      key,
-      label: district,
-      value: 1,
-    });
-  });
-
-  return Array.from(grouped.values())
-    .sort((left, right) => right.value - left.value)
-    .slice(0, 5);
+      return {
+        formId,
+        formName:
+          toText(data.formName) || toText(data.name) || `Formulario ${formId}`,
+        formVersionIds: Array.isArray(data.formVersionIds)
+          ? data.formVersionIds.reduce<number[]>((accumulator, versionId) => {
+              const parsed = toOptionalNumber(versionId);
+              if (parsed !== null) {
+                accumulator.push(parsed);
+              }
+              return accumulator;
+            }, [])
+          : [],
+        totalResponses:
+          toOptionalNumber(data.totalResponses) ?? responses.length,
+        latestResponseAt: toText(data.latestResponseAt) || null,
+        responses,
+      };
+    })
+    .filter((item): item is GroupedFormResponse => item !== null);
 };
 
 export default function Panorama() {
@@ -255,9 +332,10 @@ export default function Panorama() {
   const [panoramaTheme, setPanoramaTheme] = useState<PanoramaThemeConfig>(
     DEFAULT_PANORAMA_THEME,
   );
-  const [opinions, setOpinions] = useState<Opinion[]>([]);
-  const [topDistricts, setTopDistricts] = useState<any[]>([]);
-  const [topTemas, setTopTemas] = useState<any[]>([]);
+  const [groupedForms, setGroupedForms] = useState<GroupedFormResponse[]>([]);
+  const [selectedFormId, setSelectedFormId] = useState<number | null>(null);
+  const [topDistricts, setTopDistricts] = useState<TopDistrictMetric[]>([]);
+  const [topTemas, setTopTemas] = useState<TopThemeMetric[]>([]);
   const [filterSelectOptions, setFilterSelectOptions] = useState<
     Partial<FilterSelectOptions>
   >({});
@@ -274,9 +352,7 @@ export default function Panorama() {
   const [showPresentationModal, setShowPresentationModal] = useState<boolean>(
     () => !readFromStorage<boolean>(PRESENTATION_SEEN_KEY, false),
   );
-  const [groupOpinions, setGroupOpinions] = useState<
-    { id: number; tema: string; total: number }[]
-  >([]);
+  const [groupOpinions, setGroupOpinions] = useState<TopThemeMetric[]>([]);
   const heroTitleRef = useRef<HTMLSpanElement | null>(null);
   const [heroCopyWidth, setHeroCopyWidth] = useState<number | null>(null);
   /*   const navigate = useNavigate(); */
@@ -322,6 +398,14 @@ export default function Panorama() {
     defaultValues: buildFilternDefaultValues(),
   });
 
+  useEffect(() => {
+    const defaults = buildFilternDefaultValues();
+    setSelectedFormId(null);
+    resetFilterForm(defaults);
+    setFilters(mapFilterFormToState(defaults));
+    setCurrentPage(1);
+  }, [resetFilterForm, selectedProjectId]);
+
   const fetchProjectTheme = useCallback(async () => {
     try {
       const projectId = selectedProjectId;
@@ -343,20 +427,25 @@ export default function Panorama() {
       const cards = asRecord(heroConfig.cards);
       const clima = asRecord(heroConfig.clima);
       const cardItems = Array.isArray(cards.items) ? cards.items : [];
-      const nextCards = DEFAULT_PANORAMA_THEME.cards.map((defaultCard, index) => {
-        const currentCard = asRecord(cardItems[index]);
-        return {
-          title: toText(currentCard.title, defaultCard.title),
-          subtitle: toText(currentCard.subtitle, defaultCard.subtitle),
-        };
-      });
+      const nextCards = DEFAULT_PANORAMA_THEME.cards.map(
+        (defaultCard, index) => {
+          const currentCard = asRecord(cardItems[index]);
+          return {
+            title: toText(currentCard.title, defaultCard.title),
+            subtitle: toText(currentCard.subtitle, defaultCard.subtitle),
+          };
+        },
+      );
 
       setPanoramaTheme({
         background: toText(
           themeConfig.background,
           DEFAULT_PANORAMA_THEME.background,
         ),
-        fontFamily: toText(themeConfig.fontFamily, DEFAULT_PANORAMA_THEME.fontFamily),
+        fontFamily: toText(
+          themeConfig.fontFamily,
+          DEFAULT_PANORAMA_THEME.fontFamily,
+        ),
         showHero:
           typeof heroConfig.showHero === "boolean"
             ? heroConfig.showHero
@@ -366,7 +455,10 @@ export default function Panorama() {
         highlight: toText(copy.highlight, DEFAULT_PANORAMA_THEME.highlight),
         subtitle: toText(copy.subtitle, DEFAULT_PANORAMA_THEME.subtitle),
         slideBadge: toText(slide.badge, DEFAULT_PANORAMA_THEME.slideBadge),
-        slideMapTitle: toText(slide.mapTitle, DEFAULT_PANORAMA_THEME.slideMapTitle),
+        slideMapTitle: toText(
+          slide.mapTitle,
+          DEFAULT_PANORAMA_THEME.slideMapTitle,
+        ),
         slideMapSubtitle: toText(
           slide.mapSubtitle,
           DEFAULT_PANORAMA_THEME.slideMapSubtitle,
@@ -375,7 +467,10 @@ export default function Panorama() {
         cards: nextCards,
         clima: {
           title: toText(clima.title, DEFAULT_PANORAMA_THEME.clima.title),
-          subtitle: toText(clima.subtitle, DEFAULT_PANORAMA_THEME.clima.subtitle),
+          subtitle: toText(
+            clima.subtitle,
+            DEFAULT_PANORAMA_THEME.clima.subtitle,
+          ),
         },
       });
     } catch (err) {
@@ -390,9 +485,10 @@ export default function Panorama() {
         setError("Nenhum projeto vinculado ao usuário.");
         return;
       }
-      const response = await getAllOpinions(projectId);
-      setOpinions(response.data.items);
-    } catch (err) {
+      const response = await getGroupedOpinionsByProject(projectId);
+      const payload = response?.data ?? response ?? {};
+      setGroupedForms(normalizeGroupedFormResponses(payload.forms));
+    } catch {
       setError("Erro ao carregar opiniões.");
     }
   }, [selectedProjectId]);
@@ -404,6 +500,35 @@ export default function Panorama() {
         setError("Nenhum projeto vinculado ao usuário.");
         return;
       }
+      if (selectedFormId !== null) {
+        const response = await getFiltrosPorFormulario(
+          projectId,
+          selectedFormId,
+        );
+        const payload = (response?.data?.data ??
+          response?.data ??
+          {}) as DynamicFormFiltersPayload;
+
+        setFilterSelectOptions({
+          tipo: toDynamicSelectOptions(payload, [
+            "tipoOpiniao",
+            "tipo_opiniao",
+            "tipo",
+          ]),
+          tema: filterOptionsByAllowedThemes(
+            toDynamicSelectOptions(payload, ["tema", "temas", "opiniao"]),
+            allowedThemes,
+          ),
+          genero: toDynamicSelectOptions(payload, ["genero"]),
+          faixaEtaria: toDynamicSelectOptions(payload, [
+            "faixaEtaria",
+            "faixa_etaria",
+            "faixa etaria",
+          ]),
+        });
+        return;
+      }
+
       const response = await getFiltros(projectId);
       const payload = response?.data?.data ?? response?.data ?? {};
       setFilterSelectOptions({
@@ -417,8 +542,16 @@ export default function Panorama() {
       });
     } catch (err) {
       console.error("Erro ao carregar filtros.", err);
+      if (selectedFormId !== null) {
+        setFilterSelectOptions({
+          tipo: [],
+          tema: [],
+          genero: [],
+          faixaEtaria: [],
+        });
+      }
     }
-  }, [allowedThemes, selectedProjectId]);
+  }, [allowedThemes, selectedFormId, selectedProjectId]);
 
   const handleGetMetricas = useCallback(async () => {
     const projectId = selectedProjectId;
@@ -426,12 +559,90 @@ export default function Panorama() {
       setError("Nenhum projeto vinculado ao usuário.");
       return;
     }
-    const response: any = await getMetricas(projectId);
-    setGroupOpinions(response.data.data.topTemas || []);
-    console.log("Filtros recebidos:", response.data.data.topTemas);
-    setTodayOpinions(response.data.data.totalOpinionsToday || 0);
-    setTopDistricts(response.data.data.topBairros || []);
-    setTopTemas(response.data.data.topTemas || []);
+    try {
+      const response = await getMetricas(projectId);
+      const payload = response?.data?.data ?? {};
+      console.log(payload)
+      const rawTopTemas = Array.isArray(payload.topTemas)
+        ? (payload.topTemas as unknown[])
+        : [];
+      const rawTopDistricts = Array.isArray(payload.topBairros)
+        ? (payload.topBairros as unknown[])
+        : [];
+      const nextTopTemas = rawTopTemas.length
+        ? rawTopTemas
+            .map((item: unknown, index: number): TopThemeMetric | null => {
+              if (!item || typeof item !== "object") {
+                return null;
+              }
+
+              const data = item as Record<string, unknown>;
+              const tema =
+                typeof data.tema === "string" ? data.tema.trim() : "";
+              if (!tema) {
+                return null;
+              }
+
+              return {
+                id:
+                  typeof data.id === "number" && Number.isFinite(data.id)
+                    ? data.id
+                    : index + 1,
+                tema,
+                total:
+                  typeof data.total === "number" && Number.isFinite(data.total)
+                    ? data.total
+                    : 0,
+              };
+            })
+            .filter(
+              (item: TopThemeMetric | null): item is TopThemeMetric =>
+                item !== null,
+            )
+        : [];
+
+      const nextTopDistricts = rawTopDistricts.length
+        ? rawTopDistricts
+            .map((item: unknown): TopDistrictMetric | null => {
+              if (!item || typeof item !== "object") {
+                return null;
+              }
+
+              const data = item as Record<string, unknown>;
+              const label =
+                typeof data.label === "string" ? data.label.trim() : "";
+              if (!label) {
+                return null;
+              }
+
+              return {
+                key: normalizeAccessKey(label),
+                label,
+                value:
+                  typeof data.value === "number" && Number.isFinite(data.value)
+                    ? data.value
+                    : 0,
+              };
+            })
+            .filter(
+              (item: TopDistrictMetric | null): item is TopDistrictMetric =>
+                item !== null,
+            )
+        : [];
+
+      setGroupOpinions(nextTopTemas);
+      setTodayOpinions(
+        typeof payload.totalOpinionsToday === "number" &&
+          Number.isFinite(payload.totalOpinionsToday)
+          ? payload.totalOpinionsToday
+          : 0,
+      );
+      setTopDistricts(nextTopDistricts);
+      setTopTemas(nextTopTemas);
+    } catch (err) {
+      console.error("Erro ao carregar metricas do panorama.", err);
+      setError("Erro ao carregar metricas.");
+    }
   }, [selectedProjectId]);
 
   useProjectRealtime({
@@ -450,22 +661,13 @@ export default function Panorama() {
 
   useEffect(() => {
     void fetchProjectTheme();
-    void fetchFilterOptions();
     void fetchOpinions();
     void handleGetMetricas();
-  }, [fetchFilterOptions, fetchOpinions, fetchProjectTheme, handleGetMetricas]);
+  }, [fetchOpinions, fetchProjectTheme, handleGetMetricas]);
 
   useEffect(() => {
-    const scopedOpinions = allowedThemes.length
-      ? opinions.filter((opinion) => hasThemeAccess(opinion.opiniao, allowedThemes))
-      : opinions;
-    const todayScopedOpinions = scopedOpinions.filter(isTodayOpinion);
-
-    setTodayOpinions(todayScopedOpinions.length);
-    setTopTemas(buildTopThemes(todayScopedOpinions));
-    setGroupOpinions(buildTopThemes(todayScopedOpinions));
-    setTopDistricts(buildTopDistricts(todayScopedOpinions));
-  }, [allowedThemes, opinions]);
+    void fetchFilterOptions();
+  }, [fetchFilterOptions]);
 
   useEffect(() => {
     const elements = document.querySelectorAll<HTMLElement>("[data-reveal]");
@@ -505,16 +707,56 @@ export default function Panorama() {
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    if (selectedFormId === null) {
+      return;
+    }
+
+    const formStillExists = groupedForms.some(
+      (form) => form.formId === selectedFormId,
+    );
+    if (!formStillExists) {
+      setSelectedFormId(null);
+    }
+  }, [groupedForms, selectedFormId]);
+
   const normalizeText = (value?: string | null) =>
     (value || "").normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().trim();
 
   const normalizeType = (item: Opinion) =>
     normalizeText(item.tipo_opiniao || item.opiniao);
 
+  const formSelectOptions = useMemo(
+    () =>
+      [
+        {
+          label: "Todos os formulários",
+          value: ALL_FORMS_VALUE,
+        },
+        ...groupedForms.map((form) => ({
+          label: `${form.formName} (${form.totalResponses})`,
+          value: form.formId,
+        })),
+      ] satisfies SelectOption<FormSelectValue>[],
+    [groupedForms],
+  );
+
+  const opinions = useMemo(
+    () =>
+      groupedForms.flatMap((form) =>
+        selectedFormId === null || form.formId === selectedFormId
+          ? form.responses
+          : [],
+      ),
+    [groupedForms, selectedFormId],
+  );
+
   const sourceOpinions = useMemo(
     () =>
       allowedThemes.length
-        ? opinions.filter((opinion) => hasThemeAccess(opinion.opiniao, allowedThemes))
+        ? opinions.filter((opinion) =>
+            hasThemeAccess(opinion.opiniao, allowedThemes),
+          )
         : opinions,
     [allowedThemes, opinions],
   );
@@ -575,6 +817,17 @@ export default function Panorama() {
     const defaults = buildFilternDefaultValues();
     resetFilterForm(defaults);
     setFilters(mapFilterFormToState(defaults));
+  };
+
+  const handleSelectForm = (value: FormSelectValue | null) => {
+    const nextFormId =
+      typeof value === "number" && Number.isFinite(value) ? value : null;
+    const defaults = buildFilternDefaultValues();
+
+    setSelectedFormId(nextFormId);
+    resetFilterForm(defaults);
+    setFilters(mapFilterFormToState(defaults));
+    setCurrentPage(1);
   };
 
   const handleClosePresentation = () => {
@@ -700,7 +953,7 @@ export default function Panorama() {
                 </div>
                 {topTemas.length ? (
                   <div className={styles.districtChips}>
-                    {topTemas.map((district: any) => (
+                    {topTemas.map((district) => (
                       <span key={district.id} className={styles.districtChip}>
                         {district.tema}
                       </span>
@@ -807,11 +1060,26 @@ export default function Panorama() {
                   <ArrowDown />
                 </Box>
               </Box>
+
               <Box
                 className={`${styles.filterContainerBody} ${
                   filterExpanded ? styles.expanded : ""
                 }`}
               >
+                {" "}
+                <Box sx={{ pt: 2, pb: 1 }}>
+                  <SelectButton
+                    label="Formulário"
+                    placeholder="Selecione um formulário"
+                    options={formSelectOptions}
+                    value={selectedFormId ?? ALL_FORMS_VALUE}
+                    onChange={(value) =>
+                      handleSelectForm(
+                        (value as FormSelectValue | null) ?? null,
+                      )
+                    }
+                  />
+                </Box>
                 <Forms<FilterFormValues>
                   errors={filterErrors}
                   inputsList={getFilterInputs(filterSelectOptions)}
@@ -859,4 +1127,3 @@ export default function Panorama() {
     </>
   );
 }
-

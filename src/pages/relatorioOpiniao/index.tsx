@@ -54,6 +54,10 @@ type FilterApiItem = {
 };
 
 const DEFAULT_VALUE_KEYS = ["value", "total", "count"] as const;
+const BAR_RACE_DEFAULT_HEIGHT = 360;
+const BAR_RACE_MIN_HEIGHT = 180;
+const BAR_RACE_BASE_HEIGHT = 128;
+const BAR_RACE_ROW_HEIGHT = 54;
 
 const buildFilternDefaultValues = (
   forcedTema?: string | null,
@@ -271,6 +275,19 @@ const mapSelectOptions = (
       }, [])
     : [];
 
+const getSharedBarRaceHeight = (...series: ChartDatum[][]) => {
+  const maxItems = Math.max(0, ...series.map((items) => items.length));
+
+  if (maxItems <= 0) {
+    return BAR_RACE_MIN_HEIGHT;
+  }
+
+  return Math.min(
+    BAR_RACE_DEFAULT_HEIGHT,
+    Math.max(BAR_RACE_MIN_HEIGHT, BAR_RACE_BASE_HEIGHT + maxItems * BAR_RACE_ROW_HEIGHT),
+  );
+};
+
 export default function RelatorioOpiniao() {
   const { tema: routeTheme } = useParams<{ tema?: string }>();
   const fixedTheme = useMemo(() => decodeRouteTheme(routeTheme), [routeTheme]);
@@ -453,6 +470,10 @@ export default function RelatorioOpiniao() {
     void fetchMetrics(params);
   }
 
+  const sharedBarRaceHeight = metricsLoading
+    ? BAR_RACE_DEFAULT_HEIGHT
+    : getSharedBarRaceHeight(topBairros, topTemas);
+
   return (
     <Layout
       titulo={
@@ -590,11 +611,15 @@ export default function RelatorioOpiniao() {
         </Box>
 
         <Box className={styles.gridContainerOndeLine} sx={{ marginTop: "1rem" }}>
-          <CardGridReflect span={6} style={{ marginBottom: 0 }} disablePadding>
+          <CardGridReflect
+            span={6}
+            style={{ marginBottom: 0, display: "flex", flexDirection: "column" }}
+            disablePadding
+          >
             <h5 style={{ margin: "1rem" }}>Top 10 bairros com mais opiniões</h5>
             <BarRaceChart
               data={topBairros}
-              height={360}
+              height={sharedBarRaceHeight}
               loading={metricsLoading}
             />
           </CardGridReflect>
@@ -610,7 +635,7 @@ export default function RelatorioOpiniao() {
             </h5>
             <BarRaceChart
               data={topTemas}
-              height={360}
+              height={sharedBarRaceHeight}
               loading={metricsLoading}
             />
           </CardGridReflect>
