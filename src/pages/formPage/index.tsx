@@ -64,6 +64,7 @@ const buildOpinionDefaultValues = (): OpinionFormValues => ({
 });
 
 const PHONE_FULL_REGEX = /^\d{2} 9 \d{4} - \d{4}$/;
+const OPINION_PREVIEW_LIMIT = 120;
 
 const formatPhoneInput = (value: string) => {
   const digits = value.replace(/\D/g, "").slice(0, 11);
@@ -374,7 +375,9 @@ export default function FormsPage() {
   }, []);
 
   const getOpinionPreviewText = (text: string) =>
-    text.length > 70 ? `${text.slice(0, 70)}...` : text;
+    text.length > OPINION_PREVIEW_LIMIT
+      ? text.slice(0, OPINION_PREVIEW_LIMIT).trimEnd()
+      : text;
 
   return (
     <Box className={styles.container} style={pageStyle}>
@@ -496,7 +499,7 @@ export default function FormsPage() {
                       {summary?.tipo && (
                         <Chip label={`Tipo: ${summary.tipo}`} />
                       )}
-                      {summary?.texto_opiniao && (
+                      {false && summary?.texto_opiniao && (
                         <Chip
                           label={`Pesquisa por palavra chave”: ${getOpinionPreviewText(
                             summary.texto_opiniao,
@@ -516,6 +519,31 @@ export default function FormsPage() {
                         />
                       )}
                     </Stack>
+
+                    {summary?.texto_opiniao && (
+                      <Box className={styles.opinionSummaryTextBox}>
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          className={styles.opinionSummaryText}
+                        >
+                          <Box component="span" fontWeight={600}>
+                            Texto da opiniao:
+                          </Box>{" "}
+                          {getOpinionPreviewText(summary.texto_opiniao)}
+                          {summary.texto_opiniao.length > OPINION_PREVIEW_LIMIT ? (
+                            <Box
+                              component="button"
+                              type="button"
+                              className={styles.moreLink}
+                              onClick={() => setIsOpinionTextModalOpen(true)}
+                            >
+                              ...ver mais
+                            </Box>
+                          ) : null}
+                        </Typography>
+                      </Box>
+                    )}
 
                     <Divider sx={{ width: "100%", maxWidth: 720 }} />
 
