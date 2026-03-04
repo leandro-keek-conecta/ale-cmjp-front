@@ -128,7 +128,7 @@ type PanoramaThemeConfig = {
 
 const DEFAULT_PANORAMA_THEME: PanoramaThemeConfig = {
   background: "linear-gradient(180deg, #f4f4f4 0%, #f4f4f4 50%, #f4f4f4 100%)",
-  fontFamily: "Inter",
+  fontFamily: "Poppins",
   showHero: false,
   kicker: "Monitorando a voz da cidade",
   title: "Opinião em",

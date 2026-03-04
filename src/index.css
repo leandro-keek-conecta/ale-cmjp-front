@@ -4,6 +4,7 @@
 
 @layer base {
   :root {
+    --app-font-family: "Poppins", "Roboto", "Helvetica", "Arial", sans-serif;
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
 
@@ -99,10 +100,15 @@
     margin: 0;
     min-height: 100dvh;
     @apply bg-background text-foreground;
-    font-family: "Inter", sans-serif;
+    font-family: var(--app-font-family);
     font-size: 0.9rem;
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
+  }
+
+  #root {
+    min-height: 100dvh;
+    font-family: var(--app-font-family);
   }
 
   h1,
@@ -142,6 +148,17 @@
     -webkit-appearance: none;
     appearance: none;
     outline: none;
+  }
+
+  .MuiTypography-root,
+  .MuiButtonBase-root,
+  .MuiInputBase-root,
+  .MuiFormLabel-root,
+  .MuiMenuItem-root,
+  .MuiChip-root,
+  .MuiTablePagination-root,
+  .MuiDataGrid-root {
+    font-family: var(--app-font-family) !important;
   }
 
   button {

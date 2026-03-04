@@ -26,7 +26,7 @@ export const CustomizationProvider = ({ children }: { children: ReactNode }) => 
     title: "Opinião em ",
     highlight: "tempo real",
     subtitle: "Veja o que as pessoas estão falando...",
-    fontFamily: "Work Sans"
+    fontFamily: "Poppins"
   });
 
   return (

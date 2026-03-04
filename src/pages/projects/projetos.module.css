@@ -2,7 +2,7 @@
   width: 100%;
   min-height: 100dvh;
   background: linear-gradient(180deg, #f4f7ff 0%, #eef3ff 100%);
-  font-family: "Inter", sans-serif;
+  font-family: var(--app-font-family);
 }
 
 .page :global(.MuiTypography-root),
@@ -10,7 +10,7 @@
 .page :global(.MuiButton-root),
 .page :global(.MuiChip-root),
 .page :global(.MuiMenuItem-root) {
-  font-family: "Inter", sans-serif;
+  font-family: var(--app-font-family);
 }
 
 .content {

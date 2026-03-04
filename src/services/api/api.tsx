@@ -8,7 +8,7 @@ import {
 // Função para obter o token do localStorage
 const getUserToken = (): string | null => localStorage.getItem("token");
 
-const baseURL = "https://ouvidoria-api.keekconecta.com.br/escuta-cidada-api";
+const baseURL = `${import.meta.env.VITE_API_URL}/escuta-cidada-api`;
 
 export const api = axios.create({
   baseURL,

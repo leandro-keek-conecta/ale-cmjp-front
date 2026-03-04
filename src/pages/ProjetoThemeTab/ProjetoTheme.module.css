@@ -30,7 +30,7 @@ bottonContainer {
   width: 100%;
   border-radius: 8px;
   color: #fff;
-  font-family: "Lato", sans-serif;
+  font-family: var(--app-font-family);
   font-weight: 500;
   font-size: 0.9rem;
   cursor: pointer;

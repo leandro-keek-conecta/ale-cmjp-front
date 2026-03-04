@@ -25,7 +25,7 @@ export const defaultTheme = createTheme({
     },
   },
   typography: {
-    fontFamily: "'Lato', 'Roboto', 'Helvetica', 'Arial', sans-serif",
+    fontFamily: "'Poppins', 'Roboto', 'Helvetica', 'Arial', sans-serif",
     h5: {
       fontWeight: 600,
     },

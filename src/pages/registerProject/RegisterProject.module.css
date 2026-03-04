@@ -21,7 +21,7 @@
   width: 8rem;
   border-radius: 8px;
   color: #fff;
-  font-family: "Lato", sans-serif;
+  font-family: var(--app-font-family);
   font-weight: 500;
   font-size: 0.9rem;
   cursor: pointer;
@@ -35,7 +35,7 @@
   width: 8rem;
   border-radius: 8px 8px 0px 0px;
   color: #fff;
-  font-family: "Lato", sans-serif;
+  font-family: var(--app-font-family);
   font-weight: 500;
   font-size: 0.9rem;
   cursor: pointer;
@@ -51,7 +51,7 @@
   width: 10rem;
   border-radius: 8px 8px 0px 0px !important;
   color: #fff;
-  font-family: "Lato", sans-serif;
+  font-family: var(--app-font-family);
   font-weight: 500;
   font-size: 0.9rem;
   cursor: pointer;

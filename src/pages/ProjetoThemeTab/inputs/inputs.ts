@@ -136,6 +136,7 @@ type ThemeInputsOptions = {
 };
 
 const fontOptions = [
+  { label: "Poppins", value: "Poppins" },
   { label: "Inter", value: "Inter" },
   { label: "Lato", value: "Lato" },
   { label: "Work Sans", value: "Work Sans" },
@@ -151,7 +152,7 @@ const highlightToneOptions = [
 export const buildThemeDefaultValues = (): ThemeFormValues => ({
   showHero: true,
   background: "linear-gradient(180deg, #f4f4f4 0%, #f4f4f4 100%)",
-  fontFamily: "Inter",
+  fontFamily: "Poppins",
   inputBackground: "#ffffff",
   inputBorderColor: "rgba(15, 23, 42, 0.16)",
   inputTransparent: false,
