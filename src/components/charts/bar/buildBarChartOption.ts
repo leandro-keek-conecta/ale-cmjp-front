@@ -37,6 +37,8 @@ export function buildBarChartOption({
       axisLine: { show: false },
       axisTick: { show: false },
       axisLabel: {
+        interval: 0,
+        hideOverlap: false,
         color: "#64748b",
         fontSize: 11,
       },
@@ -44,6 +46,8 @@ export function buildBarChartOption({
 
     yAxis: {
       type: "value",
+      minInterval: 1, 
+      min: 0,
       axisLine: { show: false },
       axisTick: { show: false },
       axisLabel: {

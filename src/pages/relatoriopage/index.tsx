@@ -50,6 +50,10 @@ type ReportCard = {
 };
 
 const DEFAULT_VALUE_KEYS = ["value", "total", "count"] as const;
+const BAR_RACE_DEFAULT_HEIGHT = 360;
+const BAR_RACE_MIN_HEIGHT = 180;
+const BAR_RACE_BASE_HEIGHT = 128;
+const BAR_RACE_ROW_HEIGHT = 54;
 
 const STATUS_LABELS: Record<ResponseStatus, string> = {
   STARTED: "Iniciadas",
@@ -408,6 +412,19 @@ const deriveCompletionRate = (
   return Math.round((completed / total) * 100);
 };
 
+const getSharedBarRaceHeight = (...series: ChartDatum[][]) => {
+  const maxItems = Math.max(0, ...series.map((items) => items.length));
+
+  if (maxItems <= 0) {
+    return BAR_RACE_MIN_HEIGHT;
+  }
+
+  return Math.min(
+    BAR_RACE_DEFAULT_HEIGHT,
+    Math.max(BAR_RACE_MIN_HEIGHT, BAR_RACE_BASE_HEIGHT + maxItems * BAR_RACE_ROW_HEIGHT),
+  );
+};
+
 export default function RelatorioPage() {
   const [cardsData, setCardsData] = useState<ReportCard[]>([]);
   const [metricsLoading, setMetricsLoading] = useState(true);
@@ -585,6 +602,10 @@ export default function RelatorioPage() {
     void fetchMetrics(params);
   }
 
+  const sharedBarRaceHeight = metricsLoading
+    ? BAR_RACE_DEFAULT_HEIGHT
+    : getSharedBarRaceHeight(responsesByFormData, statusFunnelData);
+
   return (
     <Layout titulo="Tela de Relatório">
       <Box className={styles.container}>
@@ -702,11 +723,15 @@ export default function RelatorioPage() {
         </Box>
 
         <Box className={styles.gridContainerOndeLine} sx={{ marginTop: "1rem" }}>
-          <CardGridReflect span={6} style={{ marginBottom: 0 }} disablePadding>
+          <CardGridReflect
+            span={6}
+            style={{ marginBottom: 0, display: "flex", flexDirection: "column" }}
+            disablePadding
+          >
             <h5 style={{ margin: "1rem" }}>Formulários com mais respostas</h5>
             <BarRaceChart
               data={responsesByFormData}
-              height={360}
+              height={sharedBarRaceHeight}
               loading={metricsLoading}
             />
           </CardGridReflect>
@@ -720,7 +745,11 @@ export default function RelatorioPage() {
             <h5 style={{ margin: "1rem", marginBottom: "2rem" }}>
               Funil de status
             </h5>
-            <BarRaceChart data={statusFunnelData} height={360} loading={metricsLoading} />
+            <BarRaceChart
+              data={statusFunnelData}
+              height={sharedBarRaceHeight}
+              loading={metricsLoading}
+            />
           </CardGridReflect>
         </Box>
       </Box>

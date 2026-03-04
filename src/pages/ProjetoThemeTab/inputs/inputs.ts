@@ -367,27 +367,6 @@ export const getThemeInputs = (
       colSpan: 12,
     },
     {
-      name: "inputBackground",
-      title: "Fundo dos inputs",
-      placeholder: "#ffffff ou rgba(...)",
-      type: "text",
-      colSpan: 6,
-      sectionTitle: "Inputs",
-    },
-    {
-      name: "inputBorderColor",
-      title: "Borda dos inputs",
-      placeholder: "#d0d7de",
-      type: "text",
-      colSpan: 6,
-    },
-    {
-      name: "inputTransparent",
-      title: "Remover fundo dos inputs",
-      type: "switch",
-      colSpan: 12,
-    },
-    {
       name: "kicker",
       title: "Kicker",
       placeholder: "Texto pequeno acima do título",

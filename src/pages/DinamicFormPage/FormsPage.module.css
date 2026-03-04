@@ -65,6 +65,33 @@
   border-radius: 12px !important;
 }
 
+.opinionSummaryTextBox {
+  width: 100%;
+  max-width: 720px;
+  text-align: left;
+}
+
+.opinionSummaryText {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  line-height: 1.55;
+}
+
+.moreLink {
+  margin-left: 0.25rem;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: #1976d2;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+}
+
+.moreLink:hover {
+  text-decoration: underline;
+}
+
 @media (max-width: 900px) {
   .formBox {
     padding: 1.5rem;

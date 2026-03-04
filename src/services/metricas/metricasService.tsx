@@ -22,6 +22,15 @@ export async function getFiltros(projetoId: number) {
   return api.get(`/form-response/metrics/filters?projetoId=${projetoId}`);
 }
 
+export async function getFiltrosPorFormulario(
+  projetoId: number,
+  formId: number,
+) {
+  return api.get("/form-response/metrics/form-filters", {
+    params: { projetoId, formId },
+  });
+}
+
 export async function getMetricas(projetoId: number) {
   const { today } = getDateRange();
   return api.get(
