@@ -288,7 +288,9 @@ export default function LoginPage() {
                 control={<Checkbox size="small" disabled={isBusy} />}
                 label="Manter sessão ativa"
               />
-              <Typography>Esqueci minha senha</Typography>
+              <Typography className={styles.forgotPasswordText}>
+                Esqueci minha senha
+              </Typography>
             </Box>
 
             <Button

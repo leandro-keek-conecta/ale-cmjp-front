@@ -151,7 +151,11 @@
   padding: 44px;
   text-align: center;
   background:
-    radial-gradient(circle at top, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.92)),
+    radial-gradient(
+      circle at top,
+      rgba(255, 255, 255, 0.96),
+      rgba(255, 255, 255, 0.92)
+    ),
     linear-gradient(135deg, rgba(15, 118, 110, 0.08), rgba(37, 99, 235, 0.08));
   backdrop-filter: blur(10px);
   opacity: 0;
@@ -373,10 +377,25 @@
   display: flex;
   flex-direction: row;
   align-items: center;
+  justify-content: space-between;
+}
+
+.rememberControl {
+  margin-right: 0 !important;
+}
+
+.rememberControl :global(.MuiFormControlLabel-label) {
+  font-size: 0.8rem;
+}
+
+.forgotPasswordText {
+  margin-left: auto;
+  font-size: 0.8rem !important;
+  white-space: nowrap;
 }
 
 .forgotLink {
-  font-size: 14px;
+  font-size: 8px;
   color: var(--login-primary);
   margin-left: auto;
   white-space: nowrap;
@@ -519,6 +538,10 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 8px;
+  }
+
+  .forgotPasswordText {
+    margin-left: 0;
   }
 
   .forgotLink {
