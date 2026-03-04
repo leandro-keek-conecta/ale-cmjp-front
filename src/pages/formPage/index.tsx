@@ -502,7 +502,7 @@ export default function FormsPage() {
                       {false && summary?.texto_opiniao && (
                         <Chip
                           label={`Pesquisa por palavra chave”: ${getOpinionPreviewText(
-                            summary.texto_opiniao,
+                            summary?.texto_opiniao ?? "",
                           )}`}
                           onClick={() => setIsOpinionTextModalOpen(true)}
                           clickable
