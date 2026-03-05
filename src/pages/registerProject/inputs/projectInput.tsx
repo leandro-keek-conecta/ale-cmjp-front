@@ -47,13 +47,13 @@ export const getProjetoBasicInputs = (
     {
       name: "corHex",
       title: "Cor Principal (Hex)",
-      placeholder: "#0b5cff",
+      placeholder: "#5070dd",
       type: "text",
       colSpan: 6,
       rules: {
         pattern: {
           value: /^#([0-9A-Fa-f]{6})$/,
-          message: "Informe um HEX válido (ex: #0b5cff)",
+          message: "Informe um HEX válido (ex: #5070dd)",
         },
       },
     },

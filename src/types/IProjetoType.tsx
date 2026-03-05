@@ -6,6 +6,8 @@ export type ThemeConfig = {
   highlightTone?: string;
   inputBackground?: string;
   inputBorderColor?: string;
+  inputTextColor?: string;
+  inputPlaceholderColor?: string;
   inputTransparent?: boolean;
   // adicione outros tokens globais se o front usar
 };

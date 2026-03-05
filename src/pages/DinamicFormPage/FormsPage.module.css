@@ -68,10 +68,13 @@
 .opinionSummaryTextBox {
   width: 100%;
   max-width: 720px;
+  min-width: 0;
   text-align: left;
 }
 
 .opinionSummaryText {
+  max-width: 100%;
+  white-space: normal;
   word-break: break-word;
   overflow-wrap: anywhere;
   line-height: 1.55;

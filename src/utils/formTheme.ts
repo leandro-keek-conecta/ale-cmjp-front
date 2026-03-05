@@ -5,6 +5,8 @@ export type FormThemeStyle = CSSProperties & Record<`--${string}`, string>;
 
 const DEFAULT_INPUT_BACKGROUND = "#ffffff";
 const DEFAULT_INPUT_BORDER = "rgba(15, 23, 42, 0.16)";
+const DEFAULT_INPUT_TEXT = "#374151";
+const DEFAULT_INPUT_PLACEHOLDER = "#9ca3af";
 
 const getText = (value: unknown) => {
   if (typeof value !== "string") return "";
@@ -22,11 +24,19 @@ const resolveInputBackground = (themeConfig?: Partial<ThemeConfig>) => {
 const resolveInputBorderColor = (themeConfig?: Partial<ThemeConfig>) =>
   getText(themeConfig?.inputBorderColor) || DEFAULT_INPUT_BORDER;
 
+const resolveInputTextColor = (themeConfig?: Partial<ThemeConfig>) =>
+  getText(themeConfig?.inputTextColor) || DEFAULT_INPUT_TEXT;
+
+const resolveInputPlaceholderColor = (themeConfig?: Partial<ThemeConfig>) =>
+  getText(themeConfig?.inputPlaceholderColor) || DEFAULT_INPUT_PLACEHOLDER;
+
 export const buildInputThemeStyle = (
   themeConfig?: Partial<ThemeConfig>,
 ): FormThemeStyle => ({
   "--form-input-background": resolveInputBackground(themeConfig),
   "--form-input-border": resolveInputBorderColor(themeConfig),
+  "--form-input-text": resolveInputTextColor(themeConfig),
+  "--form-input-placeholder": resolveInputPlaceholderColor(themeConfig),
 });
 
 export const buildPageThemeStyle = (
@@ -79,10 +89,15 @@ export const buildThemedInputSx = ({
     padding,
     borderRadius: "8px",
     fontSize,
+    color: "var(--form-input-text, #374151)",
     ...(fontWeight ? { fontWeight } : {}),
     ...(cursor ? { cursor } : {}),
   },
+  "& .MuiInputBase-input.Mui-disabled": {
+    WebkitTextFillColor: "var(--form-input-text, #374151)",
+  },
   "& .MuiInputBase-input::placeholder": {
+    color: "var(--form-input-placeholder, #9ca3af)",
     opacity: 1,
   },
 });

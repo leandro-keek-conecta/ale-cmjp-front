@@ -55,6 +55,8 @@ export type SubmitSummary = {
   texto_opiniao?: string;
 };
 
+const OPINION_PREVIEW_LIMIT = 120;
+
 const formatPhoneInput = (value: string) => {
   const digits = value.replace(/\D/g, "").slice(0, 11);
   const ddd = digits.slice(0, 2);
@@ -871,7 +873,9 @@ export default function DinamicFormsPage() {
   };
 
   const getOpinionPreviewText = (text: string) =>
-    text.length > 70 ? `${text.slice(0, 70)}...` : text;
+    text.length > OPINION_PREVIEW_LIMIT
+      ? text.slice(0, OPINION_PREVIEW_LIMIT).trimEnd()
+      : text;
 
   const isFormStep = currentStep < pages.length;
   const showBackButton = currentStep > 0 && currentStep < pages.length;
@@ -1024,26 +1028,33 @@ export default function DinamicFormsPage() {
                         >
                           {summary?.tema && <Chip label={`Tema: ${summary.tema}`} />}
                           {summary?.tipo && <Chip label={`Tipo: ${summary.tipo}`} />}
-                          {summary?.texto_opiniao && (
-                            <Chip
-                              label={`Texto da opiniao: ${getOpinionPreviewText(
-                                summary.texto_opiniao,
-                              )}`}
-                              onClick={() => setIsOpinionTextModalOpen(true)}
-                              clickable
-                              title="Ver texto completo"
-                              sx={{
-                                maxWidth: "100%",
-                                ".MuiChip-label": {
-                                  maxWidth: "100%",
-                                  overflow: "hidden",
-                                  textOverflow: "ellipsis",
-                                  whiteSpace: "nowrap",
-                                },
-                              }}
-                            />
-                          )}
                         </Stack>
+
+                        {summary?.texto_opiniao && (
+                          <Box className={styles.opinionSummaryTextBox}>
+                            <Typography
+                              variant="body2"
+                              color="text.secondary"
+                              className={styles.opinionSummaryText}
+                            >
+                              <Box component="span" fontWeight={600}>
+                                Texto da opiniao:
+                              </Box>{" "}
+                              {getOpinionPreviewText(summary.texto_opiniao)}
+                              {summary.texto_opiniao.length >
+                              OPINION_PREVIEW_LIMIT ? (
+                                <Box
+                                  component="button"
+                                  type="button"
+                                  className={styles.moreLink}
+                                  onClick={() => setIsOpinionTextModalOpen(true)}
+                                >
+                                  ...ver mais
+                                </Box>
+                              ) : null}
+                            </Typography>
+                          </Box>
+                        )}
 
                         <Divider sx={{ width: "100%", maxWidth: 720 }} />
 
