@@ -1073,7 +1073,14 @@ export default function ConstructorForm() {
       const fieldOption = FIELD_OPTIONS.find((option) => option.id === fieldType);
       if (!fieldOption) return;
 
-      const newField = createBuilderField(fieldType, fieldOption.label);
+      const existingFieldNames = fieldRows.flatMap((row) =>
+        row.map((field) => field.name),
+      );
+      const newField = createBuilderField(
+        fieldType,
+        fieldOption.label,
+        existingFieldNames,
+      );
 
       setFormBlocks((previous) => {
         if (!previous.length) {
