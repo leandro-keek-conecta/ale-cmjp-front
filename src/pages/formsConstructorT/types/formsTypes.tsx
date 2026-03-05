@@ -135,18 +135,45 @@ function resolveGeneratedFieldPrefix(type: FieldType, normalizedLabel: string) {
   return normalizedLabel || normalizeFieldName(type) || "campo";
 }
 
-export function createBuilderField(type: FieldType, label: string): BuilderField {
+function createUniqueFieldName(
+  baseName: string,
+  existingFieldNames: string[],
+) {
+  const normalizedBase = normalizeFieldName(baseName) || "campo";
+  const normalizedExistingNames = new Set(
+    existingFieldNames
+      .map((name) => normalizeFieldName(name))
+      .filter(Boolean),
+  );
+
+  if (!normalizedExistingNames.has(normalizedBase)) {
+    return normalizedBase;
+  }
+
+  let suffix = 2;
+  let candidate = `${normalizedBase}_${suffix}`;
+
+  while (normalizedExistingNames.has(candidate)) {
+    suffix += 1;
+    candidate = `${normalizedBase}_${suffix}`;
+  }
+
+  return candidate;
+}
+
+export function createBuilderField(
+  type: FieldType,
+  label: string,
+  existingFieldNames: string[] = [],
+): BuilderField {
   const id = createFieldId();
   const normalizedLabel = normalizeFieldName(label);
   const prefix = resolveGeneratedFieldPrefix(type, normalizedLabel);
-  const uniqueSuffix = id
-    .replace(/[^a-z0-9]/gi, "")
-    .toLowerCase()
-    .slice(-10);
+  const name = createUniqueFieldName(prefix, existingFieldNames);
 
   return {
     id,
-    name: `${prefix}_${uniqueSuffix}`,
+    name,
     type,
     label,
     placeholder: `Campo ${label.toLowerCase()}`,
