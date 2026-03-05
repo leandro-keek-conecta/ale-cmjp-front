@@ -17,15 +17,15 @@ import TopicIcon from "@mui/icons-material/Topic";
 import DynamicFormIcon from "@mui/icons-material/DynamicForm";
 import { useAuth } from "@/context/AuthContext";
 import { listAllProjects } from "@/services/projeto/ProjetoService";
-import { getStoredProjectId } from "@/utils/project";
+import { useProjectContext } from "@/context/ProjectContext";
 import {
   buildThemeRoutePath,
-  extractThemesFromProject,
   filterThemesByScope,
   getProjectAllowedThemes,
   getStoredHiddenTabs,
   isScreenHidden,
   normalizeAccessKey,
+  normalizeStringList,
 } from "@/utils/userProjectAccess";
 
 interface PropriedadesSidebar {
@@ -39,8 +39,6 @@ type ProjectThemeSource = {
   id?: unknown;
   projetoId?: unknown;
   temasDoProjeto?: unknown;
-  metrics?: unknown;
-  projeto?: unknown;
 };
 
 const getThemeIcon = (themeLabel: string) => {
@@ -59,62 +57,16 @@ const getThemeIcon = (themeLabel: string) => {
   return <AssessmentIcon />;
 };
 
-const toProjectId = (source: unknown): number | null => {
-  if (!source || typeof source !== "object") return null;
-
-  const entry = source as ProjectThemeSource;
-  if (typeof entry.id === "number") return entry.id;
-  if (typeof entry.projetoId === "number") return entry.projetoId;
-
-  if (entry.projeto && typeof entry.projeto === "object") {
-    return toProjectId(entry.projeto);
-  }
-
-  return null;
-};
-
-const extractThemesFromUser = (
-  user: unknown,
-  selectedProjectId: number | null,
-): string[] => {
-  if (!user || typeof user !== "object") return [];
-
-  const source = user as Record<string, unknown>;
-  const projectCandidates: unknown[] = [];
-
-  if (source.projeto && typeof source.projeto === "object") {
-    projectCandidates.push(source.projeto);
-  }
-
-  if (Array.isArray(source.projetos)) {
-    source.projetos.forEach((project) => {
-      if (!project || typeof project !== "object") return;
-      const entry = project as Record<string, unknown>;
-      const nestedProject =
-        entry.projeto && typeof entry.projeto === "object"
-          ? entry.projeto
-          : project;
-      projectCandidates.push(nestedProject);
-    });
-  }
-
-  if (typeof selectedProjectId === "number") {
-    const selectedProject = projectCandidates.find(
-      (project) => toProjectId(project) === selectedProjectId,
+const toProjectThemeList = (payload: unknown): ProjectThemeSource[] => {
+  if (Array.isArray(payload)) {
+    return payload.filter(
+      (entry): entry is ProjectThemeSource =>
+        Boolean(entry && typeof entry === "object"),
     );
-    if (selectedProject) {
-      const selectedThemes = extractThemesFromProject(selectedProject);
-      if (selectedThemes.length) {
-        return selectedThemes;
-      }
-    }
   }
 
-  for (const project of projectCandidates) {
-    const themes = extractThemesFromProject(project);
-    if (themes.length) {
-      return themes;
-    }
+  if (payload && typeof payload === "object") {
+    return [payload as ProjectThemeSource];
   }
 
   return [];
@@ -123,8 +75,8 @@ const extractThemesFromUser = (
 export function Sidebar({ estaAberta, aoFechar }: PropriedadesSidebar) {
   const location = useLocation();
   const { user } = useAuth();
+  const { projectId: selectedProjectId } = useProjectContext();
   const [projectThemes, setProjectThemes] = useState<string[]>([]);
-  const selectedProjectId = getStoredProjectId();
   const hiddenTabs = useMemo(
     () => getStoredHiddenTabs(selectedProjectId),
     [selectedProjectId, user],
@@ -140,44 +92,44 @@ export function Sidebar({ estaAberta, aoFechar }: PropriedadesSidebar) {
   const themeRoutes = useMemo(
     () =>
       filterThemesByScope(projectThemes, allowedThemes)
-        .filter((theme) => !isScreenHidden(hiddenTabs, buildThemeRoutePath(theme)))
+        .filter(
+          (theme) => !isScreenHidden(hiddenTabs, buildThemeRoutePath(theme)),
+        )
         .map((theme) => ({
-        label: theme,
-        path: buildThemeRoutePath(theme),
-      })),
+          label: theme,
+          path: buildThemeRoutePath(theme),
+        })),
     [allowedThemes, hiddenTabs, projectThemes],
   );
 
   useEffect(() => {
-    setProjectThemes(extractThemesFromUser(user, selectedProjectId));
-  }, [user, selectedProjectId]);
-
-  useEffect(() => {
-    if (typeof user?.id !== "number") return;
+    if (typeof selectedProjectId !== "number") {
+      setProjectThemes([]);
+      return;
+    }
 
     let cancelled = false;
+    setProjectThemes([]);
 
     const loadThemes = async () => {
       try {
-        const projects = await listAllProjects(user.id as number);
-        if (cancelled || !Array.isArray(projects)) return;
+        const projects = await listAllProjects(selectedProjectId);
+        if (cancelled) return;
 
-        const projectList = projects as ProjectThemeSource[];
+        const projectList = toProjectThemeList(projects);
         const selectedProject =
-          typeof selectedProjectId === "number"
-            ? projectList.find(
-                (project) => toProjectId(project) === selectedProjectId,
-              )
-            : projectList[0];
+          projectList.length > 0 ? projectList[projectList.length - 1] : null;
 
-        if (!selectedProject) return;
-
-        const themes = extractThemesFromProject(selectedProject);
-        if (themes.length) {
-          setProjectThemes(themes);
+        if (!selectedProject) {
+          setProjectThemes([]);
+          return;
         }
+
+        setProjectThemes(normalizeStringList(selectedProject.temasDoProjeto));
       } catch {
-        // fallback to themes already available in user context
+        if (!cancelled) {
+          setProjectThemes([]);
+        }
       }
     };
 
@@ -186,7 +138,7 @@ export function Sidebar({ estaAberta, aoFechar }: PropriedadesSidebar) {
     return () => {
       cancelled = true;
     };
-  }, [selectedProjectId, user?.id]);
+  }, [selectedProjectId]);
 
   const isActive = (path: string) => {
     if (path === "/") return location.pathname === "/";
