@@ -109,7 +109,7 @@ function createFieldId() {
   return `${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
 }
 
-function normalizeFieldName(value: string) {
+export function normalizeFieldName(value: string) {
   return value
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
@@ -118,24 +118,7 @@ function normalizeFieldName(value: string) {
     .replace(/^_+|_+$/g, "");
 }
 
-function resolveGeneratedFieldPrefix(type: FieldType, normalizedLabel: string) {
-  if (type === "textarea") {
-    return "texto_opiniao";
-  }
-
-  if (
-    type === "text" &&
-    /(?:opiniao|descricao|comentario|mensagem|relato|detalhe)/.test(
-      normalizedLabel,
-    )
-  ) {
-    return "texto_opiniao";
-  }
-
-  return normalizedLabel || normalizeFieldName(type) || "campo";
-}
-
-function createUniqueFieldName(
+export function createUniqueFieldName(
   baseName: string,
   existingFieldNames: string[],
 ) {
@@ -161,15 +144,20 @@ function createUniqueFieldName(
   return candidate;
 }
 
+export function createFieldNameFromLabel(
+  label: string,
+  existingFieldNames: string[] = [],
+) {
+  return createUniqueFieldName(label, existingFieldNames);
+}
+
 export function createBuilderField(
   type: FieldType,
   label: string,
   existingFieldNames: string[] = [],
 ): BuilderField {
   const id = createFieldId();
-  const normalizedLabel = normalizeFieldName(label);
-  const prefix = resolveGeneratedFieldPrefix(type, normalizedLabel);
-  const name = createUniqueFieldName(prefix, existingFieldNames);
+  const name = createFieldNameFromLabel(label, existingFieldNames);
 
   return {
     id,
