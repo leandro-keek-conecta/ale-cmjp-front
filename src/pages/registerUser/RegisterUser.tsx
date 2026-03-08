@@ -70,14 +70,13 @@ type AlertState = {
 
 type ProjetoRequestPayload = {
   id: number;
-  access: ProjetoAccessLevel;
   hiddenTabs?: string[];
-  allowedThemes?: string[];
+  temasPermitidos?: string[];
 };
 
 const buildDefaultValues = (): FormValues => ({
   id: undefined,
-  projetos: [createEmptyProjetoSelection()],
+  projetos: [],
   name: "",
   email: "",
   gender: "",
@@ -89,7 +88,7 @@ const buildDefaultValues = (): FormValues => ({
 
 const createEmptyProjetoSelection = (): ProjetoFormValue => ({
   projetoId: null,
-  access: null,
+  access: "FULL_ACCESS",
   hiddenTabs: [],
   allowedThemes: [],
 });
@@ -105,23 +104,29 @@ const SYSTEM_SCREENS: SelectOption<string>[] = [
 
 const normalizeProjetosForRequest = (
   projetos: ProjetoFormValue[] | undefined,
+  role: FormValues["role"],
 ): ProjetoRequestPayload[] => {
   if (!Array.isArray(projetos)) return [];
   const seen = new Set<number>();
   return projetos
     .map((project) => {
       const id = project?.projetoId;
-      const access = project?.access ?? null;
-      if (typeof id !== "number" || !access) return null;
+      if (typeof id !== "number") return null;
       if (seen.has(id)) return null;
       seen.add(id);
+
+      const hiddenTabs = Array.isArray(project?.hiddenTabs)
+        ? project.hiddenTabs.filter(Boolean)
+        : [];
+      const temasPermitidos =
+        role === "USER"
+          ? normalizeStringList(project?.allowedThemes)
+          : [];
+
       return {
         id,
-        access,
-        hiddenTabs: Array.isArray(project?.hiddenTabs)
-          ? project.hiddenTabs
-          : [],
-        allowedThemes: normalizeStringList(project?.allowedThemes),
+        ...(hiddenTabs.length ? { hiddenTabs } : {}),
+        ...(temasPermitidos.length ? { temasPermitidos } : {}),
       };
     })
     .filter(Boolean) as ProjetoRequestPayload[];
@@ -167,14 +172,16 @@ const mapUserProjects = (user: User): ProjetoFormValue[] => {
         if (typeof id !== "number") return null;
         return {
           projetoId: id,
-          access: project?.access ?? null,
+          access: project?.access ?? "FULL_ACCESS",
           hiddenTabs: project?.hiddenTabs ?? [],
-          allowedThemes: normalizeStringList(project?.allowedThemes),
+          allowedThemes: normalizeStringList(
+            project?.temasPermitidos ?? project?.allowedThemes,
+          ),
         };
       })
       .filter(Boolean) as ProjetoFormValue[];
 
-    return mapped.length ? mapped : [createEmptyProjetoSelection()];
+    return mapped;
   }
 
   const fallbackId = user?.projetoId ?? user?.projeto?.id;
@@ -182,14 +189,14 @@ const mapUserProjects = (user: User): ProjetoFormValue[] => {
     return [
       {
         projetoId: fallbackId,
-        access: null,
+        access: "FULL_ACCESS",
         hiddenTabs: [],
         allowedThemes: [],
       },
     ];
   }
 
-  return [createEmptyProjetoSelection()];
+  return [];
 };
 
 const mapUserToFormValues = (user: User): FormValues => ({
@@ -241,6 +248,11 @@ export default function RegisterUser() {
     control,
     name: "projetos",
   });
+  const watchedRole = useWatch({
+    control,
+    name: "role",
+  });
+  const isCommonUserRole = watchedRole === "USER";
   const roleOptions = useMemo(
     () => getAssignableRoleOptions(user?.role),
     [user?.role],
@@ -315,7 +327,7 @@ export default function RegisterUser() {
       }
 
       if (!Array.isArray(projectLinks) || !projectLinks.length) {
-        return false;
+        return true;
       }
 
       return projectLinks.some((projectLink) =>
@@ -507,6 +519,18 @@ export default function RegisterUser() {
     });
   }, [loadThemesForProject, watchedProjects]);
 
+  useEffect(() => {
+    if (watchedRole === "USER" || !Array.isArray(watchedProjects)) {
+      return;
+    }
+
+    watchedProjects.forEach((projectEntry, index) => {
+      if (Array.isArray(projectEntry?.allowedThemes) && projectEntry.allowedThemes.length) {
+        setValue(`projetos.${index}.allowedThemes`, []);
+      }
+    });
+  }, [setValue, watchedProjects, watchedRole]);
+
   const tableRows = useMemo(() => {
     const optionsById = new Map(
       projectOptions.map((option) => [option.value, option.label]),
@@ -550,7 +574,7 @@ export default function RegisterUser() {
       projetos:
         selected.projetos && selected.projetos.length
           ? selected.projetos
-          : [createEmptyProjetoSelection()],
+          : [],
       password: "",
       passwordConfirm: "",
     });
@@ -602,25 +626,23 @@ export default function RegisterUser() {
       if (hasUnmanageableProject) {
         throw new Error("Voce nao pode cadastrar usuarios neste projeto.");
       }
-      const projetosPayload = normalizeProjetosForRequest(projetos);
-
-      if (projetosPayload.length === 0) {
-        throw new Error("Selecione ao menos um projeto e nivel de acesso.");
-      }
+      const projetosPayload = normalizeProjetosForRequest(projetos, rest.role);
 
       const password = rest.password;
       if (!password) {
         throw new Error("Informe uma senha para criar o usuário.");
       }
 
+      if (password !== rest.passwordConfirm) {
+        throw new Error("As senhas informadas nao coincidem.");
+      }
+
       await createUser({
         email: rest.email,
         name: rest.name,
         password,
-        gender: rest.gender,
-        profession: rest.profession,
         role: rest.role,
-        projetos: projetosPayload,
+        ...(projetosPayload.length ? { projetos: projetosPayload } : {}),
       });
 
       if (isMountedRef.current) {
@@ -660,7 +682,7 @@ export default function RegisterUser() {
     try {
       setLoading(true);
       setAlert({ show: false });
-      const { projetos, password, passwordConfirm, ...rest } = data;
+      const { projetos, ...rest } = data;
       const id = rest.id;
       if (typeof id !== "number") {
         throw new Error("Usuário inválido para atualização.");
@@ -673,17 +695,13 @@ export default function RegisterUser() {
         throw new Error("Voce nao pode editar usuarios neste projeto.");
       }
 
-      const projetosPayload = normalizeProjetosForRequest(projetos);
-      if (projetosPayload.length === 0) {
-        throw new Error("Selecione ao menos um projeto e nivel de acesso.");
-      }
+      const projetosPayload = normalizeProjetosForRequest(projetos, rest.role);
 
       await updateUser({
         id,
         email: rest.email,
         name: rest.name,
         role: rest.role,
-        profession: rest.profession,
         projetos: projetosPayload,
       });
 
@@ -816,7 +834,7 @@ export default function RegisterUser() {
                         )}
                       />
                     </Box>
-                    <Box sx={{ flex: 1 }}>
+                    <Box sx={{ flex: 1, display: "none" }}>
                       <Controller
                         name={`projetos.${index}.access`}
                         control={control}
@@ -834,7 +852,12 @@ export default function RegisterUser() {
                         )}
                       />
                     </Box>
-                    <Box sx={{ flex: 1 }}>
+                    <Box
+                      sx={{
+                        flex: 1,
+                        display: isCommonUserRole ? "block" : "none",
+                      }}
+                    >
                       <Controller
                         name={`projetos.${index}.allowedThemes`}
                         control={control}
@@ -895,7 +918,7 @@ export default function RegisterUser() {
                         )}
                       />
                     </Box>
-                    {fields.length > 1 && (
+                    {fields.length >= 1 && (
                       <IconButton
                         type="button"
                         aria-label="Remover projeto"

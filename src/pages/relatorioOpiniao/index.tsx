@@ -32,6 +32,11 @@ import getFilterInputs, {
 } from "./inputs/inputListFilter";
 import type { ChartDatum } from "@/types/ChartDatum";
 import { useParams } from "react-router-dom";
+import { useProjectContext } from "@/context/ProjectContext";
+import {
+  filterOptionsByAllowedThemes,
+  getStoredAllowedThemes,
+} from "@/utils/userProjectAccess";
 
 type ReportCards = {
   totalOpinions?: number | string;
@@ -289,9 +294,18 @@ const getSharedBarRaceHeight = (...series: ChartDatum[][]) => {
 };
 
 export default function RelatorioOpiniao() {
+  const { projectId: selectedProjectId } = useProjectContext();
+  const allowedThemes = useMemo(
+    () => getStoredAllowedThemes(selectedProjectId),
+    [selectedProjectId],
+  );
   const { tema: routeTheme } = useParams<{ tema?: string }>();
   const fixedTheme = useMemo(() => decodeRouteTheme(routeTheme), [routeTheme]);
   const hasFixedTheme = fixedTheme.length > 0;
+  const autoSelectedTheme =
+    !hasFixedTheme && allowedThemes.length === 1 ? allowedThemes[0] : "";
+  const effectiveForcedTheme = fixedTheme || autoSelectedTheme;
+  const hideTemaFilter = hasFixedTheme || autoSelectedTheme.length > 0;
 
   const [cardsData, setCardsData] = useState<ReportCard[]>([]);
   const [metricsLoading, setMetricsLoading] = useState(true);
@@ -313,7 +327,7 @@ export default function RelatorioOpiniao() {
     handleSubmit: handleFilterSubmit,
     reset: resetFilterForm,
   } = useForm<FilterFormValues>({
-    defaultValues: buildFilternDefaultValues(fixedTheme || null),
+    defaultValues: buildFilternDefaultValues(effectiveForcedTheme || null),
   });
 
   const activeRef = useRef(true);
@@ -325,10 +339,10 @@ export default function RelatorioOpiniao() {
 
         const requestParams = params ?? {};
         const scopedParams =
-          hasFixedTheme && fixedTheme
+          effectiveForcedTheme
             ? {
                 ...requestParams,
-                temas: fixedTheme,
+                temas: effectiveForcedTheme,
               }
             : requestParams;
 
@@ -400,7 +414,10 @@ export default function RelatorioOpiniao() {
         if (typedFilters) {
           setFilterSelectOptions({
             tipo: mapSelectOptions(typedFilters.tipoOpiniao),
-            tema: mapSelectOptions(typedFilters.temas),
+            tema: filterOptionsByAllowedThemes(
+              mapSelectOptions(typedFilters.temas),
+              allowedThemes,
+            ),
             genero: mapSelectOptions(typedFilters.genero),
             faixaEtaria: mapSelectOptions(typedFilters.faixaEtaria),
           });
@@ -421,7 +438,7 @@ export default function RelatorioOpiniao() {
         }
       }
     },
-    [fixedTheme, hasFixedTheme],
+    [allowedThemes, effectiveForcedTheme],
   );
 
   useEffect(() => {
@@ -434,9 +451,9 @@ export default function RelatorioOpiniao() {
   }, [fetchMetrics]);
 
   useEffect(() => {
-    const defaults = buildFilternDefaultValues(fixedTheme || null);
+    const defaults = buildFilternDefaultValues(effectiveForcedTheme || null);
     resetFilterForm(defaults);
-  }, [fixedTheme, resetFilterForm]);
+  }, [effectiveForcedTheme, resetFilterForm]);
 
   useEffect(() => {
     const elements = document.querySelectorAll<HTMLElement>("[data-reveal]");
@@ -460,13 +477,16 @@ export default function RelatorioOpiniao() {
   }, []);
 
   const handleClearFilters = () => {
-    const defaults = buildFilternDefaultValues(fixedTheme || null);
+    const defaults = buildFilternDefaultValues(effectiveForcedTheme || null);
     resetFilterForm(defaults);
     void fetchMetrics();
   };
 
   async function onSubmitUser(data: FilterFormValues) {
-    const params = buildMetricsParamsFromForm(data, fixedTheme || undefined);
+    const params = buildMetricsParamsFromForm(
+      data,
+      effectiveForcedTheme || undefined,
+    );
     void fetchMetrics(params);
   }
 
@@ -510,7 +530,7 @@ export default function RelatorioOpiniao() {
             <Forms<FilterFormValues>
               errors={filterErrors}
               inputsList={getFilterInputs(filterSelectOptions, {
-                hideTema: hasFixedTheme,
+                hideTema: hideTemaFilter,
               })}
               control={filterControl}
             />{" "}

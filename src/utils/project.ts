@@ -15,6 +15,7 @@ export type ProjectLike = {
   url?: string | null;
   hiddenTabs?: string[] | null;
   allowedThemes?: string[] | null;
+  temasPermitidos?: string[] | null;
   access?: unknown;
   projeto?: ProjectLike | null;
   [key: string]: unknown;

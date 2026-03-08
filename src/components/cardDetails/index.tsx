@@ -115,11 +115,11 @@ export default function CardDetails({ opinions }: CardDetailsProps) {
           >
             <div className={styles.cardHeader}>
               <div className={styles.cardMeta}>
-                <div className={styles.name}>{item.nome || "Visitante"}</div>
+                <div className={styles.name}>{`${item.nome} ${item.sobrenome?? ""}` || "Visitante"}</div>
               </div>
             </div>
             <div className={styles.meta}>
-              <span>{item.bairro || "Bairro nao informado"}</span>
+              <span>{item.bairro ||item.bairros || "Bairro nao informado"}</span>
               <span>{formatDate(resolveOpinionDate(item))}</span>
             </div>
             <Box
@@ -140,7 +140,7 @@ export default function CardDetails({ opinions }: CardDetailsProps) {
             <Box className={styles.cardFooterContainer}>
               <div className={styles.cardFooter}>
                 {(() => {
-                  const pillType = item.opiniao || "Outro";
+                  const pillType = item.opiniao || "Não Possui";
                   const pillKey = normalize(pillType) || "outro";
                   return (
                     <span className={styles.pill} data-type={pillKey}>
@@ -151,7 +151,7 @@ export default function CardDetails({ opinions }: CardDetailsProps) {
               </div>
               <div className={styles.cardFooter}>
                 {(() => {
-                  const pillType = item.tipo_opiniao || item.opiniao || "Outro";
+                  const pillType = item.tipo_opiniao || item.opiniao || "Não Possui";
                   const pillKey = normalize(pillType) || "outro";
                   return (
                     <span className={styles.pill} data-type={pillKey}>

@@ -13,6 +13,7 @@ export type RawUserProject = {
   token?: string | null;
   hiddenTabs?: string[] | null;
   allowedThemes?: string[] | null;
+  temasPermitidos?: string[] | null;
   access?: ProjetoAccessLevel | null;
   projeto?: RawUserProject | null;
 };
@@ -24,6 +25,7 @@ export interface ProjectSelectionPayload {
   token?: string | null;
   hiddenTabs?: string[] | null;
   allowedThemes?: string[] | null;
+  temasPermitidos?: string[] | null;
   access?: ProjetoAccessLevel | null;
 }
 
@@ -93,7 +95,13 @@ export const normalizeProjectFromUser = (
   const hiddenTabs =
     project.hiddenTabs ?? nested?.hiddenTabs ?? fallback?.hiddenTabs ?? [];
   const allowedThemes =
-    project.allowedThemes ?? nested?.allowedThemes ?? fallback?.allowedThemes ?? [];
+    project.allowedThemes ??
+    project.temasPermitidos ??
+    nested?.allowedThemes ??
+    nested?.temasPermitidos ??
+    fallback?.allowedThemes ??
+    fallback?.temasPermitidos ??
+    [];
 
   return {
     id,
@@ -108,5 +116,6 @@ export const normalizeProjectFromUser = (
       : "FULL_ACCESS",
     hiddenTabs: normalizeStringList(hiddenTabs),
     allowedThemes: normalizeStringList(allowedThemes),
+    temasPermitidos: normalizeStringList(allowedThemes),
   };
 };

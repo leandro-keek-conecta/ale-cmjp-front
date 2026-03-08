@@ -3,21 +3,17 @@ import type User from "@/types/IUserType";
 import { api } from "../api/api";
 import axios from "axios";
 import type { UpdateUserDTO } from "@/types/IUpdateUserDTO";
-import type { ProjetoAccessLevel } from "@/types/IUserType";
 import type { RawUserProject } from "@/utils/projectSelection";
 
 interface CreateUserParams {
   email: string;
   name: string;
   password: string;
-  profession: string;
-  gender: string;
-  role: string;
-  projetos: {
+  role: "USER" | "ADMIN" | "SUPERADMIN";
+  projetos?: {
     id: number;
-    access: ProjetoAccessLevel;
     hiddenTabs?: string[];
-    allowedThemes?: string[];
+    temasPermitidos?: string[];
   }[];
 }
 

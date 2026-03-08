@@ -20,6 +20,7 @@ type StoredProjectContext = {
   token: string;
   hiddenTabs: string[];
   allowedThemes: string[];
+  temasPermitidos: string[];
   access: ProjetoAccessLevel;
 };
 
@@ -44,7 +45,9 @@ const normalizeProjectPayload = (
   const slug = typeof payload?.slug === "string" ? payload.slug.trim() : "";
   const token = typeof payload?.token === "string" ? payload.token : "";
   const hiddenTabs = normalizeHiddenTabs(payload?.hiddenTabs);
-  const allowedThemes = normalizeStringList(payload?.allowedThemes);
+  const allowedThemes = normalizeStringList(
+    payload?.allowedThemes ?? payload?.temasPermitidos,
+  );
   const access = isProjetoAccessLevel(payload?.access)
     ? payload.access
     : DEFAULT_ACCESS;
@@ -56,6 +59,7 @@ const normalizeProjectPayload = (
     token,
     hiddenTabs,
     allowedThemes,
+    temasPermitidos: allowedThemes,
     access,
   };
 };
@@ -137,6 +141,7 @@ const syncSelectedProjectOnUser = (selection: StoredProjectContext) => {
         token: selection.token || baseProject?.token || "",
         hiddenTabs: selection.hiddenTabs,
         allowedThemes: selection.allowedThemes,
+        temasPermitidos: selection.temasPermitidos,
         access: selection.access,
       },
     };

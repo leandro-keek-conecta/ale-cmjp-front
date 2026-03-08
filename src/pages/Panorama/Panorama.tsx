@@ -57,8 +57,10 @@ export type Opinion = {
   id: number | string;
   usuario_id?: number | string;
   nome?: string;
+  sobrenome?: string;
   telefone?: string;
   bairro?: string;
+  bairros?: string;
   campanha?: string;
   horario?: string | null;
   startedAt?: string | null;
@@ -94,11 +96,13 @@ type DynamicFormFiltersPayload = {
 
 const ALL_FORMS_VALUE = "__all__" as const;
 
-const buildFilternDefaultValues = (): FilterFormValues => ({
+const buildFilternDefaultValues = (
+  forcedTema?: string | null,
+): FilterFormValues => ({
   dataInicio: null,
   dataFim: null,
   tipo: "",
-  tema: "",
+  tema: forcedTema ?? "",
   bairro: "",
   genero: "",
   faixaEtaria: "",
@@ -329,6 +333,8 @@ export default function Panorama() {
     () => getStoredAllowedThemes(selectedProjectId),
     [selectedProjectId],
   );
+  const autoSelectedTheme = allowedThemes.length === 1 ? allowedThemes[0] : "";
+  const hideTemaFilter = autoSelectedTheme.length > 0;
   const [panoramaTheme, setPanoramaTheme] = useState<PanoramaThemeConfig>(
     DEFAULT_PANORAMA_THEME,
   );
@@ -340,7 +346,7 @@ export default function Panorama() {
     Partial<FilterSelectOptions>
   >({});
   const [filters, setFilters] = useState<FiltersState>(() =>
-    mapFilterFormToState(buildFilternDefaultValues()),
+    mapFilterFormToState(buildFilternDefaultValues(autoSelectedTheme || null)),
   );
   const [todayOpinions, setTodayOpinions] = useState<number>(0);
   const [error, setError] = useState("");
@@ -395,16 +401,16 @@ export default function Panorama() {
     handleSubmit: handleFilterSubmit,
     reset: resetFilterForm,
   } = useForm<FilterFormValues>({
-    defaultValues: buildFilternDefaultValues(),
+    defaultValues: buildFilternDefaultValues(autoSelectedTheme || null),
   });
 
   useEffect(() => {
-    const defaults = buildFilternDefaultValues();
+    const defaults = buildFilternDefaultValues(autoSelectedTheme || null);
     setSelectedFormId(null);
     resetFilterForm(defaults);
     setFilters(mapFilterFormToState(defaults));
     setCurrentPage(1);
-  }, [resetFilterForm, selectedProjectId]);
+  }, [autoSelectedTheme, resetFilterForm, selectedProjectId]);
 
   const fetchProjectTheme = useCallback(async () => {
     try {
@@ -562,7 +568,6 @@ export default function Panorama() {
     try {
       const response = await getMetricas(projectId);
       const payload = response?.data?.data ?? {};
-      console.log(payload)
       const rawTopTemas = Array.isArray(payload.topTemas)
         ? (payload.topTemas as unknown[])
         : [];
@@ -814,7 +819,7 @@ export default function Panorama() {
   }
 
   const handleClearFilters = () => {
-    const defaults = buildFilternDefaultValues();
+    const defaults = buildFilternDefaultValues(autoSelectedTheme || null);
     resetFilterForm(defaults);
     setFilters(mapFilterFormToState(defaults));
   };
@@ -822,7 +827,7 @@ export default function Panorama() {
   const handleSelectForm = (value: FormSelectValue | null) => {
     const nextFormId =
       typeof value === "number" && Number.isFinite(value) ? value : null;
-    const defaults = buildFilternDefaultValues();
+    const defaults = buildFilternDefaultValues(autoSelectedTheme || null);
 
     setSelectedFormId(nextFormId);
     resetFilterForm(defaults);
@@ -1082,7 +1087,9 @@ export default function Panorama() {
                 </Box>
                 <Forms<FilterFormValues>
                   errors={filterErrors}
-                  inputsList={getFilterInputs(filterSelectOptions)}
+                  inputsList={getFilterInputs(filterSelectOptions, {
+                    hideTema: hideTemaFilter,
+                  })}
                   control={filterControl}
                 />{" "}
                 <Box className={styles.filterActions}>

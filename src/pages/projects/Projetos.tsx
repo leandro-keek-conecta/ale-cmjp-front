@@ -53,6 +53,7 @@ type RawProjectUser = {
   access?: unknown;
   hiddenTabs?: unknown;
   allowedThemes?: unknown;
+  temasPermitidos?: unknown;
 };
 
 type RawProjectSource = {
@@ -64,6 +65,7 @@ type RawProjectSource = {
   access?: unknown;
   hiddenTabs?: unknown;
   allowedThemes?: unknown;
+  temasPermitidos?: unknown;
   token?: unknown;
   slug?: unknown;
   url?: unknown;
@@ -386,7 +388,11 @@ export default function Projetos() {
           : normalizeHiddenTabs(source.hiddenTabs);
       const allowedThemes = normalizeStringList(
         users.find((projectUser) => projectUser?.id === user?.id)
-          ?.allowedThemes ?? source.allowedThemes,
+          ?.allowedThemes ??
+          users.find((projectUser) => projectUser?.id === user?.id)
+            ?.temasPermitidos ??
+          source.allowedThemes ??
+          source.temasPermitidos,
       );
 
       const name =
