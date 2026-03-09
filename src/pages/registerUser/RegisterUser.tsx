@@ -409,23 +409,37 @@ export default function RegisterUser() {
   );
 
   const getScreenOptionsForProject = useCallback(
-    (projectId: number | null | undefined) => {
+    (
+      projectId: number | null | undefined,
+      selectedAllowedThemes: string[] | undefined = [],
+    ) => {
       const baseOptions = [...SYSTEM_SCREENS];
       const themeOptions = getThemeOptionsForProject(projectId);
+      const scopedThemes = normalizeStringList(selectedAllowedThemes);
 
       if (!themeOptions.length) {
         return baseOptions;
       }
 
+      const visibleThemeOptions = isCommonUserRole
+        ? themeOptions.filter((theme) =>
+            scopedThemes.includes(theme.value),
+          )
+        : themeOptions;
+
+      if (!visibleThemeOptions.length) {
+        return baseOptions;
+      }
+
       return [
         ...baseOptions,
-        ...themeOptions.map((theme) => ({
+        ...visibleThemeOptions.map((theme) => ({
           label: `Relatorio de opinioes - ${theme.label}`,
           value: toScreenToken(buildThemeRoutePath(theme.value)),
         })),
       ];
     },
-    [getThemeOptionsForProject],
+    [getThemeOptionsForProject, isCommonUserRole],
   );
 
   useEffect(() => {
@@ -530,6 +544,30 @@ export default function RegisterUser() {
       }
     });
   }, [setValue, watchedProjects, watchedRole]);
+
+  useEffect(() => {
+    if (!Array.isArray(watchedProjects)) {
+      return;
+    }
+
+    watchedProjects.forEach((projectEntry, index) => {
+      const availableScreenValues = new Set(
+        getScreenOptionsForProject(
+          projectEntry?.projetoId ?? null,
+          projectEntry?.allowedThemes ?? [],
+        ).map((option) => String(option.value)),
+      );
+
+      const currentHiddenTabs = normalizeStringList(projectEntry?.hiddenTabs);
+      const nextHiddenTabs = currentHiddenTabs.filter((screen) =>
+        availableScreenValues.has(screen),
+      );
+
+      if (nextHiddenTabs.length !== currentHiddenTabs.length) {
+        setValue(`projetos.${index}.hiddenTabs`, nextHiddenTabs);
+      }
+    });
+  }, [getScreenOptionsForProject, setValue, watchedProjects]);
 
   const tableRows = useMemo(() => {
     const optionsById = new Map(
@@ -899,6 +937,7 @@ export default function RegisterUser() {
                             label="Telas do sistema (desmarque para esconder)"
                             options={getScreenOptionsForProject(
                               watchedProjects?.[index]?.projetoId ?? null,
+                              watchedProjects?.[index]?.allowedThemes ?? [],
                             )}
                             value={campo.value ?? []}
                             loading={

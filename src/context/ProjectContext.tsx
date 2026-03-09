@@ -23,6 +23,10 @@ type ActiveProjectContextValue = {
   projectId: number | null;
   projectName: string;
   projectSlug: string;
+  hiddenTabs: string[];
+  allowedThemes: string[];
+  temasPermitidos: string[];
+  hasThemeScope: boolean;
   refreshProjectContext: () => void;
 };
 
@@ -100,13 +104,25 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo<ActiveProjectContextValue>(
-    () => ({
-      project,
-      projectId: typeof project?.id === "number" ? project.id : null,
-      projectName: typeof project?.name === "string" ? project.name : "",
-      projectSlug: typeof project?.slug === "string" ? project.slug : "",
-      refreshProjectContext: () => setProject(readProjectContext()),
-    }),
+    () => {
+      const scopedThemes = Array.isArray(project?.temasPermitidos)
+        ? project.temasPermitidos
+        : Array.isArray(project?.allowedThemes)
+          ? project.allowedThemes
+          : [];
+
+      return {
+        project,
+        projectId: typeof project?.id === "number" ? project.id : null,
+        projectName: typeof project?.name === "string" ? project.name : "",
+        projectSlug: typeof project?.slug === "string" ? project.slug : "",
+        hiddenTabs: Array.isArray(project?.hiddenTabs) ? project.hiddenTabs : [],
+        allowedThemes: scopedThemes,
+        temasPermitidos: scopedThemes,
+        hasThemeScope: scopedThemes.length > 0,
+        refreshProjectContext: () => setProject(readProjectContext()),
+      };
+    },
     [project],
   );
 

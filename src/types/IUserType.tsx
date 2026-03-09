@@ -18,6 +18,18 @@ export interface ProjetoUserPivot {
   temasPermitidos?: string[];
 }
 
+export interface UserProjectAccessScope {
+  projectId: number;
+  name?: string;
+  slug?: string;
+  access?: ProjetoAccessLevel;
+  hiddenTabs?: string[];
+  allowedThemes?: string[];
+  temasPermitidos?: string[];
+}
+
+export type UserProjectAccessById = Record<string, UserProjectAccessScope>;
+
 export interface UserHiddenScreen {
   id?: number;
   userId?: number;
@@ -37,5 +49,6 @@ export default interface User {
   projetoId?: number;
   projeto?: Projeto;
   projetos?: ProjetoUserPivot[];
+  projectAccessById?: UserProjectAccessById;
   hiddenScreens?: UserHiddenScreen[];
 }

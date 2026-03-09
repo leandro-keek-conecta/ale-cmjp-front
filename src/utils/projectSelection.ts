@@ -95,8 +95,8 @@ export const normalizeProjectFromUser = (
   const hiddenTabs =
     project.hiddenTabs ?? nested?.hiddenTabs ?? fallback?.hiddenTabs ?? [];
   const allowedThemes =
-    project.allowedThemes ??
     project.temasPermitidos ??
+    project.allowedThemes ??
     nested?.allowedThemes ??
     nested?.temasPermitidos ??
     fallback?.allowedThemes ??

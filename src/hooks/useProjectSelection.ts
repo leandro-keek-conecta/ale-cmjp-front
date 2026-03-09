@@ -46,7 +46,7 @@ const normalizeProjectPayload = (
   const token = typeof payload?.token === "string" ? payload.token : "";
   const hiddenTabs = normalizeHiddenTabs(payload?.hiddenTabs);
   const allowedThemes = normalizeStringList(
-    payload?.allowedThemes ?? payload?.temasPermitidos,
+    payload?.temasPermitidos ?? payload?.allowedThemes,
   );
   const access = isProjetoAccessLevel(payload?.access)
     ? payload.access

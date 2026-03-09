@@ -760,7 +760,7 @@ export default function Panorama() {
     () =>
       allowedThemes.length
         ? opinions.filter((opinion) =>
-            hasThemeAccess(opinion.opiniao, allowedThemes),
+            hasThemeAccess(opinion.opiniao ?? "", allowedThemes),
           )
         : opinions,
     [allowedThemes, opinions],

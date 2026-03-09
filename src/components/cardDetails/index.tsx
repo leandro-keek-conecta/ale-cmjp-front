@@ -37,7 +37,6 @@ function getOpinionKey(item: Opinion, index: number) {
 }
 
 export default function CardDetails({ opinions }: CardDetailsProps) {
-  console.log(opinions)
   const [selectedOpinion, setSelectedOpinion] = useState<Opinion | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [incomingOpinionKeys, setIncomingOpinionKeys] = useState<string[]>([]);
@@ -105,6 +104,7 @@ export default function CardDetails({ opinions }: CardDetailsProps) {
       {opinions.map((item, index) => {
         const opinionKey = getOpinionKey(item, index);
         const isIncoming = incomingOpinionKeys.includes(opinionKey);
+        const fullName = `${item.nome ?? ""} ${item.sobrenome ?? ""}`.trim();
 
         return (
           <article
@@ -115,7 +115,7 @@ export default function CardDetails({ opinions }: CardDetailsProps) {
           >
             <div className={styles.cardHeader}>
               <div className={styles.cardMeta}>
-                <div className={styles.name}>{`${item.nome} ${item.sobrenome?? ""}` || "Visitante"}</div>
+                <div className={styles.name}>{fullName || "Visitante"}</div>
               </div>
             </div>
             <div className={styles.meta}>

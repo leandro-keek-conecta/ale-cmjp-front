@@ -21,8 +21,6 @@ import { useProjectContext } from "@/context/ProjectContext";
 import {
   buildThemeRoutePath,
   filterThemesByScope,
-  getProjectAllowedThemes,
-  getStoredHiddenTabs,
   isScreenHidden,
   normalizeAccessKey,
   normalizeStringList,
@@ -75,23 +73,24 @@ const toProjectThemeList = (payload: unknown): ProjectThemeSource[] => {
 export function Sidebar({ estaAberta, aoFechar }: PropriedadesSidebar) {
   const location = useLocation();
   const { user } = useAuth();
-  const { projectId: selectedProjectId } = useProjectContext();
+  const {
+    projectId: selectedProjectId,
+    hiddenTabs,
+    temasPermitidos,
+    hasThemeScope,
+  } = useProjectContext();
   const [projectThemes, setProjectThemes] = useState<string[]>([]);
-  const hiddenTabs = useMemo(
-    () => getStoredHiddenTabs(selectedProjectId),
-    [selectedProjectId, user],
-  );
-  const allowedThemes = useMemo(
-    () => getProjectAllowedThemes(user, selectedProjectId),
-    [selectedProjectId, user],
-  );
 
   const isSuperAdmin = user?.role === "SUPERADMIN";
   const isAdmin = user?.role === "ADMIN";
   const hasManagementSection = isSuperAdmin || isAdmin;
+  const hasOnlyThemeReportAccess = useMemo(
+    () => user?.role === "USER" && hasThemeScope,
+    [hasThemeScope, user?.role],
+  );
   const themeRoutes = useMemo(
     () =>
-      filterThemesByScope(projectThemes, allowedThemes)
+      filterThemesByScope(projectThemes, temasPermitidos)
         .filter(
           (theme) => !isScreenHidden(hiddenTabs, buildThemeRoutePath(theme)),
         )
@@ -99,7 +98,7 @@ export function Sidebar({ estaAberta, aoFechar }: PropriedadesSidebar) {
           label: theme,
           path: buildThemeRoutePath(theme),
         })),
-    [allowedThemes, hiddenTabs, projectThemes],
+    [hiddenTabs, projectThemes, temasPermitidos],
   );
 
   useEffect(() => {
@@ -148,8 +147,11 @@ export function Sidebar({ estaAberta, aoFechar }: PropriedadesSidebar) {
   };
 
   const hidePanorama = isScreenHidden(hiddenTabs, "/panorama");
-  const hideRelatorio = isScreenHidden(hiddenTabs, "/relatorio");
-  const hideRelatorioOpiniao = isScreenHidden(hiddenTabs, "/relatorio-opiniao");
+  const hideRelatorio =
+    hasOnlyThemeReportAccess || isScreenHidden(hiddenTabs, "/relatorio");
+  const hideRelatorioOpiniao =
+    hasOnlyThemeReportAccess ||
+    isScreenHidden(hiddenTabs, "/relatorio-opiniao");
   const hideCadastroTheme = isScreenHidden(hiddenTabs, "/cadastro-thema");
   const hideConstructorForms = isScreenHidden(hiddenTabs, "/constructor-forms");
 
