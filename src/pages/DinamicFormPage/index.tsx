@@ -3,7 +3,7 @@ import styles from "./FormsPage.module.css";
 import HorizontalLinearAlternativeLabelStepper from "../../components/stepper";
 import { useEffect, useMemo, useState } from "react";
 import Forms, { type InputType } from "../../components/Forms";
-import { useForm } from "react-hook-form";
+import { useForm, type RegisterOptions } from "react-hook-form";
 import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
 import {
   Card,
@@ -182,10 +182,91 @@ function toOptionalNumber(value: unknown) {
   return undefined;
 }
 
+function toOptionalBoolean(value: unknown) {
+  if (typeof value === "boolean") {
+    return value;
+  }
+  if (typeof value === "string") {
+    const normalized = value.trim().toLowerCase();
+    if (normalized === "true") return true;
+    if (normalized === "false") return false;
+  }
+  return undefined;
+}
+
+function toPatternSource(value: unknown): string | undefined {
+  if (value instanceof RegExp) {
+    return value.source;
+  }
+
+  if (typeof value === "string" && value.trim()) {
+    return value.trim();
+  }
+
+  if (value && typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    return (
+      toPatternSource(record.value) ??
+      toPatternSource(record.regex) ??
+      toPatternSource(record.pattern) ??
+      toPatternSource(record.expression)
+    );
+  }
+
+  return undefined;
+}
+
+function toPatternMessage(value: unknown, fallback: string) {
+  if (typeof value === "string" && value.trim()) {
+    return fallback;
+  }
+
+  if (value && typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    const candidate =
+      record.message ??
+      record.errorMessage ??
+      record.helperText ??
+      record.text;
+    if (typeof candidate === "string" && candidate.trim()) {
+      return candidate.trim();
+    }
+  }
+
+  return fallback;
+}
+
+function toRegExp(value: unknown) {
+  const source = toPatternSource(value);
+  if (!source) return undefined;
+
+  try {
+    return new RegExp(source);
+  } catch {
+    return undefined;
+  }
+}
+
 function getFieldOptions(source: unknown) {
   return (source && typeof source === "object"
     ? (source as Record<string, unknown>).options
     : undefined) as Record<string, unknown> | undefined;
+}
+
+function getValidationOption(
+  field: Record<string, unknown> | undefined,
+  schemaRule: Record<string, unknown> | undefined,
+  key: string,
+) {
+  const fieldOptions = getFieldOptions(field);
+  const schemaOptions = getFieldOptions(schemaRule);
+
+  return (
+    field?.[key] ??
+    fieldOptions?.[key] ??
+    schemaRule?.[key] ??
+    schemaOptions?.[key]
+  );
 }
 
 function resolveFieldInputType(
@@ -275,7 +356,10 @@ function isRuleObject(value: unknown): value is Record<string, unknown> {
     "options" in rule ||
     "rows" in rule ||
     "min" in rule ||
-    "max" in rule
+    "max" in rule ||
+    "pattern" in rule ||
+    "regex" in rule ||
+    "validationRegex" in rule
   );
 }
 
@@ -365,6 +449,10 @@ function buildFieldFromSchema(
   const min = toOptionalNumber(schemaRule?.min ?? options?.min);
   const max = toOptionalNumber(schemaRule?.max ?? options?.max);
   const rows = toOptionalNumber(schemaRule?.rows ?? options?.rows);
+  const pattern =
+    getValidationOption(undefined, schemaRule, "pattern") ??
+    getValidationOption(undefined, schemaRule, "regex") ??
+    getValidationOption(undefined, schemaRule, "validationRegex");
 
   return {
     name: normalizedName,
@@ -376,6 +464,7 @@ function buildFieldFromSchema(
     ...(typeof min === "number" ? { min } : {}),
     ...(typeof max === "number" ? { max } : {}),
     ...(typeof rows === "number" ? { rows } : {}),
+    ...(pattern !== undefined ? { pattern } : {}),
   } as Record<string, unknown>;
 }
 
@@ -577,21 +666,109 @@ export default function DinamicFormsPage() {
     const fieldOptions = getFieldOptions(field);
     const schemaOptions = getFieldOptions(schemaRule);
     const isRequired = Boolean(field.required ?? schemaRule?.required);
+    const min = toOptionalNumber(getValidationOption(field, schemaRule, "min"));
+    const max = toOptionalNumber(getValidationOption(field, schemaRule, "max"));
+    const rows = toOptionalNumber(getValidationOption(field, schemaRule, "rows"));
+    const patternValue =
+      getValidationOption(field, schemaRule, "pattern") ??
+      getValidationOption(field, schemaRule, "regex") ??
+      getValidationOption(field, schemaRule, "validationRegex");
+    const pattern = toRegExp(patternValue);
+    const allowDecimals = toOptionalBoolean(
+      getValidationOption(field, schemaRule, "allowDecimals"),
+    );
     const placeholder =
       toTrimmedString(field.placeholder) ||
       toTrimmedString(fieldOptions?.placeholder) ||
       toTrimmedString(schemaRule?.placeholder) ||
       toTrimmedString(schemaOptions?.placeholder) ||
       undefined;
+    const rules: RegisterOptions = {};
+
+    if (isRequired) {
+      rules.required = `${label} é obrigatório`;
+    }
+
+    if (inputType === "number") {
+      if (typeof min === "number") {
+        rules.min = {
+          value: min,
+          message: `Valor minimo: ${min}`,
+        };
+      }
+      if (typeof max === "number") {
+        rules.max = {
+          value: max,
+          message: `Valor maximo: ${max}`,
+        };
+      }
+    }
+
+    if (
+      inputType === "text" ||
+      inputType === "textarea" ||
+      inputType === "password" ||
+      inputType === "email"
+    ) {
+      if (typeof min === "number") {
+        rules.minLength = {
+          value: min,
+          message: `Minimo de ${min} caracteres`,
+        };
+      }
+      if (typeof max === "number") {
+        rules.maxLength = {
+          value: max,
+          message: `Maximo de ${max} caracteres`,
+        };
+      }
+    }
+
+    if (pattern) {
+      rules.pattern = {
+        value: pattern,
+        message: toPatternMessage(
+          patternValue,
+          `${label} está em formato inválido`,
+        ),
+      };
+    }
+
+    const inputProps: Record<string, unknown> = {};
+    if (typeof min === "number") {
+      inputProps.min = min;
+    }
+    if (typeof max === "number") {
+      inputProps.max = max;
+      if (
+        inputType === "text" ||
+        inputType === "textarea" ||
+        inputType === "password" ||
+        inputType === "email"
+      ) {
+        inputProps.maxLength = max;
+      }
+    }
+    if (pattern) {
+      inputProps.pattern = pattern.source;
+    }
+    if (inputType === "number") {
+      inputProps.step = allowDecimals ? "any" : 1;
+    }
 
     const base = {
       name: fieldName,
       title: label,
       colSpan: 12,
       ...(placeholder ? { placeholder } : {}),
-      rules: isRequired
-        ? { required: `${label} é obrigatório` }
-        : undefined,
+      ...(Object.keys(rules).length ? { rules } : {}),
+      ...(Object.keys(inputProps).length ? { inputProps } : {}),
+      ...(inputType === "textarea"
+        ? {
+            minRows: typeof rows === "number" ? rows : 2,
+            maxRows: typeof rows === "number" ? rows : 6,
+          }
+        : {}),
     };
 
     if (inputType === "Select") {

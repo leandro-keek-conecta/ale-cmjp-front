@@ -1,7 +1,7 @@
 import { apiPublic } from "../apiPublic/api";
 import { api } from "../api/api";
 
-import type { Opinion } from "../../pages/Panorama/Panorama";
+import type { Opinion } from "../../types/opinion";
 import type { UserFormValues } from "../../types/user";
 import { getStoredProjectId } from "@/utils/project";
 

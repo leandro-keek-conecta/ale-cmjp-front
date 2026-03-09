@@ -1,5 +1,6 @@
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -17,12 +18,20 @@ import {
   type ProjectSelectionPayload,
   type RawUserProject,
 } from "@/utils/projectSelection";
+import { normalizeStringList } from "@/utils/userProjectAccess";
 
 type ActiveProjectContextValue = {
   project: ProjectSelectionPayload | null;
   projectId: number | null;
   projectName: string;
   projectSlug: string;
+  hiddenTabs: string[];
+  allowedThemes: string[];
+  temasPermitidos: string[];
+  projectThemes: string[];
+  projectThemesLoaded: boolean;
+  hasThemeScope: boolean;
+  updateProjectThemes: (themes: string[]) => void;
   refreshProjectContext: () => void;
 };
 
@@ -75,6 +84,22 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
     readProjectContext(),
   );
 
+  const persistProjectContext = useCallback(
+    (nextProject: ProjectSelectionPayload | null) => {
+      if (typeof window === "undefined") {
+        return;
+      }
+
+      if (!nextProject || typeof nextProject.id !== "number") {
+        localStorage.removeItem(PROJECT_CONTEXT_KEY);
+        return;
+      }
+
+      localStorage.setItem(PROJECT_CONTEXT_KEY, JSON.stringify(nextProject));
+    },
+    [],
+  );
+
   useEffect(() => {
     const syncProjectContext = () => {
       setProject(readProjectContext());
@@ -99,15 +124,53 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  const updateProjectThemes = useCallback(
+    (themes: string[]) => {
+      setProject((currentProject) => {
+        if (!currentProject || typeof currentProject.id !== "number") {
+          return currentProject;
+        }
+
+        const nextProject: ProjectSelectionPayload = {
+          ...currentProject,
+          projectThemes: normalizeStringList(themes),
+          projectThemesLoaded: true,
+        };
+
+        persistProjectContext(nextProject);
+        return nextProject;
+      });
+    },
+    [persistProjectContext],
+  );
+
   const value = useMemo<ActiveProjectContextValue>(
-    () => ({
-      project,
-      projectId: typeof project?.id === "number" ? project.id : null,
-      projectName: typeof project?.name === "string" ? project.name : "",
-      projectSlug: typeof project?.slug === "string" ? project.slug : "",
-      refreshProjectContext: () => setProject(readProjectContext()),
-    }),
-    [project],
+    () => {
+      const scopedThemes = Array.isArray(project?.temasPermitidos)
+        ? project.temasPermitidos
+        : Array.isArray(project?.allowedThemes)
+          ? project.allowedThemes
+          : [];
+      const projectThemes = Array.isArray(project?.projectThemes)
+        ? project.projectThemes
+        : [];
+
+      return {
+        project,
+        projectId: typeof project?.id === "number" ? project.id : null,
+        projectName: typeof project?.name === "string" ? project.name : "",
+        projectSlug: typeof project?.slug === "string" ? project.slug : "",
+        hiddenTabs: Array.isArray(project?.hiddenTabs) ? project.hiddenTabs : [],
+        allowedThemes: scopedThemes,
+        temasPermitidos: scopedThemes,
+        projectThemes,
+        projectThemesLoaded: project?.projectThemesLoaded === true,
+        hasThemeScope: scopedThemes.length > 0,
+        updateProjectThemes,
+        refreshProjectContext: () => setProject(readProjectContext()),
+      };
+    },
+    [project, updateProjectThemes],
   );
 
   return (

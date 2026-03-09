@@ -1,4 +1,4 @@
-﻿import { Fragment, useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo } from "react";
 import styles from "./sidebar.module.css";
 import PaletteIcon from "@mui/icons-material/Palette";
 import { useLocation } from "react-router-dom";
@@ -20,12 +20,11 @@ import { listAllProjects } from "@/services/projeto/ProjetoService";
 import { useProjectContext } from "@/context/ProjectContext";
 import {
   buildThemeRoutePath,
+  extractThemesFromProject,
   filterThemesByScope,
-  getProjectAllowedThemes,
-  getStoredHiddenTabs,
+  getProjectIdFromSource,
   isScreenHidden,
   normalizeAccessKey,
-  normalizeStringList,
 } from "@/utils/userProjectAccess";
 
 interface PropriedadesSidebar {
@@ -75,23 +74,26 @@ const toProjectThemeList = (payload: unknown): ProjectThemeSource[] => {
 export function Sidebar({ estaAberta, aoFechar }: PropriedadesSidebar) {
   const location = useLocation();
   const { user } = useAuth();
-  const { projectId: selectedProjectId } = useProjectContext();
-  const [projectThemes, setProjectThemes] = useState<string[]>([]);
-  const hiddenTabs = useMemo(
-    () => getStoredHiddenTabs(selectedProjectId),
-    [selectedProjectId, user],
-  );
-  const allowedThemes = useMemo(
-    () => getProjectAllowedThemes(user, selectedProjectId),
-    [selectedProjectId, user],
-  );
+  const {
+    projectId: selectedProjectId,
+    hiddenTabs,
+    temasPermitidos,
+    projectThemes,
+    projectThemesLoaded,
+    hasThemeScope,
+    updateProjectThemes,
+  } = useProjectContext();
 
   const isSuperAdmin = user?.role === "SUPERADMIN";
   const isAdmin = user?.role === "ADMIN";
   const hasManagementSection = isSuperAdmin || isAdmin;
+  const hasOnlyThemeReportAccess = useMemo(
+    () => user?.role === "USER" && hasThemeScope,
+    [hasThemeScope, user?.role],
+  );
   const themeRoutes = useMemo(
     () =>
-      filterThemesByScope(projectThemes, allowedThemes)
+      filterThemesByScope(projectThemes, temasPermitidos)
         .filter(
           (theme) => !isScreenHidden(hiddenTabs, buildThemeRoutePath(theme)),
         )
@@ -99,17 +101,15 @@ export function Sidebar({ estaAberta, aoFechar }: PropriedadesSidebar) {
           label: theme,
           path: buildThemeRoutePath(theme),
         })),
-    [allowedThemes, hiddenTabs, projectThemes],
+    [hiddenTabs, projectThemes, temasPermitidos],
   );
 
   useEffect(() => {
-    if (typeof selectedProjectId !== "number") {
-      setProjectThemes([]);
+    if (typeof selectedProjectId !== "number" || projectThemesLoaded) {
       return;
     }
 
     let cancelled = false;
-    setProjectThemes([]);
 
     const loadThemes = async () => {
       try {
@@ -118,18 +118,19 @@ export function Sidebar({ estaAberta, aoFechar }: PropriedadesSidebar) {
 
         const projectList = toProjectThemeList(projects);
         const selectedProject =
-          projectList.length > 0 ? projectList[projectList.length - 1] : null;
+          projectList.find(
+            (project) => getProjectIdFromSource(project) === selectedProjectId,
+          ) ??
+          (projectList.length > 0 ? projectList[projectList.length - 1] : null);
 
         if (!selectedProject) {
-          setProjectThemes([]);
+          updateProjectThemes([]);
           return;
         }
 
-        setProjectThemes(normalizeStringList(selectedProject.temasDoProjeto));
+        updateProjectThemes(extractThemesFromProject(selectedProject));
       } catch {
-        if (!cancelled) {
-          setProjectThemes([]);
-        }
+        // Leave unresolved on failure so a new project selection can retry.
       }
     };
 
@@ -138,7 +139,7 @@ export function Sidebar({ estaAberta, aoFechar }: PropriedadesSidebar) {
     return () => {
       cancelled = true;
     };
-  }, [selectedProjectId]);
+  }, [projectThemesLoaded, selectedProjectId, updateProjectThemes]);
 
   const isActive = (path: string) => {
     if (path === "/") return location.pathname === "/";
@@ -148,8 +149,11 @@ export function Sidebar({ estaAberta, aoFechar }: PropriedadesSidebar) {
   };
 
   const hidePanorama = isScreenHidden(hiddenTabs, "/panorama");
-  const hideRelatorio = isScreenHidden(hiddenTabs, "/relatorio");
-  const hideRelatorioOpiniao = isScreenHidden(hiddenTabs, "/relatorio-opiniao");
+  const hideRelatorio =
+    hasOnlyThemeReportAccess || isScreenHidden(hiddenTabs, "/relatorio");
+  const hideRelatorioOpiniao =
+    hasOnlyThemeReportAccess ||
+    isScreenHidden(hiddenTabs, "/relatorio-opiniao");
   const hideCadastroTheme = isScreenHidden(hiddenTabs, "/cadastro-thema");
   const hideConstructorForms = isScreenHidden(hiddenTabs, "/constructor-forms");
 
@@ -260,5 +264,3 @@ export function Sidebar({ estaAberta, aoFechar }: PropriedadesSidebar) {
     </nav>
   );
 }
-
-

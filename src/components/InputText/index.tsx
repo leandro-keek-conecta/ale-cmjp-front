@@ -12,6 +12,7 @@ interface InputTextProps {
   helperText?: string; // Mensagem de erro ou ajuda
   className?: string;
   required?: boolean;
+  inputProps?: Record<string, unknown>;
 }
 
 export default function InputText({
@@ -24,6 +25,7 @@ export default function InputText({
   helperText = "",
   className,
   required = false,
+  inputProps,
 }: InputTextProps) {
   const isMobile = useMediaQuery("(max-width:768px)");
   const size = isMobile ? "2.6rem" : "2.6rem";
@@ -40,6 +42,7 @@ export default function InputText({
       required={required}
       className={className}
       fullWidth
+      inputProps={inputProps}
       InputLabelProps={{
         shrink: true,
       }}

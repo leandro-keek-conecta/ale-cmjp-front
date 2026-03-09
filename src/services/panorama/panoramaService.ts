@@ -1,4 +1,8 @@
 import { api } from "../api/api";
+import {
+  getStoredAllowedThemes,
+  mergeRequestedThemesWithScope,
+} from "../../utils/userProjectAccess";
 
 type DateInput = Date | string | null | undefined;
 
@@ -18,6 +22,18 @@ const cleanParams = (params: Record<string, unknown>) =>
         !(typeof value === "string" && value.trim() === ""),
     ),
   );
+
+const withThemeScope = (
+  projetoId: number,
+  temas?: string | string[],
+) => {
+  const allowedThemes = getStoredAllowedThemes(projetoId);
+
+  return {
+    projetoId,
+    temas: mergeRequestedThemesWithScope(temas, allowedThemes),
+  };
+};
 
 type ApiEnvelope<T> = { data: T; message?: string };
 
@@ -123,20 +139,24 @@ export async function getMetricSummary(
     rangeEnd?: DateInput;
     limitTopThemes?: number;
     limitTopNeighborhoods?: number;
+    temas?: string | string[];
   },
   signal?: AbortSignal,
 ) {
+  const scopedParams = withThemeScope(params.projetoId, params.temas);
+
   const res = await api.get<ApiEnvelope<MetricSummaryData>>(
     "/form-response/metrics/summary",
     {
       params: cleanParams({
-        projetoId: params.projetoId,
+        projetoId: scopedParams.projetoId,
         formVersionId: params.formVersionId,
         day: toIso(params.day),
         rangeStart: toIso(params.rangeStart),
         rangeEnd: toIso(params.rangeEnd),
         limitTopThemes: params.limitTopThemes,
         limitTopNeighborhoods: params.limitTopNeighborhoods,
+        temas: scopedParams.temas,
       }),
       signal,
     },
@@ -151,17 +171,22 @@ export async function getMetricFilters(
     start?: DateInput;
     end?: DateInput;
     limit?: number;
+    temas?: string | string[];
   },
   signal?: AbortSignal,
 ) {
+  const scopedParams = withThemeScope(params.projetoId, params.temas);
+
   const res = await api.get<ApiEnvelope<MetricFiltersData>>(
     "/form-response/metrics/filters",
     {
       params: cleanParams({
-        projetoId: params.projetoId,
+        projetoId: scopedParams.projetoId,
         formVersionId: params.formVersionId,
         start: toIso(params.start),
         end: toIso(params.end),
+        limit: params.limit,
+        temas: scopedParams.temas,
       }),
       signal,
     },
@@ -179,18 +204,21 @@ export async function getRawFormResponses<T = Record<string, unknown>>(
     offset: number;
     includeDates?: boolean;
     select?: string[];
+    temas?: string | string[];
   },
   signal?: AbortSignal,
 ) {
+  const scopedParams = withThemeScope(params.projetoId, params.temas);
   const res = await api.get<ApiEnvelope<RawListPayload<T>>>("/form-response/raw", {
     params: cleanParams({
-      projetoId: params.projetoId,
+      projetoId: scopedParams.projetoId,
       formVersionId: params.formVersionId,
       start: toIso(params.start),
       end: toIso(params.end),
       limit: params.limit,
       offset: params.offset,
       includeDates: params.includeDates ?? true,
+      temas: scopedParams.temas,
       select: params.select?.length ? params.select.join(",") : undefined,
     }),
     signal,

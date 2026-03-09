@@ -12,6 +12,7 @@ interface TextAreaProps {
   minRows?: number;
   maxRows?: number;
   required?: boolean;
+  inputProps?: Record<string, unknown>;
 }
 
 export default function TextArea({
@@ -24,6 +25,7 @@ export default function TextArea({
   minRows = 2 ,
   maxRows = 6,
   required = false,
+  inputProps,
 }: TextAreaProps) {
   const isMobile = useMediaQuery("(max-width:768px)");
   const fontSize = isMobile ? "1rem" : "1rem";
@@ -41,6 +43,7 @@ export default function TextArea({
       multiline
       minRows={minRows}
       maxRows={maxRows}
+      inputProps={inputProps}
       InputLabelProps={{ shrink: true }}
       sx={{
         "& .MuiInputBase-root": {

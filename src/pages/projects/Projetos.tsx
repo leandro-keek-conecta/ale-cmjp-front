@@ -10,7 +10,10 @@ import {
 import styles from "./projetos.module.css";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
-import type { ProjetoAccessLevel } from "@/types/IUserType";
+import type {
+  ProjetoAccessLevel,
+  UserProjectAccessScope,
+} from "@/types/IUserType";
 import { useProjectSelection } from "@/hooks/useProjectSelection";
 import CardProject from "./cardProject";
 import type { ChartDatum } from "@/types/ChartDatum";
@@ -20,7 +23,10 @@ import getProjects, { listAllProjects } from "@/services/projeto/ProjetoService"
 import type { ThemeChipDatum } from "./cardProject/chips";
 import SearchProjects from "./searchOfProjects";
 import CabecalhoEstilizado from "@/components/CabecalhoEstilizado";
-import { normalizeStringList } from "@/utils/userProjectAccess";
+import {
+  extractThemesFromProject,
+  normalizeStringList,
+} from "@/utils/userProjectAccess";
 
 export type ProjectCardData = {
   id: number;
@@ -38,6 +44,9 @@ export type ProjectCardData = {
     access: ProjetoAccessLevel;
     hiddenTabs: string[];
     allowedThemes: string[];
+    temasPermitidos: string[];
+    projectThemes: string[];
+    projectThemesLoaded: boolean;
     token?: string;
   };
 };
@@ -53,22 +62,47 @@ type RawProjectUser = {
   access?: unknown;
   hiddenTabs?: unknown;
   allowedThemes?: unknown;
+  temasPermitidos?: unknown;
 };
 
 type RawProjectSource = {
   id?: unknown;
   projetoId?: unknown;
+  projeto?: unknown;
   name?: unknown;
   nome?: unknown;
   ativo?: unknown;
   access?: unknown;
   hiddenTabs?: unknown;
   allowedThemes?: unknown;
+  temasPermitidos?: unknown;
   token?: unknown;
   slug?: unknown;
   url?: unknown;
   metrics?: unknown;
   users?: unknown;
+};
+
+const getProjectIdFromSource = (value: unknown): number | null => {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const source = value as Record<string, unknown>;
+
+  if (typeof source.projetoId === "number") {
+    return source.projetoId;
+  }
+
+  if (typeof source.id === "number") {
+    return source.id;
+  }
+
+  if (source.projeto && typeof source.projeto === "object") {
+    return getProjectIdFromSource(source.projeto);
+  }
+
+  return null;
 };
 
 const toNumber = (value: unknown) => {
@@ -272,8 +306,30 @@ const normalizeThemeMetrics = (value: unknown): ThemeChipDatum[] => {
     .slice(0, 5);
 };
 
+const hasResolvedProjectThemes = (source: RawProjectSource) => {
+  const nestedProject =
+    source.projeto && typeof source.projeto === "object"
+      ? (source.projeto as Record<string, unknown>)
+      : null;
+  const metrics =
+    source.metrics && typeof source.metrics === "object"
+      ? (source.metrics as Record<string, unknown>)
+      : null;
+
+  return (
+    Array.isArray((source as Record<string, unknown>).temasDoProjeto) ||
+    Array.isArray((source as Record<string, unknown>).temas) ||
+    Array.isArray((source as Record<string, unknown>).themes) ||
+    Array.isArray(nestedProject?.temasDoProjeto) ||
+    Array.isArray(nestedProject?.temas) ||
+    Array.isArray(nestedProject?.themes) ||
+    Array.isArray((source as Record<string, unknown>).responsesByTheme) ||
+    Array.isArray(metrics?.responsesByTheme)
+  );
+};
+
 export default function Projetos() {
-  const { user, setUser } = useAuth();
+  const { user } = useAuth();
   const { selectProject } = useProjectSelection();
   const navigate = useNavigate();
   const [loadingProjects, setLoadingProjects] = useState(true);
@@ -344,19 +400,39 @@ export default function Projetos() {
     return () => {
       mounted = false;
     };
-  }, [user?.id]);
+  }, [user?.id, user?.projeto, user?.projetos, user?.role]);
+
+  const userProjectScopeById = useMemo(() => {
+    const map = new Map<number, RawProjectSource | UserProjectAccessScope>();
+    const scopedProjects = Array.isArray(user?.projetos)
+      ? (user.projetos as unknown as RawProjectSource[])
+      : user?.projeto
+        ? ([user.projeto] as unknown as RawProjectSource[])
+        : [];
+
+    scopedProjects.forEach((projectEntry) => {
+      const projectId = getProjectIdFromSource(projectEntry);
+      if (typeof projectId === "number") {
+        map.set(projectId, projectEntry);
+      }
+    });
+
+    Object.entries(user?.projectAccessById ?? {}).forEach(([projectId, scope]) => {
+      const numericProjectId = Number(projectId);
+      if (Number.isFinite(numericProjectId) && scope) {
+        map.set(numericProjectId, scope);
+      }
+    });
+
+    return map;
+  }, [user?.projectAccessById, user?.projeto, user?.projetos]);
 
   const projects = useMemo<ProjectCardData[]>(() => {
     const dedupe = new Set<number>();
     const list: ProjectCardData[] = [];
 
     projectSources.forEach((source) => {
-      const projectId =
-        typeof source?.id === "number"
-          ? source.id
-          : typeof source?.projetoId === "number"
-            ? source.projetoId
-            : null;
+      const projectId = getProjectIdFromSource(source);
 
       if (typeof projectId !== "number" || dedupe.has(projectId)) {
         return;
@@ -366,28 +442,39 @@ export default function Projetos() {
       const users = Array.isArray(source.users)
         ? (source.users as RawProjectUser[])
         : [];
-
-      const userAccess = users.find(
+      const projectUserScope = users.find(
         (projectUser) => projectUser?.id === user?.id,
-      )?.access;
-      const rawAccess = userAccess ?? source.access;
+      );
+      const userScopedProject = userProjectScopeById.get(projectId);
+
+      const rawAccess =
+        projectUserScope?.access ??
+        userScopedProject?.access ??
+        source.access;
       const access = isProjetoAccessLevel(rawAccess)
         ? rawAccess
         : "FULL_ACCESS";
 
       const hiddenTabs =
         normalizeHiddenTabs(
-          users.find((projectUser) => projectUser?.id === user?.id)?.hiddenTabs,
+          projectUserScope?.hiddenTabs ?? userScopedProject?.hiddenTabs,
         ).length > 0
           ? normalizeHiddenTabs(
-              users.find((projectUser) => projectUser?.id === user?.id)
-                ?.hiddenTabs,
+              projectUserScope?.hiddenTabs ?? userScopedProject?.hiddenTabs,
             )
-          : normalizeHiddenTabs(source.hiddenTabs);
+          : normalizeHiddenTabs(
+              userScopedProject?.hiddenTabs ?? source.hiddenTabs,
+            );
       const allowedThemes = normalizeStringList(
-        users.find((projectUser) => projectUser?.id === user?.id)
-          ?.allowedThemes ?? source.allowedThemes,
+        projectUserScope?.temasPermitidos ??
+          projectUserScope?.allowedThemes ??
+          userScopedProject?.temasPermitidos ??
+          userScopedProject?.allowedThemes ??
+          source.temasPermitidos ??
+          source.allowedThemes,
       );
+      const projectThemes = extractThemesFromProject(source);
+      const projectThemesLoaded = hasResolvedProjectThemes(source);
 
       const name =
         toSafeString(source.name) ||
@@ -413,6 +500,9 @@ export default function Projetos() {
           access,
           hiddenTabs,
           allowedThemes,
+          temasPermitidos: allowedThemes,
+          projectThemes,
+          projectThemesLoaded,
           token: toSafeString(source.token),
         },
       });
@@ -421,7 +511,7 @@ export default function Projetos() {
     });
 
     return list;
-  }, [projectSources, user?.id]);
+  }, [projectSources, user?.id, userProjectScopeById]);
 
   useEffect(() => {
     if (!projects.length) {
@@ -458,19 +548,9 @@ export default function Projetos() {
   const handleSelectProject = useCallback(
     (project: ProjectCardData) => {
       selectProject(project.payload);
-
-      const rawUser = localStorage.getItem("user");
-      if (rawUser) {
-        try {
-          setUser(JSON.parse(rawUser));
-        } catch {
-          // ignore invalid storage
-        }
-      }
-
       navigate("/panorama");
     },
-    [navigate, selectProject, setUser],
+    [navigate, selectProject],
   );
 
   const handleCreateProject = useCallback(() => {

@@ -9,6 +9,7 @@ import InputOptions, {
 import Button from "@/components/Button";
 import {
   type BuilderBlock,
+  createFieldNameFromLabel,
   createBuilderField,
   DEFAULT_FORM_STYLE_OPTIONS,
   FIELD_OPTIONS,
@@ -811,6 +812,45 @@ function syncBlocksWithFieldNames(
   return nextBlocks;
 }
 
+function renameFieldNameInBlocks(
+  blocks: BuilderBlock[],
+  previousFieldName: string,
+  nextFieldName: string,
+) {
+  if (!previousFieldName || previousFieldName === nextFieldName) {
+    return blocks;
+  }
+
+  return blocks.map((block) => ({
+    ...block,
+    fields: block.fields.map((fieldName) =>
+      fieldName === previousFieldName ? nextFieldName : fieldName,
+    ),
+  }));
+}
+
+function renamePersistedFieldIdByName(
+  fieldIdByName: Record<string, number>,
+  previousFieldName: string,
+  nextFieldName: string,
+) {
+  if (!previousFieldName || previousFieldName === nextFieldName) {
+    return fieldIdByName;
+  }
+
+  const persistedFieldId = fieldIdByName[previousFieldName];
+  if (persistedFieldId === undefined) {
+    return fieldIdByName;
+  }
+
+  const remainingMappings = { ...fieldIdByName };
+  delete remainingMappings[previousFieldName];
+  return {
+    ...remainingMappings,
+    [nextFieldName]: persistedFieldId,
+  };
+}
+
 function parseDropPlacement(dropTargetId: string): DropPlacement | null {
   if (dropTargetId === "drop-new-row") {
     return { type: "new-row" };
@@ -1043,6 +1083,29 @@ export default function ConstructorForm() {
     fieldId: string,
     updates: Partial<BuilderField>,
   ) => {
+    const currentField = fieldRows
+      .flatMap((row) => row)
+      .find((field) => field.id === fieldId);
+
+    if (!currentField) return;
+
+    const nextLabel =
+      typeof updates.label === "string" ? updates.label.trim() : currentField.label;
+    const nextName = nextLabel
+      ? createFieldNameFromLabel(
+          nextLabel,
+          fieldRows
+            .flatMap((row) => row.map((field) => field.name))
+            .filter((name) => name !== currentField.name),
+        )
+      : currentField.name;
+
+    setFormBlocks((previous) =>
+      renameFieldNameInBlocks(previous, currentField.name, nextName),
+    );
+    setSelectedFieldIdByName((previous) =>
+      renamePersistedFieldIdByName(previous, currentField.name, nextName),
+    );
     setFieldRows((previous) =>
       previous.map((row) =>
         row.map((field) =>
@@ -1050,6 +1113,8 @@ export default function ConstructorForm() {
             ? {
                 ...field,
                 ...updates,
+                name: nextName,
+                label: nextLabel || field.label,
               }
             : field,
         ),

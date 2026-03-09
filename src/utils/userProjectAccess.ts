@@ -14,13 +14,18 @@ type ThemeProjectSource = {
 
 export const NO_THEME_ACCESS_VALUE = "__codex_no_theme_access__";
 
-export const normalizeAccessKey = (value: string) =>
-  value
+export const normalizeAccessKey = (value: unknown) => {
+  if (typeof value !== "string") {
+    return "";
+  }
+
+  return value
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .replace(/\s+/g, " ")
     .trim();
+};
 
 export const normalizeStringList = (value: unknown): string[] => {
   if (!Array.isArray(value)) {
@@ -205,8 +210,8 @@ const getThemesFromEntryField = (entry: unknown) => {
 
   const record = entry as GenericRecord;
   return normalizeStringList(
-    record.allowedThemes ??
-      record.temasPermitidos ??
+    record.temasPermitidos ??
+      record.allowedThemes ??
       record.permittedThemes ??
       record.themeScopes,
   );
@@ -247,6 +252,22 @@ export const getProjectHiddenTabs = (user: unknown, projectId: number | null) =>
   }
 
   return normalizeStringList(asRecord(record.projeto).hiddenTabs);
+};
+
+export const isThemeScopedUser = (
+  user: unknown,
+  projectId: number | null,
+) => {
+  if (!user || typeof user !== "object") {
+    return false;
+  }
+
+  const role = asRecord(user).role;
+  if (role !== "USER") {
+    return false;
+  }
+
+  return getProjectAllowedThemes(user, projectId).length > 0;
 };
 
 export const filterThemesByScope = (

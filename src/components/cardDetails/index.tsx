@@ -6,7 +6,7 @@ import {
   Divider,
 } from "@mui/material";
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { Opinion } from "../../pages/Panorama/Panorama";
+import type { Opinion } from "../../types/opinion";
 import formatDate from "../../utils/formatDate";
 import styles from "./cardDetails.module.css";
 
@@ -17,6 +17,7 @@ type CardDetailsProps = {
 function resolveOpinionDate(opinion: Opinion) {
   return (
     opinion.submittedAt ??
+    opinion.completedAt ??
     opinion.createdAt ??
     opinion.startedAt ??
     opinion.horario ??
@@ -37,7 +38,6 @@ function getOpinionKey(item: Opinion, index: number) {
 }
 
 export default function CardDetails({ opinions }: CardDetailsProps) {
-  console.log(opinions)
   const [selectedOpinion, setSelectedOpinion] = useState<Opinion | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [incomingOpinionKeys, setIncomingOpinionKeys] = useState<string[]>([]);
@@ -105,6 +105,7 @@ export default function CardDetails({ opinions }: CardDetailsProps) {
       {opinions.map((item, index) => {
         const opinionKey = getOpinionKey(item, index);
         const isIncoming = incomingOpinionKeys.includes(opinionKey);
+        const fullName = `${item.nome ?? ""} ${item.sobrenome ?? ""}`.trim();
 
         return (
           <article
@@ -115,11 +116,11 @@ export default function CardDetails({ opinions }: CardDetailsProps) {
           >
             <div className={styles.cardHeader}>
               <div className={styles.cardMeta}>
-                <div className={styles.name}>{item.nome || "Visitante"}</div>
+                <div className={styles.name}>{fullName || "Visitante"}</div>
               </div>
             </div>
             <div className={styles.meta}>
-              <span>{item.bairro || "Bairro nao informado"}</span>
+              <span>{item.bairro ||item.bairros || "Bairro nao informado"}</span>
               <span>{formatDate(resolveOpinionDate(item))}</span>
             </div>
             <Box
@@ -140,7 +141,7 @@ export default function CardDetails({ opinions }: CardDetailsProps) {
             <Box className={styles.cardFooterContainer}>
               <div className={styles.cardFooter}>
                 {(() => {
-                  const pillType = item.opiniao || "Outro";
+                  const pillType = item.opiniao || "Não Possui";
                   const pillKey = normalize(pillType) || "outro";
                   return (
                     <span className={styles.pill} data-type={pillKey}>
@@ -151,7 +152,7 @@ export default function CardDetails({ opinions }: CardDetailsProps) {
               </div>
               <div className={styles.cardFooter}>
                 {(() => {
-                  const pillType = item.tipo_opiniao || item.opiniao || "Outro";
+                  const pillType = item.tipo_opiniao || item.opiniao || "Não Possui";
                   const pillKey = normalize(pillType) || "outro";
                   return (
                     <span className={styles.pill} data-type={pillKey}>

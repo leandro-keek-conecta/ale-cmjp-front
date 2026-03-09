@@ -13,6 +13,10 @@ export type RawUserProject = {
   token?: string | null;
   hiddenTabs?: string[] | null;
   allowedThemes?: string[] | null;
+  temasPermitidos?: string[] | null;
+  temasDoProjeto?: string[] | null;
+  projectThemes?: string[] | null;
+  projectThemesLoaded?: boolean | null;
   access?: ProjetoAccessLevel | null;
   projeto?: RawUserProject | null;
 };
@@ -24,6 +28,9 @@ export interface ProjectSelectionPayload {
   token?: string | null;
   hiddenTabs?: string[] | null;
   allowedThemes?: string[] | null;
+  temasPermitidos?: string[] | null;
+  projectThemes?: string[] | null;
+  projectThemesLoaded?: boolean | null;
   access?: ProjetoAccessLevel | null;
 }
 
@@ -93,7 +100,31 @@ export const normalizeProjectFromUser = (
   const hiddenTabs =
     project.hiddenTabs ?? nested?.hiddenTabs ?? fallback?.hiddenTabs ?? [];
   const allowedThemes =
-    project.allowedThemes ?? nested?.allowedThemes ?? fallback?.allowedThemes ?? [];
+    project.temasPermitidos ??
+    project.allowedThemes ??
+    nested?.allowedThemes ??
+    nested?.temasPermitidos ??
+    fallback?.allowedThemes ??
+    fallback?.temasPermitidos ??
+    [];
+  const rawProjectThemes =
+    project.projectThemes ??
+    project.temasDoProjeto ??
+    nested?.projectThemes ??
+    nested?.temasDoProjeto ??
+    fallback?.projectThemes ??
+    fallback?.temasDoProjeto;
+  const projectThemes = normalizeStringList(rawProjectThemes);
+  const explicitProjectThemesLoaded =
+    typeof project.projectThemesLoaded === "boolean"
+      ? project.projectThemesLoaded
+      : typeof nested?.projectThemesLoaded === "boolean"
+        ? nested.projectThemesLoaded
+        : typeof fallback?.projectThemesLoaded === "boolean"
+          ? fallback.projectThemesLoaded
+          : undefined;
+  const projectThemesLoaded =
+    explicitProjectThemesLoaded ?? rawProjectThemes !== undefined;
 
   return {
     id,
@@ -108,5 +139,8 @@ export const normalizeProjectFromUser = (
       : "FULL_ACCESS",
     hiddenTabs: normalizeStringList(hiddenTabs),
     allowedThemes: normalizeStringList(allowedThemes),
+    temasPermitidos: normalizeStringList(allowedThemes),
+    projectThemes,
+    projectThemesLoaded,
   };
 };
