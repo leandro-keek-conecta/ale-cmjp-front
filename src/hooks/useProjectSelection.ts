@@ -21,6 +21,8 @@ type StoredProjectContext = {
   hiddenTabs: string[];
   allowedThemes: string[];
   temasPermitidos: string[];
+  projectThemes: string[];
+  projectThemesLoaded: boolean;
   access: ProjetoAccessLevel;
 };
 
@@ -51,6 +53,11 @@ const normalizeProjectPayload = (
   const access = isProjetoAccessLevel(payload?.access)
     ? payload.access
     : DEFAULT_ACCESS;
+  const projectThemes = normalizeStringList(payload?.projectThemes);
+  const projectThemesLoaded =
+    typeof payload?.projectThemesLoaded === "boolean"
+      ? payload.projectThemesLoaded
+      : payload?.projectThemes !== undefined;
 
   return {
     id,
@@ -60,6 +67,8 @@ const normalizeProjectPayload = (
     hiddenTabs,
     allowedThemes,
     temasPermitidos: allowedThemes,
+    projectThemes,
+    projectThemesLoaded,
     access,
   };
 };
@@ -142,6 +151,9 @@ const syncSelectedProjectOnUser = (selection: StoredProjectContext) => {
         hiddenTabs: selection.hiddenTabs,
         allowedThemes: selection.allowedThemes,
         temasPermitidos: selection.temasPermitidos,
+        temasDoProjeto: selection.projectThemes,
+        projectThemes: selection.projectThemes,
+        projectThemesLoaded: selection.projectThemesLoaded,
         access: selection.access,
       },
     };

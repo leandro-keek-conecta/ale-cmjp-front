@@ -14,6 +14,9 @@ export type RawUserProject = {
   hiddenTabs?: string[] | null;
   allowedThemes?: string[] | null;
   temasPermitidos?: string[] | null;
+  temasDoProjeto?: string[] | null;
+  projectThemes?: string[] | null;
+  projectThemesLoaded?: boolean | null;
   access?: ProjetoAccessLevel | null;
   projeto?: RawUserProject | null;
 };
@@ -26,6 +29,8 @@ export interface ProjectSelectionPayload {
   hiddenTabs?: string[] | null;
   allowedThemes?: string[] | null;
   temasPermitidos?: string[] | null;
+  projectThemes?: string[] | null;
+  projectThemesLoaded?: boolean | null;
   access?: ProjetoAccessLevel | null;
 }
 
@@ -102,6 +107,24 @@ export const normalizeProjectFromUser = (
     fallback?.allowedThemes ??
     fallback?.temasPermitidos ??
     [];
+  const rawProjectThemes =
+    project.projectThemes ??
+    project.temasDoProjeto ??
+    nested?.projectThemes ??
+    nested?.temasDoProjeto ??
+    fallback?.projectThemes ??
+    fallback?.temasDoProjeto;
+  const projectThemes = normalizeStringList(rawProjectThemes);
+  const explicitProjectThemesLoaded =
+    typeof project.projectThemesLoaded === "boolean"
+      ? project.projectThemesLoaded
+      : typeof nested?.projectThemesLoaded === "boolean"
+        ? nested.projectThemesLoaded
+        : typeof fallback?.projectThemesLoaded === "boolean"
+          ? fallback.projectThemesLoaded
+          : undefined;
+  const projectThemesLoaded =
+    explicitProjectThemesLoaded ?? rawProjectThemes !== undefined;
 
   return {
     id,
@@ -117,5 +140,7 @@ export const normalizeProjectFromUser = (
     hiddenTabs: normalizeStringList(hiddenTabs),
     allowedThemes: normalizeStringList(allowedThemes),
     temasPermitidos: normalizeStringList(allowedThemes),
+    projectThemes,
+    projectThemesLoaded,
   };
 };

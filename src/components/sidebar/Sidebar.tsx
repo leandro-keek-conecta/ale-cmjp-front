@@ -1,4 +1,4 @@
-﻿import { Fragment, useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo } from "react";
 import styles from "./sidebar.module.css";
 import PaletteIcon from "@mui/icons-material/Palette";
 import { useLocation } from "react-router-dom";
@@ -20,10 +20,11 @@ import { listAllProjects } from "@/services/projeto/ProjetoService";
 import { useProjectContext } from "@/context/ProjectContext";
 import {
   buildThemeRoutePath,
+  extractThemesFromProject,
   filterThemesByScope,
+  getProjectIdFromSource,
   isScreenHidden,
   normalizeAccessKey,
-  normalizeStringList,
 } from "@/utils/userProjectAccess";
 
 interface PropriedadesSidebar {
@@ -77,9 +78,11 @@ export function Sidebar({ estaAberta, aoFechar }: PropriedadesSidebar) {
     projectId: selectedProjectId,
     hiddenTabs,
     temasPermitidos,
+    projectThemes,
+    projectThemesLoaded,
     hasThemeScope,
+    updateProjectThemes,
   } = useProjectContext();
-  const [projectThemes, setProjectThemes] = useState<string[]>([]);
 
   const isSuperAdmin = user?.role === "SUPERADMIN";
   const isAdmin = user?.role === "ADMIN";
@@ -102,13 +105,11 @@ export function Sidebar({ estaAberta, aoFechar }: PropriedadesSidebar) {
   );
 
   useEffect(() => {
-    if (typeof selectedProjectId !== "number") {
-      setProjectThemes([]);
+    if (typeof selectedProjectId !== "number" || projectThemesLoaded) {
       return;
     }
 
     let cancelled = false;
-    setProjectThemes([]);
 
     const loadThemes = async () => {
       try {
@@ -117,18 +118,19 @@ export function Sidebar({ estaAberta, aoFechar }: PropriedadesSidebar) {
 
         const projectList = toProjectThemeList(projects);
         const selectedProject =
-          projectList.length > 0 ? projectList[projectList.length - 1] : null;
+          projectList.find(
+            (project) => getProjectIdFromSource(project) === selectedProjectId,
+          ) ??
+          (projectList.length > 0 ? projectList[projectList.length - 1] : null);
 
         if (!selectedProject) {
-          setProjectThemes([]);
+          updateProjectThemes([]);
           return;
         }
 
-        setProjectThemes(normalizeStringList(selectedProject.temasDoProjeto));
+        updateProjectThemes(extractThemesFromProject(selectedProject));
       } catch {
-        if (!cancelled) {
-          setProjectThemes([]);
-        }
+        // Leave unresolved on failure so a new project selection can retry.
       }
     };
 
@@ -137,7 +139,7 @@ export function Sidebar({ estaAberta, aoFechar }: PropriedadesSidebar) {
     return () => {
       cancelled = true;
     };
-  }, [selectedProjectId]);
+  }, [projectThemesLoaded, selectedProjectId, updateProjectThemes]);
 
   const isActive = (path: string) => {
     if (path === "/") return location.pathname === "/";
@@ -262,5 +264,3 @@ export function Sidebar({ estaAberta, aoFechar }: PropriedadesSidebar) {
     </nav>
   );
 }
-
-

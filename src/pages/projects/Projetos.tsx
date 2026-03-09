@@ -23,7 +23,10 @@ import getProjects, { listAllProjects } from "@/services/projeto/ProjetoService"
 import type { ThemeChipDatum } from "./cardProject/chips";
 import SearchProjects from "./searchOfProjects";
 import CabecalhoEstilizado from "@/components/CabecalhoEstilizado";
-import { normalizeStringList } from "@/utils/userProjectAccess";
+import {
+  extractThemesFromProject,
+  normalizeStringList,
+} from "@/utils/userProjectAccess";
 
 export type ProjectCardData = {
   id: number;
@@ -42,6 +45,8 @@ export type ProjectCardData = {
     hiddenTabs: string[];
     allowedThemes: string[];
     temasPermitidos: string[];
+    projectThemes: string[];
+    projectThemesLoaded: boolean;
     token?: string;
   };
 };
@@ -63,6 +68,7 @@ type RawProjectUser = {
 type RawProjectSource = {
   id?: unknown;
   projetoId?: unknown;
+  projeto?: unknown;
   name?: unknown;
   nome?: unknown;
   ativo?: unknown;
@@ -300,6 +306,28 @@ const normalizeThemeMetrics = (value: unknown): ThemeChipDatum[] => {
     .slice(0, 5);
 };
 
+const hasResolvedProjectThemes = (source: RawProjectSource) => {
+  const nestedProject =
+    source.projeto && typeof source.projeto === "object"
+      ? (source.projeto as Record<string, unknown>)
+      : null;
+  const metrics =
+    source.metrics && typeof source.metrics === "object"
+      ? (source.metrics as Record<string, unknown>)
+      : null;
+
+  return (
+    Array.isArray((source as Record<string, unknown>).temasDoProjeto) ||
+    Array.isArray((source as Record<string, unknown>).temas) ||
+    Array.isArray((source as Record<string, unknown>).themes) ||
+    Array.isArray(nestedProject?.temasDoProjeto) ||
+    Array.isArray(nestedProject?.temas) ||
+    Array.isArray(nestedProject?.themes) ||
+    Array.isArray((source as Record<string, unknown>).responsesByTheme) ||
+    Array.isArray(metrics?.responsesByTheme)
+  );
+};
+
 export default function Projetos() {
   const { user } = useAuth();
   const { selectProject } = useProjectSelection();
@@ -445,6 +473,8 @@ export default function Projetos() {
           source.temasPermitidos ??
           source.allowedThemes,
       );
+      const projectThemes = extractThemesFromProject(source);
+      const projectThemesLoaded = hasResolvedProjectThemes(source);
 
       const name =
         toSafeString(source.name) ||
@@ -471,6 +501,8 @@ export default function Projetos() {
           hiddenTabs,
           allowedThemes,
           temasPermitidos: allowedThemes,
+          projectThemes,
+          projectThemesLoaded,
           token: toSafeString(source.token),
         },
       });
