@@ -2,6 +2,7 @@ import type {
   PanoramaResponse,
   PanoramaResponseField,
 } from "../types/panoramaResponse";
+import type { Opinion } from "../types/opinion";
 
 type ResponseContext = {
   formId?: number | null;
@@ -90,7 +91,9 @@ export function resolveResponseDate(response: PanoramaResponse) {
   );
 }
 
-export function isOpinionResponse(response: PanoramaResponse) {
+export function isOpinionResponse(
+  response: PanoramaResponse,
+): response is Opinion {
   const hasOpinionContent =
     typeof response.opiniao === "string" && response.opiniao.trim() !== "";
   const hasOpinionText =

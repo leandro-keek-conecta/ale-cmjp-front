@@ -1,6 +1,6 @@
 import { api } from "../api/api";
 import { apiPublic } from "../apiPublic/api";
-import type { Opinion } from "../../pages/Panorama/Panorama";
+import type { Opinion } from "../../types/opinion";
 import type { OpinionFormValues } from "../../types/opiniao";
 import {
   getStoredAllowedThemes,

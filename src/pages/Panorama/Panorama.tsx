@@ -46,32 +46,13 @@ import {
 import { getProjectById } from "../../services/projeto/ProjetoService";
 import { useProjectContext } from "@/context/ProjectContext";
 import { useProjectRealtime } from "@/hooks/useRealtimeSubscription";
+import type { Opinion } from "@/types/opinion";
 import {
   filterOptionsByAllowedThemes,
   getStoredAllowedThemes,
   hasThemeAccess,
   normalizeAccessKey,
 } from "@/utils/userProjectAccess";
-
-export type Opinion = {
-  id: number | string;
-  usuario_id?: number | string;
-  nome?: string;
-  sobrenome?: string;
-  telefone?: string;
-  bairro?: string;
-  bairros?: string;
-  campanha?: string;
-  horario?: string | null;
-  startedAt?: string | null;
-  submittedAt?: string | null;
-  createdAt?: string | null;
-  acao?: string;
-  opiniao: string;
-  outra_opiniao?: string;
-  tipo_opiniao?: string;
-  texto_opiniao?: string;
-};
 type FilterApiItem = { label: string; value: string; count?: number };
 type TopThemeMetric = { id: number; tema: string; total: number };
 type TopDistrictMetric = { key: string; label: string; value: number };

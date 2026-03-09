@@ -6,7 +6,7 @@ import {
   Divider,
 } from "@mui/material";
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { Opinion } from "../../pages/Panorama/Panorama";
+import type { Opinion } from "../../types/opinion";
 import formatDate from "../../utils/formatDate";
 import styles from "./cardDetails.module.css";
 
@@ -17,6 +17,7 @@ type CardDetailsProps = {
 function resolveOpinionDate(opinion: Opinion) {
   return (
     opinion.submittedAt ??
+    opinion.completedAt ??
     opinion.createdAt ??
     opinion.startedAt ??
     opinion.horario ??
