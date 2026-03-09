@@ -151,7 +151,7 @@ export default function CardDetails({ opinions }: CardDetailsProps) {
               </div>
               <div className={styles.cardFooter}>
                 {(() => {
-                  const pillType = item.tipo_opiniao || item.opiniao || "Outro";
+                  const pillType = item.tipo_opiniao || item.tipo_de_opiniao || "Outro";
                   const pillKey = normalize(pillType) || "outro";
                   return (
                     <span className={styles.pill} data-type={pillKey}>

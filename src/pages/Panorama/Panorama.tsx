@@ -67,6 +67,7 @@ export type Opinion = {
   acao?: string;
   opiniao: string;
   outra_opiniao?: string;
+  tipo_de_opiniao?:string;
   tipo_opiniao?: string;
   texto_opiniao?: string;
 };
