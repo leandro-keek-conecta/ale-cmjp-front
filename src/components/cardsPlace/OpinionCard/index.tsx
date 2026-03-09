@@ -6,8 +6,8 @@ import {
   Divider,
 } from "@mui/material";
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { Opinion } from "../../types/opinion";
-import formatDate from "../../utils/formatDate";
+import type { Opinion } from "../../../types/opinion";
+import formatDate from "../../../utils/formatDate";
 import styles from "./cardDetails.module.css";
 
 type CardDetailsProps = {
@@ -105,7 +105,6 @@ export default function CardDetails({ opinions }: CardDetailsProps) {
       {opinions.map((item, index) => {
         const opinionKey = getOpinionKey(item, index);
         const isIncoming = incomingOpinionKeys.includes(opinionKey);
-        const fullName = `${item.nome ?? ""} ${item.sobrenome ?? ""}`.trim();
 
         return (
           <article
@@ -116,11 +115,11 @@ export default function CardDetails({ opinions }: CardDetailsProps) {
           >
             <div className={styles.cardHeader}>
               <div className={styles.cardMeta}>
-                <div className={styles.name}>{fullName || "Visitante"}</div>
+                <div className={styles.name}>{item.nome || "Visitante"}</div>
               </div>
             </div>
             <div className={styles.meta}>
-              <span>{item.bairro ||item.bairros || "Bairro nao informado"}</span>
+              <span>{item.bairro || "Bairro nao informado"}</span>
               <span>{formatDate(resolveOpinionDate(item))}</span>
             </div>
             <Box
@@ -141,7 +140,7 @@ export default function CardDetails({ opinions }: CardDetailsProps) {
             <Box className={styles.cardFooterContainer}>
               <div className={styles.cardFooter}>
                 {(() => {
-                  const pillType = item.opiniao || "Não Possui";
+                  const pillType = item.opiniao || "Outro";
                   const pillKey = normalize(pillType) || "outro";
                   return (
                     <span className={styles.pill} data-type={pillKey}>
@@ -152,7 +151,7 @@ export default function CardDetails({ opinions }: CardDetailsProps) {
               </div>
               <div className={styles.cardFooter}>
                 {(() => {
-                  const pillType = item.tipo_opiniao || item.tipo_de_opiniao || "Não Possui";
+                  const pillType = item.tipo_opiniao || item.opiniao || "Outro";
                   const pillKey = normalize(pillType) || "outro";
                   return (
                     <span className={styles.pill} data-type={pillKey}>

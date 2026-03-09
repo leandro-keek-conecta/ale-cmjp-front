@@ -7,12 +7,12 @@ export type SelectOption<T = string | number> = { label: string; value: T };
 
 export const levelAccessOptions: SelectOption<ProjetoAccessLevel>[] = [
   { label: "Acesso Total ao Projeto", value: "FULL_ACCESS" },
-  { label: "Apenas Automações", value: "AUTOMATIONS_ONLY" },
+  { label: "Apenas Automacoes", value: "AUTOMATIONS_ONLY" },
   { label: "Apenas Dashboard", value: "DASH_ONLY" },
 ];
 
 const allRoleOptions: SelectOption<FormValues["role"]>[] = [
-  { label: "Usuário Comum", value: "USER" },
+  { label: "Usuario Comum", value: "USER" },
   { label: "Administrador", value: "ADMIN" },
   { label: "Administrador Geral", value: "SUPERADMIN" },
 ];
@@ -42,7 +42,7 @@ export const getUserInputs = (
       placeholder: "Digite seu nome completo",
       type: "text",
       colSpan: 4,
-      rules: { required: "Nome é obrigatório" },
+      rules: { required: "Nome e obrigatorio" },
     },
     {
       name: "email",
@@ -51,28 +51,26 @@ export const getUserInputs = (
       type: "email",
       colSpan: 4,
       rules: {
-        required: "E-mail é obrigatório",
+        required: "E-mail e obrigatorio",
         pattern: {
           value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-          message: "E-mail inválido",
+          message: "E-mail invalido",
         },
       },
     },
     {
       name: "role",
-      title: "Nível de Acesso",
+      title: "Tipo de usuario",
       placeholder: "Selecione o papel global",
       type: "Select",
       colSpan: 4,
       selectOptions: roleOptions,
-      rules: { required: "Função é obrigatória" },
+      rules: { required: "Funcao e obrigatoria" },
     },
   ];
 
   if (!isEditing) {
-    inputs.splice(
-      4,
-      0,
+    inputs.push(
       {
         name: "password",
         title: "Senha",
@@ -80,8 +78,8 @@ export const getUserInputs = (
         type: "text",
         colSpan: 6,
         rules: {
-          required: "Senha é obrigatória",
-          minLength: { value: 6, message: "Mínimo 6 caracteres" },
+          required: "Senha e obrigatoria",
+          minLength: { value: 6, message: "Minimo 6 caracteres" },
         },
       },
       {
@@ -90,7 +88,7 @@ export const getUserInputs = (
         placeholder: "Digite sua senha novamente",
         type: "text",
         colSpan: 6,
-        rules: { required: "Confirmação de senha é obrigatória" },
+        rules: { required: "Confirmacao de senha e obrigatoria" },
       },
     );
   }

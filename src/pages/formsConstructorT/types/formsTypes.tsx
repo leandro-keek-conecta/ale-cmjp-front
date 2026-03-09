@@ -109,7 +109,7 @@ function createFieldId() {
   return `${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
 }
 
-function normalizeFieldName(value: string) {
+export function normalizeFieldName(value: string) {
   return value
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
@@ -118,35 +118,50 @@ function normalizeFieldName(value: string) {
     .replace(/^_+|_+$/g, "");
 }
 
-function resolveGeneratedFieldPrefix(type: FieldType, normalizedLabel: string) {
-  if (type === "textarea") {
-    return "texto_opiniao";
+export function createUniqueFieldName(
+  baseName: string,
+  existingFieldNames: string[],
+) {
+  const normalizedBase = normalizeFieldName(baseName) || "campo";
+  const normalizedExistingNames = new Set(
+    existingFieldNames
+      .map((name) => normalizeFieldName(name))
+      .filter(Boolean),
+  );
+
+  if (!normalizedExistingNames.has(normalizedBase)) {
+    return normalizedBase;
   }
 
-  if (
-    type === "text" &&
-    /(?:opiniao|descricao|comentario|mensagem|relato|detalhe)/.test(
-      normalizedLabel,
-    )
-  ) {
-    return "texto_opiniao";
+  let suffix = 2;
+  let candidate = `${normalizedBase}_${suffix}`;
+
+  while (normalizedExistingNames.has(candidate)) {
+    suffix += 1;
+    candidate = `${normalizedBase}_${suffix}`;
   }
 
-  return normalizedLabel || normalizeFieldName(type) || "campo";
+  return candidate;
 }
 
-export function createBuilderField(type: FieldType, label: string): BuilderField {
+export function createFieldNameFromLabel(
+  label: string,
+  existingFieldNames: string[] = [],
+) {
+  return createUniqueFieldName(label, existingFieldNames);
+}
+
+export function createBuilderField(
+  type: FieldType,
+  label: string,
+  existingFieldNames: string[] = [],
+): BuilderField {
   const id = createFieldId();
-  const normalizedLabel = normalizeFieldName(label);
-  const prefix = resolveGeneratedFieldPrefix(type, normalizedLabel);
-  const uniqueSuffix = id
-    .replace(/[^a-z0-9]/gi, "")
-    .toLowerCase()
-    .slice(-10);
+  const name = createFieldNameFromLabel(label, existingFieldNames);
 
   return {
     id,
-    name: `${prefix}_${uniqueSuffix}`,
+    name,
     type,
     label,
     placeholder: `Campo ${label.toLowerCase()}`,

@@ -46,6 +46,7 @@ import {
 import { getProjectById } from "../../services/projeto/ProjetoService";
 import { useProjectContext } from "@/context/ProjectContext";
 import { useProjectRealtime } from "@/hooks/useRealtimeSubscription";
+import type { Opinion } from "@/types/opinion";
 import {
   filterOptionsByAllowedThemes,
   getStoredAllowedThemes,
@@ -67,7 +68,6 @@ export type Opinion = {
   acao?: string;
   opiniao: string;
   outra_opiniao?: string;
-  tipo_de_opiniao?:string;
   tipo_opiniao?: string;
   texto_opiniao?: string;
 };
@@ -95,11 +95,13 @@ type DynamicFormFiltersPayload = {
 
 const ALL_FORMS_VALUE = "__all__" as const;
 
-const buildFilternDefaultValues = (): FilterFormValues => ({
+const buildFilternDefaultValues = (
+  forcedTema?: string | null,
+): FilterFormValues => ({
   dataInicio: null,
   dataFim: null,
   tipo: "",
-  tema: "",
+  tema: forcedTema ?? "",
   bairro: "",
   genero: "",
   faixaEtaria: "",
@@ -323,6 +325,39 @@ const normalizeGroupedFormResponses = (
     .filter((item): item is GroupedFormResponse => item !== null);
 };
 
+const scopeGroupedFormResponsesByThemes = (
+  forms: GroupedFormResponse[],
+  allowedThemes: string[],
+) => {
+  if (!allowedThemes.length) {
+    return forms;
+  }
+
+  return forms
+    .map((form) => {
+      const scopedResponses = form.responses.filter((response) =>
+        hasThemeAccess(response.opiniao ?? "", allowedThemes),
+      );
+
+      if (!scopedResponses.length) {
+        return null;
+      }
+
+      return {
+        ...form,
+        responses: scopedResponses,
+        totalResponses: scopedResponses.length,
+        latestResponseAt:
+          scopedResponses[0]?.submittedAt ??
+          scopedResponses[0]?.completedAt ??
+          scopedResponses[0]?.createdAt ??
+          scopedResponses[0]?.startedAt ??
+          form.latestResponseAt,
+      };
+    })
+    .filter((item): item is GroupedFormResponse => item !== null);
+};
+
 export default function Panorama() {
   const PRESENTATION_SEEN_KEY = "home:presentationSeen";
   const { projectId: selectedProjectId } = useProjectContext();
@@ -330,6 +365,8 @@ export default function Panorama() {
     () => getStoredAllowedThemes(selectedProjectId),
     [selectedProjectId],
   );
+  const autoSelectedTheme = allowedThemes.length === 1 ? allowedThemes[0] : "";
+  const hideTemaFilter = autoSelectedTheme.length > 0;
   const [panoramaTheme, setPanoramaTheme] = useState<PanoramaThemeConfig>(
     DEFAULT_PANORAMA_THEME,
   );
@@ -341,7 +378,7 @@ export default function Panorama() {
     Partial<FilterSelectOptions>
   >({});
   const [filters, setFilters] = useState<FiltersState>(() =>
-    mapFilterFormToState(buildFilternDefaultValues()),
+    mapFilterFormToState(buildFilternDefaultValues(autoSelectedTheme || null)),
   );
   const [todayOpinions, setTodayOpinions] = useState<number>(0);
   const [error, setError] = useState("");
@@ -396,16 +433,16 @@ export default function Panorama() {
     handleSubmit: handleFilterSubmit,
     reset: resetFilterForm,
   } = useForm<FilterFormValues>({
-    defaultValues: buildFilternDefaultValues(),
+    defaultValues: buildFilternDefaultValues(autoSelectedTheme || null),
   });
 
   useEffect(() => {
-    const defaults = buildFilternDefaultValues();
+    const defaults = buildFilternDefaultValues(autoSelectedTheme || null);
     setSelectedFormId(null);
     resetFilterForm(defaults);
     setFilters(mapFilterFormToState(defaults));
     setCurrentPage(1);
-  }, [resetFilterForm, selectedProjectId]);
+  }, [autoSelectedTheme, resetFilterForm, selectedProjectId]);
 
   const fetchProjectTheme = useCallback(async () => {
     try {
@@ -486,13 +523,20 @@ export default function Panorama() {
         setError("Nenhum projeto vinculado ao usuário.");
         return;
       }
-      const response = await getGroupedOpinionsByProject(projectId);
+      const response = await getGroupedOpinionsByProject(
+        projectId,
+        null,
+        allowedThemes,
+      );
       const payload = response?.data ?? response ?? {};
-      setGroupedForms(normalizeGroupedFormResponses(payload.forms));
+      const normalizedForms = normalizeGroupedFormResponses(payload.forms);
+      setGroupedForms(
+        scopeGroupedFormResponsesByThemes(normalizedForms, allowedThemes),
+      );
     } catch {
       setError("Erro ao carregar opiniões.");
     }
-  }, [selectedProjectId]);
+  }, [allowedThemes, selectedProjectId]);
 
   const fetchFilterOptions = useCallback(async () => {
     try {
@@ -563,7 +607,6 @@ export default function Panorama() {
     try {
       const response = await getMetricas(projectId);
       const payload = response?.data?.data ?? {};
-      console.log(payload)
       const rawTopTemas = Array.isArray(payload.topTemas)
         ? (payload.topTemas as unknown[])
         : [];
@@ -756,7 +799,7 @@ export default function Panorama() {
     () =>
       allowedThemes.length
         ? opinions.filter((opinion) =>
-            hasThemeAccess(opinion.opiniao, allowedThemes),
+            hasThemeAccess(opinion.opiniao ?? "", allowedThemes),
           )
         : opinions,
     [allowedThemes, opinions],
@@ -815,7 +858,7 @@ export default function Panorama() {
   }
 
   const handleClearFilters = () => {
-    const defaults = buildFilternDefaultValues();
+    const defaults = buildFilternDefaultValues(autoSelectedTheme || null);
     resetFilterForm(defaults);
     setFilters(mapFilterFormToState(defaults));
   };
@@ -823,7 +866,7 @@ export default function Panorama() {
   const handleSelectForm = (value: FormSelectValue | null) => {
     const nextFormId =
       typeof value === "number" && Number.isFinite(value) ? value : null;
-    const defaults = buildFilternDefaultValues();
+    const defaults = buildFilternDefaultValues(autoSelectedTheme || null);
 
     setSelectedFormId(nextFormId);
     resetFilterForm(defaults);
@@ -1083,7 +1126,9 @@ export default function Panorama() {
                 </Box>
                 <Forms<FilterFormValues>
                   errors={filterErrors}
-                  inputsList={getFilterInputs(filterSelectOptions)}
+                  inputsList={getFilterInputs(filterSelectOptions, {
+                    hideTema: hideTemaFilter,
+                  })}
                   control={filterControl}
                 />{" "}
                 <Box className={styles.filterActions}>

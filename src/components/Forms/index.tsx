@@ -44,6 +44,9 @@ export interface InputType<TFieldValues extends FieldValues = FieldValues> {
     isMulti?: boolean;
   };
   rules?: object;
+  inputProps?: Record<string, unknown>;
+  minRows?: number;
+  maxRows?: number;
   value?: SelectValue;
   containerClassName?: string;
   sectionTitle?: string;
@@ -264,6 +267,9 @@ export default function Forms<TFieldValues extends FieldValues = FieldValues>({
                       label={input.title}
                       placeholder={input.placeholder || ""}
                       value={value ?? ""}
+                      minRows={input.minRows}
+                      maxRows={input.maxRows}
+                      inputProps={input.inputProps}
                       required={isRequired}
                       onChange={(e) => {
                         onChange(e.target.value);
@@ -281,6 +287,7 @@ export default function Forms<TFieldValues extends FieldValues = FieldValues>({
                     placeholder={input.placeholder || ""}
                     type={input.type}
                     value={value ?? ""}
+                    inputProps={input.inputProps}
                     required={isRequired}
                     onChange={(e) => {
                       onChange(e.target.value);

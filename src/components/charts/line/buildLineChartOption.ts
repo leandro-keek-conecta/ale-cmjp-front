@@ -17,7 +17,7 @@ export function buildLineChartOption({
 
   return {
     grid: {
-      left: 0,
+      left: 10,
       right: 25,
       top: 25,
       bottom: 0,
@@ -33,6 +33,7 @@ export function buildLineChartOption({
     },
     yAxis: {
       type: "value",
+      minInterval: 1,
     },
     series: [
       {

@@ -107,7 +107,10 @@ export function CabecalhoMenuUsuario({
         {
           label: "Sair",
           icone: <LogoutIcon />,
-          onClick: handleLogout,
+          onClick: () => {
+            navigate("/");
+            handleLogout;
+          },
         },
       ];
     }
@@ -117,7 +120,10 @@ export function CabecalhoMenuUsuario({
       {
         label: "Sair",
         icone: <LogoutIcon />,
-        onClick: handleLogout,
+        onClick: () => {
+          navigate("/");
+          handleLogout;
+        },
       },
     ];
   }, [handleLogout, menuMode, navigate, user?.role]);
