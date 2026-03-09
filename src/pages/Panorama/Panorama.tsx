@@ -326,6 +326,39 @@ const normalizeGroupedFormResponses = (
     .filter((item): item is GroupedFormResponse => item !== null);
 };
 
+const scopeGroupedFormResponsesByThemes = (
+  forms: GroupedFormResponse[],
+  allowedThemes: string[],
+) => {
+  if (!allowedThemes.length) {
+    return forms;
+  }
+
+  return forms
+    .map((form) => {
+      const scopedResponses = form.responses.filter((response) =>
+        hasThemeAccess(response.opiniao ?? "", allowedThemes),
+      );
+
+      if (!scopedResponses.length) {
+        return null;
+      }
+
+      return {
+        ...form,
+        responses: scopedResponses,
+        totalResponses: scopedResponses.length,
+        latestResponseAt:
+          scopedResponses[0]?.submittedAt ??
+          scopedResponses[0]?.completedAt ??
+          scopedResponses[0]?.createdAt ??
+          scopedResponses[0]?.startedAt ??
+          form.latestResponseAt,
+      };
+    })
+    .filter((item): item is GroupedFormResponse => item !== null);
+};
+
 export default function Panorama() {
   const PRESENTATION_SEEN_KEY = "home:presentationSeen";
   const { projectId: selectedProjectId } = useProjectContext();
@@ -491,13 +524,20 @@ export default function Panorama() {
         setError("Nenhum projeto vinculado ao usuário.");
         return;
       }
-      const response = await getGroupedOpinionsByProject(projectId);
+      const response = await getGroupedOpinionsByProject(
+        projectId,
+        null,
+        allowedThemes,
+      );
       const payload = response?.data ?? response ?? {};
-      setGroupedForms(normalizeGroupedFormResponses(payload.forms));
+      const normalizedForms = normalizeGroupedFormResponses(payload.forms);
+      setGroupedForms(
+        scopeGroupedFormResponsesByThemes(normalizedForms, allowedThemes),
+      );
     } catch {
       setError("Erro ao carregar opiniões.");
     }
-  }, [selectedProjectId]);
+  }, [allowedThemes, selectedProjectId]);
 
   const fetchFilterOptions = useCallback(async () => {
     try {

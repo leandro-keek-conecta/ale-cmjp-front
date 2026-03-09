@@ -2,6 +2,10 @@ import { api } from "../api/api";
 import { apiPublic } from "../apiPublic/api";
 import type { Opinion } from "../../pages/Panorama/Panorama";
 import type { OpinionFormValues } from "../../types/opiniao";
+import {
+  getStoredAllowedThemes,
+  mergeRequestedThemesWithScope,
+} from "../../utils/userProjectAccess";
 
 /*
 const year = now.getFullYear();
@@ -39,6 +43,28 @@ const getArrayPayload = (data: unknown) => {
     return candidates.find(Array.isArray) ?? [];
   }
   return [];
+};
+
+const cleanParams = (params: Record<string, unknown>) =>
+  Object.fromEntries(
+    Object.entries(params).filter(
+      ([, value]) =>
+        value !== undefined &&
+        value !== null &&
+        !(typeof value === "string" && value.trim() === ""),
+    ),
+  );
+
+const withThemeScope = (
+  projetoId: number,
+  temas?: string | string[],
+) => {
+  const allowedThemes = getStoredAllowedThemes(projetoId);
+
+  return {
+    projetoId,
+    temas: mergeRequestedThemesWithScope(temas, allowedThemes),
+  };
 };
 
 type SubmitSummary = Partial<
@@ -103,17 +129,34 @@ export type GroupedProjectResponses = {
 export async function getGroupedOpinionsByProject(
   projectId: number,
   formId?: number | null,
+  temas?: string | string[],
 ) {
+  const scopedParams = withThemeScope(projectId, temas);
   const response = await api.get(`/form-response/project/${projectId}/grouped`, {
-    params: formId ? { formId } : undefined,
+    params: cleanParams({
+      formId,
+      temas: scopedParams.temas,
+    }),
   });
 
   return response?.data;
 }
 
-export async function getAllOpinions(projectId: number) {
+export async function getAllOpinions(
+  projectId: number,
+  temas?: string | string[],
+) {
+  const scopedParams = withThemeScope(projectId, temas);
   const response = await api.get(
-    `/form-response/raw?projetoId=${projectId}&select=nome,telefone,ano_nascimento,genero,bairro,campanha,opiniao,outra_opiniao,tipo_opiniao,texto_opiniao,startedAt,submittedAt,createdAt`,
+    "/form-response/raw",
+    {
+      params: cleanParams({
+        projetoId: projectId,
+        temas: scopedParams.temas,
+        select:
+          "nome,telefone,ano_nascimento,genero,bairro,campanha,opiniao,outra_opiniao,tipo_opiniao,texto_opiniao,startedAt,submittedAt,createdAt",
+      }),
+    },
   );
   return response?.data;
 }

@@ -204,18 +204,21 @@ export async function getRawFormResponses<T = Record<string, unknown>>(
     offset: number;
     includeDates?: boolean;
     select?: string[];
+    temas?: string | string[];
   },
   signal?: AbortSignal,
 ) {
+  const scopedParams = withThemeScope(params.projetoId, params.temas);
   const res = await api.get<ApiEnvelope<RawListPayload<T>>>("/form-response/raw", {
     params: cleanParams({
-      projetoId: params.projetoId,
+      projetoId: scopedParams.projetoId,
       formVersionId: params.formVersionId,
       start: toIso(params.start),
       end: toIso(params.end),
       limit: params.limit,
       offset: params.offset,
       includeDates: params.includeDates ?? true,
+      temas: scopedParams.temas,
       select: params.select?.length ? params.select.join(",") : undefined,
     }),
     signal,
