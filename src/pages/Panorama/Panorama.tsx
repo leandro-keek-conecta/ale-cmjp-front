@@ -53,24 +53,6 @@ import {
   hasThemeAccess,
   normalizeAccessKey,
 } from "@/utils/userProjectAccess";
-
-export type Opinion = {
-  id: number | string;
-  usuario_id?: number | string;
-  nome?: string;
-  telefone?: string;
-  bairro?: string;
-  campanha?: string;
-  horario?: string | null;
-  startedAt?: string | null;
-  submittedAt?: string | null;
-  createdAt?: string | null;
-  acao?: string;
-  opiniao: string;
-  outra_opiniao?: string;
-  tipo_opiniao?: string;
-  texto_opiniao?: string;
-};
 type FilterApiItem = { label: string; value: string; count?: number };
 type TopThemeMetric = { id: number; tema: string; total: number };
 type TopDistrictMetric = { key: string; label: string; value: number };
