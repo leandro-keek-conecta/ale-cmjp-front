@@ -50,10 +50,10 @@ type ReportCard = {
 };
 
 const DEFAULT_VALUE_KEYS = ["value", "total", "count"] as const;
-const BAR_RACE_DEFAULT_HEIGHT = 360;
-const BAR_RACE_MIN_HEIGHT = 180;
-const BAR_RACE_BASE_HEIGHT = 128;
-const BAR_RACE_ROW_HEIGHT = 54;
+const BAR_RACE_DEFAULT_HEIGHT = 280;
+const BAR_RACE_MIN_HEIGHT = 120;
+const BAR_RACE_BASE_HEIGHT = 72;
+const BAR_RACE_ROW_HEIGHT = 20;
 
 const STATUS_LABELS: Record<ResponseStatus, string> = {
   STARTED: "Iniciadas",
