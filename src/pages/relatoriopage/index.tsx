@@ -430,7 +430,7 @@ export default function RelatorioPage() {
   const [metricsLoading, setMetricsLoading] = useState(true);
   const [lineByDayData, setLineByDayData] = useState<ChartDatum[]>([]);
   const [lineByMonthData, setLineByMonthData] = useState<ChartDatum[]>([]);
-  const [responsesByFormData, setResponsesByFormData] = useState<ChartDatum[]>([]);
+  const [responsesByOriginData, setResponsesByOriginData] = useState<ChartDatum[]>([]);
   const [statusFunnelData, setStatusFunnelData] = useState<ChartDatum[]>([]);
   const [filterExpanded, setFilterExpanded] = useState(false);
   const [completionData, setCompletionData] = useState<ChartDatum[]>([]);
@@ -512,11 +512,11 @@ export default function RelatorioPage() {
         normalizeOpinionsByDay(dayData as Parameters<typeof normalizeOpinionsByDay>[0]),
       );
 
-      const normalizedResponsesByForm = normalizeChartData(
-        typedReport.responsesByForm,
-        ["label", "formName", "name", "title"],
+      const normalizedResponsesByOrigin = normalizeChartData(
+        typedReport.responsesByOrigin,
+        ["label", "origin", "origem", "channel", "name", "title"],
       );
-      setResponsesByFormData(normalizedResponsesByForm);
+      setResponsesByOriginData(normalizedResponsesByOrigin);
 
       const normalizedStatusFunnel = normalizeChartData(typedReport.statusFunnel, [
         "label",
@@ -545,15 +545,15 @@ export default function RelatorioPage() {
           : formOptionsRef.current,
         status: buildStatusOptions(statusCounts),
       }));
-    } catch {
-      if (!activeRef.current) return;
-      setCardsData(buildCards());
-      setLineByMonthData([]);
-      setLineByDayData([]);
-      setResponsesByFormData([]);
-      setStatusFunnelData([]);
-      setCompletionData([]);
-    } finally {
+      } catch {
+        if (!activeRef.current) return;
+        setCardsData(buildCards());
+        setLineByMonthData([]);
+        setLineByDayData([]);
+        setResponsesByOriginData([]);
+        setStatusFunnelData([]);
+        setCompletionData([]);
+      } finally {
       if (activeRef.current) {
         setMetricsLoading(false);
       }
@@ -604,7 +604,7 @@ export default function RelatorioPage() {
 
   const sharedBarRaceHeight = metricsLoading
     ? BAR_RACE_DEFAULT_HEIGHT
-    : getSharedBarRaceHeight(responsesByFormData, statusFunnelData);
+    : getSharedBarRaceHeight(responsesByOriginData, statusFunnelData);
 
   return (
     <Layout titulo="Tela de Relatório">
@@ -697,10 +697,10 @@ export default function RelatorioPage() {
         </Box>
         <Box className={styles.gridContainer} sx={{ marginTop: "1rem" }}>
           <CardGridReflect span={4}>
-            <h5>Quantidade de Respostas por Formulário</h5>
+            <h5>Quantidade de Respostas por Origem</h5>
             <Box sx={{ marginTop: "1rem" }}>
               <BarChart
-                data={responsesByFormData}
+                data={responsesByOriginData}
                 height={220}
                 loading={metricsLoading}
               />
@@ -728,9 +728,9 @@ export default function RelatorioPage() {
             style={{ marginBottom: 0, display: "flex", flexDirection: "column" }}
             disablePadding
           >
-            <h5 style={{ margin: "1rem" }}>Formulários com mais respostas</h5>
+            <h5 style={{ margin: "1rem" }}>Origens com mais respostas</h5>
             <BarRaceChart
-              data={responsesByFormData}
+              data={responsesByOriginData}
               height={sharedBarRaceHeight}
               loading={metricsLoading}
             />

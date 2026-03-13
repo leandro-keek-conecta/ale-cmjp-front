@@ -243,6 +243,7 @@ export default function Forms<TFieldValues extends FieldValues = FieldValues>({
                     <InputFile
                       label={input.title}
                       placeholder={input.placeholder}
+                      value={value as string | FileList | null | undefined}
                       onChange={(event) => {
                         const files = event.target.files;
                         if (files) {

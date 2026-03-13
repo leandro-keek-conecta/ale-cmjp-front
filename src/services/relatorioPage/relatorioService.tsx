@@ -52,6 +52,7 @@ export type ProjectReportResponse = {
   lineByMonth?: unknown[];
   lineByDay?: unknown[];
   responsesByForm?: unknown[];
+  responsesByOrigin?: unknown[];
   statusFunnel?: unknown[];
   [key: string]: unknown;
 };

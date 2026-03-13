@@ -711,10 +711,16 @@ export default function Panorama() {
       { threshold: 0.18 },
     );
 
-    elements.forEach((element) => observer.observe(element));
+    elements.forEach((element) => {
+      if (element.classList.contains(styles.revealed)) {
+        return;
+      }
+
+      observer.observe(element);
+    });
 
     return () => observer.disconnect();
-  }, []);
+  }, [panoramaTheme.showHero]);
 
   useEffect(() => {
     const element = heroTitleRef.current;
