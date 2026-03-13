@@ -168,15 +168,15 @@ export const buildThemeDefaultValues = (): ThemeFormValues => ({
   slide1_title: "Pronta para responder",
   slide1_description:
     "Interface humanizada para tirar dúvidas da população a qualquer hora.",
-  slide1_image: "https://s3.keekconecta.com.br/ale-cmjp/fotos/ale-1.jpg",
+  slide1_image: "https://s3.keekconecta.com.br/ale-cmjp/ouvidoria-exemplo/Gemini_Generated_Image_2ekqdt2ekqdt2ekq (1).png",
   slide2_title: "Assistente presente nas ruas",
   slide2_description:
     "Registra solicitações diretamente dos bairros e agiliza o atendimento.",
-  slide2_image: "https://s3.keekconecta.com.br/ale-cmjp/fotos/ale-2.jpg",
+  slide2_image: "https://s3.keekconecta.com.br/ale-cmjp/ouvidoria-exemplo/Gemini_Generated_Image_pksadspksadspksa.png",
   slide3_title: "Conversas claras e objetivas",
   slide3_description:
     "Painel mostra o que está acontecendo em tempo real, sem complicação.",
-  slide3_image: "https://s3.keekconecta.com.br/ale-cmjp/fotos/ale-5.png",
+  slide3_image: "https://s3.keekconecta.com.br/ale-cmjp/ouvidoria-exemplo/Gemini_Generated_Image_y0uc96y0uc96y0uc (1).png",
   cardsCount: 3,
   card1_metric: "opinions_today",
   card1_title: "Opiniões de hoje",

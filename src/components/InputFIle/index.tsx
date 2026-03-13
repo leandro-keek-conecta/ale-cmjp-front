@@ -14,27 +14,48 @@ const VisuallyHiddenInput = styled("input")({
 interface InputFileProps {
   label?: string;
   placeholder?: string;
+  value?: string | FileList | null;
   onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
   error?: boolean;
   helperText?: string;
 }
 
+const getDisplayFileName = (value?: string | FileList | null) => {
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (!trimmed) {
+      return "";
+    }
+
+    try {
+      const url = new URL(trimmed);
+      const pathSegments = url.pathname.split("/").filter(Boolean);
+      return decodeURIComponent(pathSegments[pathSegments.length - 1] ?? trimmed);
+    } catch {
+      return trimmed;
+    }
+  }
+
+  if (value?.length) {
+    return value[0]?.name ?? "";
+  }
+
+  return "";
+};
+
 export default function InputFile({
   label = "Arquivo",
   placeholder = "Selecione um arquivo",
+  value,
   onChange,
   error = false,
   helperText = "",
 }: InputFileProps) {
-  const [fileName, setFileName] = React.useState<string>("");
   const inputRef = React.useRef<HTMLInputElement | null>(null);
+  const fileName = React.useMemo(() => getDisplayFileName(value), [value]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files?.length) {
-      const file = event.target.files[0];
-      setFileName(file.name); // Atualiza o nome do arquivo selecionado
-    }
-    onChange?.(event); // Dispara o evento onChange
+    onChange?.(event);
   };
 
   return (
@@ -43,16 +64,17 @@ export default function InputFile({
         label={label}
         placeholder={placeholder}
         variant="outlined"
-        value={fileName} // Exibe o nome do arquivo selecionado
-        onClick={() => inputRef.current?.click()} // Abre o seletor de arquivos ao clicar
+        value={fileName}
+        onClick={() => inputRef.current?.click()}
         InputProps={{
+          readOnly: true,
           endAdornment: (
             <CloudUploadIcon
               sx={{
                 cursor: "pointer",
                 marginLeft: 1,
               }}
-              onClick={() => inputRef.current?.click()} // Abre o seletor de arquivos
+              onClick={() => inputRef.current?.click()}
             />
           ),
         }}
@@ -70,6 +92,7 @@ export default function InputFile({
       />
       <VisuallyHiddenInput
         type="file"
+        accept="image/*"
         onChange={handleFileChange}
         ref={inputRef}
       />

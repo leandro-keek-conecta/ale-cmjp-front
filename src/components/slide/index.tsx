@@ -18,27 +18,6 @@ export type SlideComponentProps = {
   intervalMs?: number;
 };
 
-const defaultSlides: SlideItem[] = [
-  {
-    title: "Pronta para responder",
-    description:
-      "Interface humanizada para tirar dúvidas da população a qualquer hora.",
-    image: "https://s3.keekconecta.com.br/ale-cmjp/fotos/ale-1.jpg",
-  },
-  {
-    title: "Assistente presente nas ruas",
-    description:
-      "Registra solicitações diretamente dos bairros e agiliza o atendimento.",
-    image: "https://s3.keekconecta.com.br/ale-cmjp/fotos/ale-2.jpg",
-  },
-  {
-    title: "Conversas claras e objetivas",
-    description:
-      "Painel mostra o que está acontecendo em tempo real, sem complicação.",
-    image: "https://s3.keekconecta.com.br/ale-cmjp/fotos/ale-5.png",
-  },
-];
-
 export default function SlideComponent({
   slides,
   badge,
@@ -49,9 +28,69 @@ export default function SlideComponent({
   const [currentSlide, setCurrentSlide] = useState(0);
 
   const resolvedSlides = useMemo(
-    () => (slides && slides.length ? slides : defaultSlides),
+    () =>
+      Array.isArray(slides)
+        ? slides.filter(
+            (slide): slide is SlideItem =>
+              Boolean(
+                slide &&
+                  typeof slide.title === "string" &&
+                  typeof slide.description === "string" &&
+                  typeof slide.image === "string" &&
+                  slide.image.trim(),
+              ),
+          )
+        : [],
     [slides],
   );
+
+  if (!resolvedSlides.length) {
+    return (
+      <Box
+        className={`${styles.aleSlider} ${styles.aleSliderError}`}
+        aria-label="Erro ao carregar galeria da assistente virtual"
+        role="alert"
+      >
+        <div className={styles.errorPanel}>
+          <span className={styles.aleBadge}>{badge || "Assistente virtual"}</span>
+          <Typography
+            variant="h6"
+            sx={{ fontWeight: 800, color: "var(--text)" }}
+          >
+            Nao foi possivel carregar o slide deste projeto.
+          </Typography>
+          <Typography
+            variant="body2"
+            sx={{ color: "var(--muted)", maxWidth: 560 }}
+          >
+            Verifique a configuracao do hero e se as imagens foram salvas
+            corretamente na resposta do projeto.
+          </Typography>
+        </div>
+        <div className={styles.errorMedia}>
+          <Card sx={{ p: 2, borderRadius: 4, width: "100%", maxWidth: 420 }}>
+            <Box className={styles.cardMapHeader}>
+              <PlaceIcon color="primary" />
+              <Typography
+                variant="subtitle1"
+                sx={{ fontWeight: 700, color: "#000000a2" }}
+              >
+                {mapTitle || "Presenca ativa nos bairros"}
+              </Typography>
+            </Box>
+            <Box className={styles.cardMapBody}>
+              <Typography
+                variant="h6"
+                sx={{ fontWeight: "bold", color: "#000000a2" }}
+              >
+                {mapSubtitle || "Participacao cidada descomplicada e eficiente"}
+              </Typography>
+            </Box>
+          </Card>
+        </div>
+      </Box>
+    );
+  }
 
   useEffect(() => {
     if (!resolvedSlides.length) return;

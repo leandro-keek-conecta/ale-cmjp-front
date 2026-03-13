@@ -149,15 +149,15 @@ export default function ThemePreview({
       urls: createdUrls,
       slide1: resolveImage(
         resolvedSettings.slide1_image,
-        "https://s3.keekconecta.com.br/ale-cmjp/fotos/ale-1.jpg",
+        "https://s3.keekconecta.com.br/ale-cmjp/ouvidoria-exemplo%2FGemini_Generated_Image_2ekqdt2ekqdt2ekq%20(1).png",
       ),
       slide2: resolveImage(
         resolvedSettings.slide2_image,
-        "https://s3.keekconecta.com.br/ale-cmjp/fotos/ale-2.jpg",
+        "https://s3.keekconecta.com.br/ale-cmjp/ouvidoria-exemplo%2FGemini_Generated_Image_pksadspksadspksa.png",
       ),
       slide3: resolveImage(
         resolvedSettings.slide3_image,
-        "https://s3.keekconecta.com.br/ale-cmjp/fotos/ale-5.png",
+        "https://s3.keekconecta.com.br/ale-cmjp/ouvidoria-exemplo%2FGemini_Generated_Image_y0uc96y0uc96y0uc%20(1).png",
       ),
     };
   }, [

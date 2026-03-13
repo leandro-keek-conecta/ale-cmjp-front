@@ -21,6 +21,10 @@ import {
 import { getStoredProjectId } from "@/utils/project";
 import type Projeto from "@/types/IProjetoType";
 import CustomAlert from "@/components/Alert";
+import {
+  getStorage,
+  uploadFileToStorage,
+} from "@/services/minio/minioService";
 
 type AlertState = {
   show: boolean;
@@ -32,6 +36,25 @@ const toNumber = (value: unknown, fallback = 0) => {
   const parsed = typeof value === "number" ? value : Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
 };
+
+const themeImageFields = [
+  "slide1_image",
+  "slide2_image",
+  "slide3_image",
+] as const;
+
+type ThemeImageField = (typeof themeImageFields)[number];
+
+const getImageFile = (value: ThemeFormValues[ThemeImageField]) => {
+  if (typeof FileList !== "undefined" && value instanceof FileList) {
+    return value.item(0);
+  }
+
+  return null;
+};
+
+const getImageUrl = (value: ThemeFormValues[ThemeImageField]) =>
+  typeof value === "string" ? value.trim() : "";
 
 export default function ProjetoThemeTab() {
   const defaultValues = useMemo(() => buildThemeDefaultValues(), []);
@@ -465,6 +488,68 @@ export default function ProjetoThemeTab() {
     };
   }, [defaultValues, reset]);
 
+  const uploadThemeImages = async (data: ThemeFormValues) => {
+    const nextValues: ThemeFormValues = { ...data };
+    const pendingUploads = themeImageFields
+      .map((field) => {
+        const file = getImageFile(data[field]);
+        return file ? { field, file } : null;
+      })
+      .filter(
+        (
+          entry,
+        ): entry is {
+          field: ThemeImageField;
+          file: File;
+        } => Boolean(entry),
+      );
+
+    themeImageFields.forEach((field) => {
+      if (!getImageFile(data[field])) {
+        nextValues[field] = getImageUrl(data[field]);
+      }
+    });
+
+    if (!pendingUploads.length) {
+      return nextValues;
+    }
+
+    const uploadTargets = await getStorage(
+      pendingUploads.map(({ file }) => ({
+        fileName: file.name,
+        folder: "panorama",
+        contentType: file.type,
+      })),
+    );
+
+    const usedTargetIndexes = new Set<number>();
+
+    for (const upload of pendingUploads) {
+      const targetIndexByName = uploadTargets.findIndex(
+        (target, index) =>
+          !usedTargetIndexes.has(index) && target.fileName === upload.file.name,
+      );
+      const targetIndex =
+        targetIndexByName >= 0
+          ? targetIndexByName
+          : uploadTargets.findIndex((_, index) => !usedTargetIndexes.has(index));
+
+      if (targetIndex < 0) {
+        throw new Error(
+          `Nao foi possivel localizar a URL de upload para ${upload.file.name}.`,
+        );
+      }
+
+      usedTargetIndexes.add(targetIndex);
+
+      const target = uploadTargets[targetIndex];
+      await uploadFileToStorage(target, upload.file);
+      nextValues[upload.field] = target.fileUrl;
+    }
+
+    return nextValues;
+  };
+
   const handleSave = async (data: ThemeFormValues) => {
     try {
       setLoading(true);
@@ -478,8 +563,10 @@ export default function ProjetoThemeTab() {
         });
         return;
       }
-      const payload = buildPayload(data);
+      const valuesToSave = await uploadThemeImages(data);
+      const payload = buildPayload(valuesToSave);
       await updateProject(projectId, payload);
+      reset(valuesToSave);
       setAlert({
         show: true,
         category: "success",

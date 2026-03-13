@@ -15,7 +15,7 @@ const App = () => (
         }}
       >
         <ScrollToTop />
-        <VLibrasWidget disabledOnPaths={["/relatorio", "/login", "/cadastro-usuario", "/cadastro-projeto", "/projetos", "/forms-constructor", "/constructor-forms"]} />
+        <VLibrasWidget disabledOnPaths={["/relatorio", "/panorama", "/login", "/cadastro-usuario", "/cadastro-projeto", "/projetos", "/forms-constructor", "/constructor-forms"]} />
         <RoutesConfig />
       </BrowserRouter>
     </ProjectProvider>
