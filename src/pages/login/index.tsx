@@ -282,13 +282,13 @@ export default function LoginPage() {
               }}
             />
 
-            <Box className={styles.actionsRow}>
+            <Box className={styles.actionsRow} >
               <FormControlLabel
                 className={styles.rememberControl}
                 control={<Checkbox size="small" disabled={isBusy} />}
                 label="Manter sessão ativa"
               />
-              <Typography className={styles.forgotPasswordText}>
+              <Typography className={styles.forgotPasswordText} >
                 Esqueci minha senha
               </Typography>
             </Box>

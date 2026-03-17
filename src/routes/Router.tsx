@@ -14,6 +14,8 @@ import RegisterProject from "@/pages/registerProject/RegisterProject";
 import ProjetoThemeTab from "@/pages/ProjetoThemeTab/ProjetoThemeTab";
 import Projetos from "@/pages/projects/Projetos";
 import ConstructorForm from "@/pages/formsConstructorT/FormsConstructor";
+import { ForgotPassword } from "@/pages/forgotPassword/FortgotPassword";
+import ChangePassword from "@/pages/changePassword/ChangePawword";
 
 const RoutesConfig = () => (
   <AuthProvider>
@@ -28,6 +30,8 @@ const RoutesConfig = () => (
       <Route path="/cadastro-thema" element={<ProtectedRoute allowedRoles={["SUPERADMIN"]}><ProjetoThemeTab /></ProtectedRoute>} />
       <Route path="/projetos" element={<ProtectedRoute allowedRoles={["USER", "ADMIN", "SUPERADMIN"]}><Projetos /></ProtectedRoute>} />
       <Route path="/dashboards/embed/:id" element={<EmbedDashboardPage />} />
+      <Route path="/change-password" element={<ChangePassword />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/form-page" element={<FormsPage />} />
       <Route path="/form/:project/:slug" element={<DinamicFormsPage />} />
       <Route path="/form/:slug" element={<DinamicFormsPage />} />
