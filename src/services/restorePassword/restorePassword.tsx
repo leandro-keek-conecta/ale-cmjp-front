@@ -23,8 +23,10 @@ function resolveErrorMessage(error: unknown, fallback: string) {
 }
 
 export async function sendEmail(email: string) {
+  console.log(email)
   try {
     const response = await api.post("/user/forgot-password", { email });
+    console.log(response)
     return response.data;
   } catch (error) {
     throw new Error(

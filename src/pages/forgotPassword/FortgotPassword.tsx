@@ -54,6 +54,7 @@ export function ForgotPassword() {
     setIsSubmitting(true);
 
     try {
+      console.log("Aqui")
       await sendEmail(trimmedEmail);
       setFeedback({
         type: "success",
