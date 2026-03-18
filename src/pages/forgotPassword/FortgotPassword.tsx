@@ -149,7 +149,7 @@ export function ForgotPassword() {
             <TextField
               fullWidth
               type="email"
-              label="Email corporativo"
+              label="Seu email"
               placeholder="nome.sobrenome@empresa.com"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
