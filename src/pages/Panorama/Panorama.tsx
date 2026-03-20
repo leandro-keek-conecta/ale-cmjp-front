@@ -1,4 +1,10 @@
-import { Box, Button, Pagination, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Pagination,
+  Typography,
+} from "@mui/material";
 
 import {
   ChatBubbleOutline,
@@ -79,6 +85,7 @@ type DynamicFormFiltersPayload = {
 
 const ALL_FORMS_VALUE = "__all__" as const;
 const DEFAULT_VALUE_KEYS = ["value", "total", "count"] as const;
+const MIN_FILTER_LOADING_MS = 1000;
 const metricSet = new Set<PanoramaMetricKey>(
   panoramaOptions.map((option) => option.value),
 );
@@ -541,6 +548,7 @@ export default function Panorama() {
   const [error, setError] = useState("");
   const [filterType] = useState<string>("all");
   const [filterExpanded, setFilterExpanded] = useState(false);
+  const [isApplyingFilters, setIsApplyingFilters] = useState(false);
   const [searchTerm] = useState("");
   const [itensPerPage] = useState(12);
   const [currentPage, setCurrentPage] = useState(5);
@@ -549,6 +557,7 @@ export default function Panorama() {
   );
   const heroTitleRef = useRef<HTMLSpanElement | null>(null);
   const [heroCopyWidth, setHeroCopyWidth] = useState<number | null>(null);
+  const filterLoadingTimeoutRef = useRef<number | null>(null);
   /*   const navigate = useNavigate(); */
   const mapSelectOptions = (
     items: FilterApiItem[] | undefined,
@@ -599,6 +608,26 @@ export default function Panorama() {
     setFilters(mapFilterFormToState(defaults));
     setCurrentPage(1);
   }, [autoSelectedTheme, resetFilterForm, selectedProjectId]);
+
+  useEffect(() => {
+    return () => {
+      if (filterLoadingTimeoutRef.current !== null) {
+        window.clearTimeout(filterLoadingTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const triggerFilterLoading = useCallback(() => {
+    if (filterLoadingTimeoutRef.current !== null) {
+      window.clearTimeout(filterLoadingTimeoutRef.current);
+    }
+
+    setIsApplyingFilters(true);
+    filterLoadingTimeoutRef.current = window.setTimeout(() => {
+      setIsApplyingFilters(false);
+      filterLoadingTimeoutRef.current = null;
+    }, MIN_FILTER_LOADING_MS);
+  }, []);
 
   const fetchProjectTheme = useCallback(async () => {
     try {
@@ -956,15 +985,23 @@ export default function Panorama() {
     if (key === "elogio") return <StarBorderRounded fontSize="small" />;
     return <ChatBubbleOutline fontSize="small" />;
   };
-  async function onSubmitUser(data: FilterFormValues) {
+  const onSubmitUser = useCallback((data: FilterFormValues) => {
     setFilters(mapFilterFormToState(data));
-  }
+    setCurrentPage(1);
+    triggerFilterLoading();
+  }, [triggerFilterLoading]);
 
   const handleClearFilters = () => {
     const defaults = buildFilternDefaultValues(autoSelectedTheme || null);
     resetFilterForm(defaults);
     setFilters(mapFilterFormToState(defaults));
+    setCurrentPage(1);
+    triggerFilterLoading();
   };
+
+  const handleApplyFilters = useCallback(() => {
+    void handleFilterSubmit(onSubmitUser)();
+  }, [handleFilterSubmit, onSubmitUser]);
 
   const handleSelectForm = (value: FormSelectValue | null) => {
     const nextFormId =
@@ -1229,15 +1266,22 @@ export default function Panorama() {
                     className={styles.filterButton}
                     type="button"
                     onClick={handleClearFilters}
+                    disabled={isApplyingFilters}
                   >
                     Limpar
                   </Button>
                   <Button
                     className={`${styles.filterButton} ${styles.filterButtonPrimary}`}
                     type="button"
-                    onClick={handleFilterSubmit(onSubmitUser)}
+                    onClick={handleApplyFilters}
+                    disabled={isApplyingFilters}
+                    startIcon={
+                      isApplyingFilters ? (
+                        <CircularProgress size={16} color="inherit" />
+                      ) : undefined
+                    }
                   >
-                    Aplicar Filtros
+                    {isApplyingFilters ? "Aplicando..." : "Aplicar Filtros"}
                   </Button>
                 </Box>
               </Box>
@@ -1247,7 +1291,16 @@ export default function Panorama() {
               className={`${styles.opinionsContainer} ${styles.reveal}`}
               data-reveal
               style={{ ["--reveal-delay" as any]: "0.32s" }}
+              aria-busy={isApplyingFilters || undefined}
             >
+              {isApplyingFilters ? (
+                <Box className={styles.opinionsLoadingOverlay}>
+                  <CircularProgress size={28} />
+                  <Typography component="span" className={styles.loadingLabel}>
+                    Aplicando filtros...
+                  </Typography>
+                </Box>
+              ) : null}
               <CardDetails opinions={paginatedOpinions} />
             </Box>
             <Box sx={{ width: "100%" }}>
@@ -1255,6 +1308,7 @@ export default function Panorama() {
                 page={currentPage}
                 count={totalPages}
                 onChange={(_, page) => setCurrentPage(page)}
+                disabled={isApplyingFilters}
                 size="small"
                 siblingCount={0}
                 boundaryCount={1}
