@@ -146,7 +146,7 @@ export async function getMetricSummary(
   const scopedParams = withThemeScope(params.projetoId, params.temas);
 
   const res = await api.get<ApiEnvelope<MetricSummaryData>>(
-    "/form-response/metrics/summary",
+    "form-response/metrics/report",
     {
       params: cleanParams({
         projetoId: scopedParams.projetoId,
@@ -226,3 +226,5 @@ export async function getRawFormResponses<T = Record<string, unknown>>(
 
   return res.data.data;
 }
+
+
