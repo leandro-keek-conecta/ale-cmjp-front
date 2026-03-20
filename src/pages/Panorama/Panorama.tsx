@@ -1,4 +1,10 @@
-import { Box, Button, Pagination, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Pagination,
+  Typography,
+} from "@mui/material";
 
 import {
   ChatBubbleOutline,
@@ -48,14 +54,16 @@ import { useProjectContext } from "@/context/ProjectContext";
 import { useProjectRealtime } from "@/hooks/useRealtimeSubscription";
 import type { Opinion } from "@/types/opinion";
 import {
+  panoramaOptions,
+  type PanoramaMetricKey,
+} from "@/pages/ProjetoThemeTab/inputs/inputs";
+import {
   filterOptionsByAllowedThemes,
   getStoredAllowedThemes,
   hasThemeAccess,
   normalizeAccessKey,
 } from "@/utils/userProjectAccess";
 type FilterApiItem = { label: string; value: string; count?: number };
-type TopThemeMetric = { id: number; tema: string; total: number };
-type TopDistrictMetric = { key: string; label: string; value: number };
 type FormSelectValue = number | "__all__";
 type DynamicFilterValue = {
   label?: unknown;
@@ -76,6 +84,11 @@ type DynamicFormFiltersPayload = {
 };
 
 const ALL_FORMS_VALUE = "__all__" as const;
+const DEFAULT_VALUE_KEYS = ["value", "total", "count"] as const;
+const MIN_FILTER_LOADING_MS = 1000;
+const metricSet = new Set<PanoramaMetricKey>(
+  panoramaOptions.map((option) => option.value),
+);
 
 const buildFilternDefaultValues = (
   forcedTema?: string | null,
@@ -91,6 +104,7 @@ const buildFilternDefaultValues = (
 });
 
 type HeroCardConfig = {
+  metric: PanoramaMetricKey;
   title: string;
   subtitle: string;
 };
@@ -125,11 +139,24 @@ const DEFAULT_PANORAMA_THEME: PanoramaThemeConfig = {
   slideMapSubtitle: "Participação cidadã descomplicada e eficiente",
   slides: [],
   cards: [
-    { title: "Opiniões de hoje", subtitle: "Total registradas" },
-    { title: "Temas mais falados", subtitle: "Participação distribuída" },
-    { title: "Bairros mais ativos", subtitle: "Participação distribuída" },
+    {
+      metric: "opinions_today",
+      title: "Opiniões de hoje",
+      subtitle: "Total registradas",
+    },
+    {
+      metric: "top_themes",
+      title: "Temas mais falados",
+      subtitle: "Participação distribuída",
+    },
+    {
+      metric: "top_neighborhoods",
+      title: "Bairros mais ativos",
+      subtitle: "Participação distribuída",
+    },
   ],
   clima: {
+    metric: "by_type",
     title: "Clima geral",
     subtitle: "Distribuição das opiniões",
   },
@@ -183,6 +210,161 @@ const toOptionalNumber = (value: unknown) => {
 
   return null;
 };
+
+const isMetricKey = (value: unknown): value is PanoramaMetricKey =>
+  typeof value === "string" && metricSet.has(value as PanoramaMetricKey);
+
+const toChartLabel = (value: unknown): string | null => {
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    return trimmed ? trimmed : null;
+  }
+  if (typeof value === "number" && Number.isFinite(value)) return String(value);
+  if (typeof value === "boolean") return value ? "Sim" : "Não";
+  return null;
+};
+
+const readNestedValue = (source: unknown, path: string) =>
+  path.split(".").reduce<unknown>((current, key) => {
+    if (!current || typeof current !== "object" || Array.isArray(current)) {
+      return undefined;
+    }
+    return (current as Record<string, unknown>)[key];
+  }, source);
+
+const resolveMetricSource = (
+  payload: Record<string, unknown>,
+  source: string,
+) => {
+  const nestedValue = readNestedValue(payload, source);
+  if (nestedValue !== undefined) {
+    return nestedValue;
+  }
+
+  if (source.startsWith("summary.")) {
+    return readNestedValue(payload, source.slice("summary.".length));
+  }
+
+  if (source.startsWith("report.")) {
+    return readNestedValue(payload, source.slice("report.".length));
+  }
+
+  return undefined;
+};
+
+const normalizeMetricList = (data: unknown, labelKeys: string[]) => {
+  if (!Array.isArray(data)) return [];
+
+  return data
+    .map((entry, index) => {
+      if (!entry || typeof entry !== "object") return null;
+
+      const item = entry as Record<string, unknown>;
+      const label = labelKeys
+        .map((key) => toChartLabel(item[key]))
+        .find((value): value is string => Boolean(value));
+
+      if (!label) return null;
+
+      const firstValue =
+        DEFAULT_VALUE_KEYS.map((key) => item[key]).find(
+          (value) => value !== undefined,
+        ) ?? 0;
+
+      return {
+        key: normalizeAccessKey(`${label}-${index}`),
+        label,
+        value: toOptionalNumber(firstValue) ?? 0,
+      };
+    })
+    .filter(
+      (
+        item,
+      ): item is { key: string; label: string; value: number } => item !== null,
+    );
+};
+
+const getMetricListLabelKeys = (metric: PanoramaMetricKey) => {
+  switch (metric) {
+    case "top_themes":
+      return ["tema", "label", "name", "title"];
+    case "top_neighborhoods":
+      return ["label", "bairro", "name", "title"];
+    case "by_gender":
+      return ["label", "gender", "genero", "name", "title"];
+    case "by_age":
+      return ["label", "ageRange", "faixaEtaria", "name", "title"];
+    case "by_type":
+      return ["label", "tipo", "tipoOpiniao", "tema", "name", "title"];
+    case "by_campaign":
+      return ["label", "campaign", "campanha", "name", "title"];
+    case "status_funnel":
+      return ["label", "status", "name", "title"];
+    case "trend_day":
+      return ["label", "day", "date", "name", "title"];
+    case "trend_month":
+      return ["label", "month", "date", "name", "title"];
+    default:
+      return ["label", "name", "title"];
+  }
+};
+
+const getMetricFallbackSubtitle = (metric: PanoramaMetricKey) => {
+  switch (metric) {
+    case "opinions_today":
+      return "Total registradas";
+    case "top_themes":
+    case "top_neighborhoods":
+      return "Participação distribuída";
+    case "total_opinions":
+    case "total_complaints":
+    case "total_praise":
+    case "total_suggestions":
+      return "Acumulado geral";
+    case "by_gender":
+    case "by_age":
+    case "by_type":
+      return "Distribuição";
+    case "by_campaign":
+      return "Aceite";
+    case "status_funnel":
+      return "Etapas";
+    case "trend_day":
+      return "Últimos dias";
+    case "trend_month":
+      return "Últimos meses";
+    default:
+      return "";
+  }
+};
+
+const getMetricIcon = (metric?: PanoramaMetricKey | "") => {
+  switch (metric) {
+    case "top_themes":
+    case "top_neighborhoods":
+      return <LocationOnOutlined className={styles.statIcon} />;
+    case "status_funnel":
+      return <ThermostatOutlined className={styles.statIcon} />;
+    case "by_gender":
+    case "by_age":
+    case "by_type":
+    case "by_campaign":
+      return <ChatBubbleOutline className={styles.statIcon} />;
+    default:
+      return <InsertChartOutlined className={styles.statIcon} />;
+  }
+};
+
+const getMetricCardSpan = (count: number) => {
+  if (count <= 1) return 12;
+  if (count === 2) return 6;
+  if (count === 3) return 4;
+  if (count === 4) return 3;
+  return 2;
+};
+
+const formatMetricChip = (label: string, value: number) =>
+  value > 0 ? `${label} (${value})` : label;
 
 const toDynamicSelectOptions = (
   fieldsPayload: DynamicFormFiltersPayload,
@@ -354,27 +536,28 @@ export default function Panorama() {
   );
   const [groupedForms, setGroupedForms] = useState<GroupedFormResponse[]>([]);
   const [selectedFormId, setSelectedFormId] = useState<number | null>(null);
-  const [topDistricts, setTopDistricts] = useState<TopDistrictMetric[]>([]);
-  const [topTemas, setTopTemas] = useState<TopThemeMetric[]>([]);
+  const [metricsPayload, setMetricsPayload] = useState<Record<string, unknown>>(
+    {},
+  );
   const [filterSelectOptions, setFilterSelectOptions] = useState<
     Partial<FilterSelectOptions>
   >({});
   const [filters, setFilters] = useState<FiltersState>(() =>
     mapFilterFormToState(buildFilternDefaultValues(autoSelectedTheme || null)),
   );
-  const [todayOpinions, setTodayOpinions] = useState<number>(0);
   const [error, setError] = useState("");
   const [filterType] = useState<string>("all");
   const [filterExpanded, setFilterExpanded] = useState(false);
+  const [isApplyingFilters, setIsApplyingFilters] = useState(false);
   const [searchTerm] = useState("");
   const [itensPerPage] = useState(12);
   const [currentPage, setCurrentPage] = useState(5);
   const [showPresentationModal, setShowPresentationModal] = useState<boolean>(
     () => !readFromStorage<boolean>(PRESENTATION_SEEN_KEY, false),
   );
-  const [groupOpinions, setGroupOpinions] = useState<TopThemeMetric[]>([]);
   const heroTitleRef = useRef<HTMLSpanElement | null>(null);
   const [heroCopyWidth, setHeroCopyWidth] = useState<number | null>(null);
+  const filterLoadingTimeoutRef = useRef<number | null>(null);
   /*   const navigate = useNavigate(); */
   const mapSelectOptions = (
     items: FilterApiItem[] | undefined,
@@ -426,6 +609,26 @@ export default function Panorama() {
     setCurrentPage(1);
   }, [autoSelectedTheme, resetFilterForm, selectedProjectId]);
 
+  useEffect(() => {
+    return () => {
+      if (filterLoadingTimeoutRef.current !== null) {
+        window.clearTimeout(filterLoadingTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const triggerFilterLoading = useCallback(() => {
+    if (filterLoadingTimeoutRef.current !== null) {
+      window.clearTimeout(filterLoadingTimeoutRef.current);
+    }
+
+    setIsApplyingFilters(true);
+    filterLoadingTimeoutRef.current = window.setTimeout(() => {
+      setIsApplyingFilters(false);
+      filterLoadingTimeoutRef.current = null;
+    }, MIN_FILTER_LOADING_MS);
+  }, []);
+
   const fetchProjectTheme = useCallback(async () => {
     try {
       const projectId = selectedProjectId;
@@ -446,16 +649,29 @@ export default function Panorama() {
       const slide = asRecord(heroConfig.slide);
       const cards = asRecord(heroConfig.cards);
       const clima = asRecord(heroConfig.clima);
-      const cardItems = Array.isArray(cards.items) ? cards.items : [];
-      const nextCards = DEFAULT_PANORAMA_THEME.cards.map(
-        (defaultCard, index) => {
-          const currentCard = asRecord(cardItems[index]);
+      const rawCount = toOptionalNumber(cards.count);
+      const configuredItems = Array.isArray(cards.items) ? cards.items : [];
+      const cardItems = configuredItems
+        .slice(0, rawCount ?? configuredItems.length)
+        .map((item) => asRecord(item));
+      const nextCards = (cardItems.length ? cardItems : DEFAULT_PANORAMA_THEME.cards)
+        .map((item, index) => {
+          const defaultCard = DEFAULT_PANORAMA_THEME.cards[index] ??
+            DEFAULT_PANORAMA_THEME.cards[DEFAULT_PANORAMA_THEME.cards.length - 1];
+          const currentCard = asRecord(item);
+          const metric = isMetricKey(currentCard.metric)
+            ? currentCard.metric
+            : defaultCard?.metric ?? "";
+
+          if (!metric) return null;
+
           return {
-            title: toText(currentCard.title, defaultCard.title),
-            subtitle: toText(currentCard.subtitle, defaultCard.subtitle),
+            metric,
+            title: toText(currentCard.title, defaultCard?.title ?? ""),
+            subtitle: toText(currentCard.subtitle, defaultCard?.subtitle ?? ""),
           };
-        },
-      );
+        })
+        .filter((item): item is NonNullable<typeof item> => item !== null);
 
       setPanoramaTheme({
         background: toText(
@@ -484,8 +700,11 @@ export default function Panorama() {
           DEFAULT_PANORAMA_THEME.slideMapSubtitle,
         ),
         slides: toSlideItems(slide.slides),
-        cards: nextCards,
+        cards: nextCards.length ? nextCards : DEFAULT_PANORAMA_THEME.cards,
         clima: {
+          metric: isMetricKey(clima.metric)
+            ? clima.metric
+            : DEFAULT_PANORAMA_THEME.clima.metric,
           title: toText(clima.title, DEFAULT_PANORAMA_THEME.clima.title),
           subtitle: toText(
             clima.subtitle,
@@ -588,83 +807,8 @@ export default function Panorama() {
     }
     try {
       const response = await getMetricas(projectId);
-      const payload = response?.data?.data ?? {};
-      const rawTopTemas = Array.isArray(payload.topTemas)
-        ? (payload.topTemas as unknown[])
-        : [];
-      const rawTopDistricts = Array.isArray(payload.topBairros)
-        ? (payload.topBairros as unknown[])
-        : [];
-      const nextTopTemas = rawTopTemas.length
-        ? rawTopTemas
-            .map((item: unknown, index: number): TopThemeMetric | null => {
-              if (!item || typeof item !== "object") {
-                return null;
-              }
-
-              const data = item as Record<string, unknown>;
-              const tema =
-                typeof data.tema === "string" ? data.tema.trim() : "";
-              if (!tema) {
-                return null;
-              }
-
-              return {
-                id:
-                  typeof data.id === "number" && Number.isFinite(data.id)
-                    ? data.id
-                    : index + 1,
-                tema,
-                total:
-                  typeof data.total === "number" && Number.isFinite(data.total)
-                    ? data.total
-                    : 0,
-              };
-            })
-            .filter(
-              (item: TopThemeMetric | null): item is TopThemeMetric =>
-                item !== null,
-            )
-        : [];
-
-      const nextTopDistricts = rawTopDistricts.length
-        ? rawTopDistricts
-            .map((item: unknown): TopDistrictMetric | null => {
-              if (!item || typeof item !== "object") {
-                return null;
-              }
-
-              const data = item as Record<string, unknown>;
-              const label =
-                typeof data.label === "string" ? data.label.trim() : "";
-              if (!label) {
-                return null;
-              }
-
-              return {
-                key: normalizeAccessKey(label),
-                label,
-                value:
-                  typeof data.value === "number" && Number.isFinite(data.value)
-                    ? data.value
-                    : 0,
-              };
-            })
-            .filter(
-              (item: TopDistrictMetric | null): item is TopDistrictMetric =>
-                item !== null,
-            )
-        : [];
-
-      setGroupOpinions(nextTopTemas);
-      setTodayOpinions(
-        typeof payload.totalOpinionsToday === "number" &&
-          Number.isFinite(payload.totalOpinionsToday)
-          ? payload.totalOpinionsToday
-          : 0,
-      );
-      setTopDistricts(nextTopDistricts);
-      setTopTemas(nextTopTemas);
+      const payload = response?.data?.data ?? response?.data ?? {};
+      setMetricsPayload(asRecord(payload));
     } catch (err) {
       console.error("Erro ao carregar metricas do panorama.", err);
       setError("Erro ao carregar metricas.");
@@ -837,19 +981,27 @@ export default function Panorama() {
   const renderTypeIcon = (type: string) => {
     const key = normalizeText(type);
     if (key === "reclamacao") return <PriorityHigh fontSize="small" />;
-    if (key === "sugestão") return <LightbulbOutlined fontSize="small" />;
+    if (key === "sugestao") return <LightbulbOutlined fontSize="small" />;
     if (key === "elogio") return <StarBorderRounded fontSize="small" />;
     return <ChatBubbleOutline fontSize="small" />;
   };
-  async function onSubmitUser(data: FilterFormValues) {
+  const onSubmitUser = useCallback((data: FilterFormValues) => {
     setFilters(mapFilterFormToState(data));
-  }
+    setCurrentPage(1);
+    triggerFilterLoading();
+  }, [triggerFilterLoading]);
 
   const handleClearFilters = () => {
     const defaults = buildFilternDefaultValues(autoSelectedTheme || null);
     resetFilterForm(defaults);
     setFilters(mapFilterFormToState(defaults));
+    setCurrentPage(1);
+    triggerFilterLoading();
   };
+
+  const handleApplyFilters = useCallback(() => {
+    void handleFilterSubmit(onSubmitUser)();
+  }, [handleFilterSubmit, onSubmitUser]);
 
   const handleSelectForm = (value: FormSelectValue | null) => {
     const nextFormId =
@@ -860,6 +1012,118 @@ export default function Panorama() {
     resetFilterForm(defaults);
     setFilters(mapFilterFormToState(defaults));
     setCurrentPage(1);
+  };
+
+  const configuredMetricCards = useMemo(
+    () => panoramaTheme.cards.filter((card) => Boolean(card.metric)),
+    [panoramaTheme.cards],
+  );
+
+  const metricCardSpan = getMetricCardSpan(configuredMetricCards.length);
+
+  const resolveMetricDisplay = useCallback(
+    (metric?: PanoramaMetricKey | "") => {
+      if (!metric) return null;
+
+      const option = panoramaOptions.find((entry) => entry.value === metric);
+      if (!option) return null;
+
+      const rawValue = resolveMetricSource(metricsPayload, option.source);
+      const numericMetrics = new Set<PanoramaMetricKey>([
+        "opinions_today",
+        "total_opinions",
+        "total_complaints",
+        "total_praise",
+        "total_suggestions",
+      ]);
+
+      if (numericMetrics.has(metric)) {
+        return {
+          type: "number" as const,
+          value: toOptionalNumber(rawValue) ?? 0,
+        };
+      }
+
+      return {
+        type: "list" as const,
+        items: normalizeMetricList(rawValue, getMetricListLabelKeys(metric)),
+      };
+    },
+    [metricsPayload],
+  );
+
+  const renderMetricCard = (
+    card: HeroCardConfig,
+    span: number,
+    className?: string,
+  ) => {
+    const option = panoramaOptions.find((entry) => entry.value === card.metric);
+    const metricDisplay = resolveMetricDisplay(card.metric);
+    const title = (card.title || "").trim() || option?.label || "Métrica";
+    const subtitle =
+      (card.subtitle || "").trim() ||
+      (card.metric ? getMetricFallbackSubtitle(card.metric) : "");
+    const isOpinionTypeMetric = card.metric === "by_type";
+
+    return (
+      <CardGridReflect
+        key={`${card.metric}-${title}`}
+        span={span}
+        className={`${styles.statCard} ${className ?? ""} ${styles.reveal}`.trim()}
+        data-reveal
+        style={{ ["--reveal-delay" as any]: "0.12s" }}
+      >
+        <div className={styles.statHeader}>
+          {getMetricIcon(card.metric)}
+          <div>
+            <div className={styles.statLabel}>{title}</div>
+            {subtitle ? <div className={styles.statHint}>{subtitle}</div> : null}
+          </div>
+        </div>
+        {metricDisplay ? (
+          metricDisplay.type === "number" ? (
+            <div className={styles.statValue}>{metricDisplay.value}</div>
+          ) : metricDisplay.items.length ? (
+            isOpinionTypeMetric ? (
+              <div className={styles.typeChips}>
+                {metricDisplay.items.map((item) => {
+                  const typeKey = normalizeText(item.label) || "outro";
+                  return (
+                    <span
+                      key={item.key}
+                      className={styles.typeChip}
+                      data-type={typeKey}
+                      aria-label={`${item.label} (${item.value})`}
+                    >
+                      <span className={styles.typeIcon}>
+                        {renderTypeIcon(item.label)}
+                      </span>
+                      <span>{item.label}</span>
+                      <span className={styles.typeCount}>{item.value}</span>
+                    </span>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className={styles.districtChips}>
+                {metricDisplay.items.map((item) => (
+                  <span key={item.key} className={styles.districtChip}>
+                    {formatMetricChip(item.label, item.value)}
+                  </span>
+                ))}
+              </div>
+            )
+          ) : (
+            <div className={styles.statEmpty}>Sem dados para esta métrica.</div>
+          )
+        ) : (
+          <div className={styles.statEmpty}>Selecione uma métrica.</div>
+        )}
+        {error && className?.includes(styles.wideCard) ? (
+          <div className={styles.statHint}>{error}</div>
+        ) : null}
+      </CardGridReflect>
+    );
   };
 
   const handleClosePresentation = () => {
@@ -945,132 +1209,10 @@ export default function Panorama() {
               </Typography>
             </div>
             <Box className={styles.statsRow}>
-              <CardGridReflect
-                span={2}
-                className={`${styles.statCard} ${styles.reveal}`}
-                data-reveal
-                style={{ ["--reveal-delay" as any]: "0.12s" }}
-              >
-                <div className={styles.statHeader}>
-                  <InsertChartOutlined className={styles.statIcon} />
-                  <div>
-                    <div className={styles.statLabel}>
-                      {panoramaTheme.cards[0]?.title}
-                    </div>
-                    <div className={styles.statHint}>
-                      {panoramaTheme.cards[0]?.subtitle}
-                    </div>
-                  </div>
-                </div>
-                {/* _________________________________________ */}
-                <div className={styles.statValue}>{todayOpinions}</div>
-              </CardGridReflect>
-              {/* Card 2 */}
-              <CardGridReflect
-                span={5}
-                className={`${styles.statCard} ${styles.reveal}`}
-                data-reveal
-                style={{ ["--reveal-delay" as any]: "0.12s" }}
-              >
-                <div className={styles.statHeader}>
-                  <LocationOnOutlined className={styles.statIcon} />
-                  <div>
-                    <div className={styles.statLabel}>
-                      {panoramaTheme.cards[1]?.title}
-                    </div>
-                    <div className={styles.statHint}>
-                      {panoramaTheme.cards[1]?.subtitle}
-                    </div>
-                  </div>
-                </div>
-                {topTemas.length ? (
-                  <div className={styles.districtChips}>
-                    {topTemas.map((district) => (
-                      <span key={district.id} className={styles.districtChip}>
-                        {district.tema}
-                      </span>
-                    ))}
-                  </div>
-                ) : (
-                  <div className={styles.statEmpty}>Sem dados de hoje.</div>
-                )}
-                <div className={styles.statHint}>Top 5 temas do dia</div>
-              </CardGridReflect>
-              {/* Card 3 */}
-              <CardGridReflect
-                span={5}
-                className={`${styles.statCard} ${styles.reveal}`}
-                data-reveal
-                style={{ ["--reveal-delay" as any]: "0.18s" }}
-              >
-                <div className={styles.statHeader}>
-                  <LocationOnOutlined className={styles.statIcon} />
-                  <div>
-                    <div className={styles.statLabel}>
-                      {panoramaTheme.cards[2]?.title}
-                    </div>
-                    <div className={styles.statHint}>
-                      {panoramaTheme.cards[2]?.subtitle}
-                    </div>
-                  </div>
-                </div>
-                {topDistricts.length ? (
-                  <div className={styles.districtChips}>
-                    {topDistricts.map((district) => (
-                      <span key={district.key} className={styles.districtChip}>
-                        {district.label}
-                      </span>
-                    ))}
-                  </div>
-                ) : (
-                  <div className={styles.statEmpty}>Sem dados de hoje.</div>
-                )}
-                <div className={styles.statHint}>Top 5 bairros do dia</div>
-              </CardGridReflect>
-
-              {/* Clima Geral */}
-              <CardGridReflect
-                span={12}
-                className={`${styles.statCard} ${styles.wideCard} ${styles.reveal}`}
-                data-reveal
-                style={{ ["--reveal-delay" as any]: "0.24s" }}
-              >
-                <Box className={styles.climaCard}>
-                  <div className={styles.statHeader}>
-                    <ThermostatOutlined className={styles.statIcon} />
-                    <Box>
-                      <div className={styles.statLabel}>
-                        {panoramaTheme.clima.title}
-                      </div>
-                      <div className={styles.statHint}>
-                        {panoramaTheme.clima.subtitle}
-                      </div>
-                    </Box>
-                  </div>
-                  <div className={styles.typeChips}>
-                    {groupOpinions.map(({ id, tema, total }) => {
-                      const typeKey = normalizeText(tema) || "outro";
-                      return (
-                        <span
-                          key={typeKey || id}
-                          className={styles.typeChip}
-                          data-type={typeKey}
-                          aria-label={`${tema} (${total})`}
-                        >
-                          <span className={styles.typeIcon}>
-                            {renderTypeIcon(tema)}
-                          </span>
-                          <span>{tema}</span>
-                          <span className={styles.typeCount}>{total}</span>
-                        </span>
-                      );
-                    })}
-                  </div>
-                  {error ? (
-                    <div className={styles.statHint}>{error}</div>
-                  ) : null}
-                </Box>
-              </CardGridReflect>
+              {configuredMetricCards.map((card) =>
+                renderMetricCard(card, metricCardSpan),
+              )}
+              {renderMetricCard(panoramaTheme.clima, 12, styles.wideCard)}
             </Box>
             {/* Componente de Filtro */}
             <CardGrid
@@ -1124,15 +1266,22 @@ export default function Panorama() {
                     className={styles.filterButton}
                     type="button"
                     onClick={handleClearFilters}
+                    disabled={isApplyingFilters}
                   >
                     Limpar
                   </Button>
                   <Button
                     className={`${styles.filterButton} ${styles.filterButtonPrimary}`}
                     type="button"
-                    onClick={handleFilterSubmit(onSubmitUser)}
+                    onClick={handleApplyFilters}
+                    disabled={isApplyingFilters}
+                    startIcon={
+                      isApplyingFilters ? (
+                        <CircularProgress size={16} color="inherit" />
+                      ) : undefined
+                    }
                   >
-                    Aplicar Filtros
+                    {isApplyingFilters ? "Aplicando..." : "Aplicar Filtros"}
                   </Button>
                 </Box>
               </Box>
@@ -1142,7 +1291,16 @@ export default function Panorama() {
               className={`${styles.opinionsContainer} ${styles.reveal}`}
               data-reveal
               style={{ ["--reveal-delay" as any]: "0.32s" }}
+              aria-busy={isApplyingFilters || undefined}
             >
+              {isApplyingFilters ? (
+                <Box className={styles.opinionsLoadingOverlay}>
+                  <CircularProgress size={28} />
+                  <Typography component="span" className={styles.loadingLabel}>
+                    Aplicando filtros...
+                  </Typography>
+                </Box>
+              ) : null}
               <CardDetails opinions={paginatedOpinions} />
             </Box>
             <Box sx={{ width: "100%" }}>
@@ -1150,6 +1308,7 @@ export default function Panorama() {
                 page={currentPage}
                 count={totalPages}
                 onChange={(_, page) => setCurrentPage(page)}
+                disabled={isApplyingFilters}
                 size="small"
                 siblingCount={0}
                 boundaryCount={1}

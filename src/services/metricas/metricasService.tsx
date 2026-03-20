@@ -74,7 +74,7 @@ export async function getFiltrosPorFormulario(
 export async function getMetricas(projetoId: number) {
   const { today } = getDateRange();
   const scopedParams = withThemeScope(projetoId);
-  return api.get("/form-response/metrics/summary", {
+  return api.get("/form-response/metrics/report", {
     params: cleanParams({
       ...scopedParams,
       day: today,
