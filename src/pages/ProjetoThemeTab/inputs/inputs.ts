@@ -5,72 +5,72 @@ export const panoramaOptions = [
   {
     value: "opinions_today",
     label: "Opiniões de hoje",
-    source: "summary.totalOpinionsToday",
+    source: "opinions_today",
   },
   {
     value: "top_themes",
     label: "Temas mais falados",
-    source: "summary.topTemas",
+    source: "topTemas",
   },
   {
     value: "top_neighborhoods",
     label: "Bairros mais ativos",
-    source: "summary.topBairros",
+    source: "topBairros",
   },
   {
     value: "total_opinions",
     label: "Total de opiniões",
-    source: "report.cards.totalOpinions",
+    source: "cards.totalOpinions",
   },
   {
     value: "total_complaints",
     label: "Total de reclamações",
-    source: "report.cards.totalComplaints",
+    source: "cards.totalComplaints",
   },
   {
     value: "total_praise",
     label: "Total de elogios",
-    source: "report.cards.totalPraise",
+    source: "cards.totalPraise",
   },
   {
     value: "total_suggestions",
     label: "Total de sugestões",
-    source: "report.cards.totalSuggestions",
+    source: "cards.totalSuggestions",
   },
   {
     value: "by_gender",
     label: "Opiniões por gênero",
-    source: "report.opinionsByGender",
+    source: "opinionsByGender",
   },
   {
     value: "by_age",
     label: "Opiniões por faixa etária",
-    source: "report.opinionsByAge",
+    source: "opinionsByAge",
   },
   {
     value: "by_type",
     label: "Tipos de opinião",
-    source: "report.tipoOpiniao",
+    source: "tipoOpiniao",
   },
   {
     value: "by_campaign",
     label: "Aceite por campanha",
-    source: "report.campaignAcceptance",
+    source: "campaignAcceptance",
   },
   {
     value: "status_funnel",
     label: "Funil de status",
-    source: "report.statusFunnel",
+    source: "statusFunnel",
   },
   {
     value: "trend_day",
     label: "Evolução por dia",
-    source: "report.lineByDay",
+    source: "lineByDay",
   },
   {
     value: "trend_month",
     label: "Evolução por mês",
-    source: "report.lineByMonth",
+    source: "lineByMonth",
   },
 ] as const;
 
