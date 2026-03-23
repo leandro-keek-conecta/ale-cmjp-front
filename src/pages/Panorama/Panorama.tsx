@@ -21,7 +21,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import CardGrid from "../../components/card-grid";
 import CardGridReflect from "../../components/card-grid-reflect";
 import CardDetails from "../../components/cardDetails";
-import SelectButton from "../../components/selectButtom";
 import {
   getGroupedOpinionsByProject,
   type GroupedFormResponse,
@@ -64,7 +63,6 @@ import {
   normalizeAccessKey,
 } from "@/utils/userProjectAccess";
 type FilterApiItem = { label: string; value: string; count?: number };
-type FormSelectValue = number | "__all__";
 type DynamicFilterValue = {
   label?: unknown;
   value?: unknown;
@@ -83,7 +81,6 @@ type DynamicFormFiltersPayload = {
   fields?: unknown;
 };
 
-const ALL_FORMS_VALUE = "__all__" as const;
 const DEFAULT_VALUE_KEYS = ["value", "total", "count"] as const;
 const MIN_FILTER_LOADING_MS = 1000;
 const metricSet = new Set<PanoramaMetricKey>(
@@ -902,20 +899,6 @@ export default function Panorama() {
   const normalizeType = (item: Opinion) =>
     normalizeText(item.tipo_opiniao || item.opiniao);
 
-  const formSelectOptions = useMemo(
-    () =>
-      [
-        {
-          label: "Todos os formulários",
-          value: ALL_FORMS_VALUE,
-        },
-        ...groupedForms.map((form) => ({
-          label: `${form.formName} (${form.totalResponses})`,
-          value: form.formId,
-        })),
-      ] satisfies SelectOption<FormSelectValue>[],
-    [groupedForms],
-  );
 
   const opinions = useMemo(
     () =>
@@ -1003,16 +986,6 @@ export default function Panorama() {
     void handleFilterSubmit(onSubmitUser)();
   }, [handleFilterSubmit, onSubmitUser]);
 
-  const handleSelectForm = (value: FormSelectValue | null) => {
-    const nextFormId =
-      typeof value === "number" && Number.isFinite(value) ? value : null;
-    const defaults = buildFilternDefaultValues(autoSelectedTheme || null);
-
-    setSelectedFormId(nextFormId);
-    resetFilterForm(defaults);
-    setFilters(mapFilterFormToState(defaults));
-    setCurrentPage(1);
-  };
 
   const configuredMetricCards = useMemo(
     () => panoramaTheme.cards.filter((card) => Boolean(card.metric)),
@@ -1241,19 +1214,6 @@ export default function Panorama() {
                 }`}
               >
                 {" "}
-                <Box sx={{ pt: 2, pb: 1 }}>
-                  <SelectButton
-                    label="Formulário"
-                    placeholder="Selecione um formulário"
-                    options={formSelectOptions}
-                    value={selectedFormId ?? ALL_FORMS_VALUE}
-                    onChange={(value) =>
-                      handleSelectForm(
-                        (value as FormSelectValue | null) ?? null,
-                      )
-                    }
-                  />
-                </Box>
                 <Forms<FilterFormValues>
                   errors={filterErrors}
                   inputsList={getFilterInputs(filterSelectOptions, {
