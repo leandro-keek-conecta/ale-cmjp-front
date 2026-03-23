@@ -178,8 +178,7 @@ export default function LoginPage() {
             <span className={styles.statusDot}></span> Monitoramento ativo
           </h3>
           <p>
-            <strong>320 novas opiniões</strong> coletadas em Mangabeira e
-            Bancários nas últimas 24h.
+            <strong>320 novas opiniões</strong> coletadas nas últimas 24h.
           </p>
         </Box>
       </Box>
@@ -213,7 +212,9 @@ export default function LoginPage() {
           </Box>
 
           <Box className={styles.cardHeader}>
-            <img src={keekLogo} className={styles.logoLarge} alt="Keek" />
+            <Box>
+              <img src={keekLogo} className={styles.logoLarge} alt="Keek" />
+            </Box>
 
             <Box className={styles.welcomeText}>
               <h2>Bem-vindo 👋</h2>

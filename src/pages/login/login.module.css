@@ -234,29 +234,24 @@
 .cardHeader {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  margin-bottom: 1rem;
+  margin-bottom: 2rem !important;
   width: 100%;
-  display: flex;
   align-items: center;
 }
 
 .logoLarge {
-  width: 120px;
-  height: auto;
+  width: auto;
+  height: 70px;
 }
 
 .cardHeader {
   display: flex;
   flex-direction: column;
-  gap: 20px;
 }
 
 .welcomeText p {
   font-size: 14px;
   color: #667085;
-  max-width: 34ch;
-  margin-bottom: 1rem;
 }
 
 .image {
@@ -268,29 +263,23 @@
 .welcomeText {
   display: flex;
   flex-direction: column;
-  gap: 8px;
 }
 
 .welcomeText h2 {
-  margin: 0;
-  font-size: 28px;
-  line-height: 1.2;
-  font-weight: 600;
-  color: var(--login-text);
+  font-size: 1.5rem;
+  font-weight: 500;
+  letter-spacing: -0.02em;
 }
 
 .welcomeText p {
-  margin: 0;
-  font-size: 15px;
-  line-height: 1.5;
-  font-weight: 400;
-  color: var(--login-muted);
+  font-size: 14px;
+  color: #667085;
 }
 
 .form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 }
 
 .inputField {
@@ -343,18 +332,32 @@
   background: var(--login-error-bg);
 }
 
+.inputField :global(input:-webkit-autofill),
+.inputField :global(input:-webkit-autofill:hover),
+.inputField :global(input:-webkit-autofill:focus),
+.inputField :global(input:-webkit-autofill:active) {
+  -webkit-text-fill-color: var(--login-text) !important;
+  caret-color: var(--login-text);
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+  box-shadow: 0 0 0 1000px #ffffff inset !important;
+  border-radius: inherit;
+  transition: background-color 9999s ease-out 0s;
+}
+
 .inputField
   :global(.MuiOutlinedInput-root.Mui-error .MuiOutlinedInput-notchedOutline) {
   border-color: var(--login-error);
 }
 
-.inputField :global(.MuiFormHelperText-root) {
-  margin-left: 2px;
-  font-size: 12px;
+.inputField :global(.MuiOutlinedInput-root) {
+  height: 52px;
+  border-radius: 14px;
+  background: #f9fafb;
 }
 
-.inputField :global(.MuiFormHelperText-root.Mui-error) {
-  color: var(--login-error-text);
+.inputField :global(.MuiOutlinedInput-root.Mui-focused) {
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
 }
 
 .passwordToggle {
@@ -529,13 +532,14 @@
   }
 
   .welcomeText h2 {
-    font-size: 24px;
-    text-align: center;
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
   }
 
   .welcomeText p {
     font-size: 14px;
-    text-align: center;
+    color: #667085;
   }
 
   .actionsRow {
@@ -568,4 +572,15 @@
   .successProgressBar {
     transform: scaleX(1);
   }
+}
+
+.inputField :global(.MuiOutlinedInput-root) {
+  height: 52px;
+  border-radius: 14px;
+  background: #f9fafb;
+}
+
+.inputField :global(.MuiOutlinedInput-root.Mui-focused) {
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
 }
