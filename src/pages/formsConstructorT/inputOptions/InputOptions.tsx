@@ -19,7 +19,9 @@ import ExpandableCard from "@/components/expandable-card";
 import { useProjectContext } from "@/context/ProjectContext";
 import { useProjectRealtime } from "@/hooks/useRealtimeSubscription";
 import { getFormsById } from "@/services/forms/formsService";
+import { API_BASE_URL } from "@/config/apiUrl";
 import buildLink from "@/utils/buildLinksWithSlug.ts";
+import { generateSlug } from "@/utils/generateSlug";
 
 export type FormOptionItem = {
   id?: number | string;
@@ -49,6 +51,7 @@ type FormLinkItem = {
   id: number;
   formName: string;
   href: string;
+  responseUrl: string;
   n8nPayload: N8nBasePayload;
 };
 
@@ -113,6 +116,26 @@ function resolveProjectSlug(form: FormOptionItem) {
       .replace(/^https?:\/\/[^/]+\/form\//i, "")
       .replace(/^\/+|\/+$/g, "");
     if (cleaned) return cleaned;
+  }
+
+  return "";
+}
+
+function resolveFormSlug(form: FormOptionItem, fallbackName?: string) {
+  const nestedForm =
+    (form.form as Record<string, unknown> | undefined) ?? undefined;
+  const rawFormSlug =
+    form.slug ??
+    form.formSlug ??
+    nestedForm?.slug ??
+    nestedForm?.formSlug;
+
+  if (typeof rawFormSlug === "string" && rawFormSlug.trim()) {
+    return rawFormSlug.trim();
+  }
+
+  if (typeof fallbackName === "string" && fallbackName.trim()) {
+    return generateSlug(fallbackName);
   }
 
   return "";
@@ -386,8 +409,11 @@ export default function InputOptions({
 
       const resolvedProjectSlug = projectSlug || resolveProjectSlug(form);
       if (!resolvedProjectSlug) return accumulator;
+      const resolvedFormSlug = resolveFormSlug(form, formName);
+      if (!resolvedFormSlug) return accumulator;
 
       const href = buildLink(formName, resolvedProjectSlug);
+      const responseUrl = `${API_BASE_URL}/public/projetos/${encodeURIComponent(resolvedProjectSlug)}/forms/slug/${encodeURIComponent(resolvedFormSlug)}/responses`;
       const formVersionId = resolveFormVersionId(form);
       const resolvedProjectId =
         resolveProjectIdFromForm(form) ?? toOptionalNumber(projectId);
@@ -420,6 +446,7 @@ export default function InputOptions({
         id: idNumber,
         formName,
         href,
+        responseUrl,
         n8nPayload,
       });
 
@@ -626,6 +653,19 @@ export default function InputOptions({
                     <IntegrationInstructionsIcon fontSize="small" />
                     Copiar objeto base n8n
                   </button>
+                  <button
+                    type="button"
+                    className={styles.responseButton}
+                    onClick={() =>
+                      void handleCopyValue(
+                        formLink.responseUrl,
+                        `response-${formLink.id}`,
+                      )
+                    }
+                  >
+                    <ContentCopyIcon fontSize="small" />
+                    Copiar URL de resposta
+                  </button>
                 </Box>
                 {copiedItemKey === `link-${formLink.id}` ? (
                   <Typography className={styles.copyFeedback}>
@@ -635,6 +675,11 @@ export default function InputOptions({
                 {copiedItemKey === `n8n-${formLink.id}` ? (
                   <Typography className={styles.copyFeedback}>
                     Objeto n8n copiado
+                  </Typography>
+                ) : null}
+                {copiedItemKey === `response-${formLink.id}` ? (
+                  <Typography className={styles.copyFeedback}>
+                    URL de resposta copiada
                   </Typography>
                 ) : null}
               </Box>
