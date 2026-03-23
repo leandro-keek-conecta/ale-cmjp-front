@@ -318,7 +318,7 @@ export default function LoginPage() {
               ) : isSuccessTransitioning ? (
                 <span className={styles.loadingInline}>Abrindo painel...</span>
               ) : (
-                "Entrar no painel"
+                "Fazer Login"
               )}
             </Button>
           </form>
