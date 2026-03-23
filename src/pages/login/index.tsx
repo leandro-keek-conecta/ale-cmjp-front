@@ -229,6 +229,7 @@ export default function LoginPage() {
               type="email"
               name="email"
               variant="outlined"
+              placeholder="Digite seu e-mail"
               size="medium"
               value={formData.email}
               onChange={handleChange}
@@ -249,6 +250,7 @@ export default function LoginPage() {
               className={styles.inputField}
               fullWidth
               label="Senha"
+              placeholder="Digite sua senha"
               type={mostraSenha ? "text" : "password"}
               name="password"
               variant="outlined"
