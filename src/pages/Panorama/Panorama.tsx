@@ -23,7 +23,6 @@ import CardGridReflect from "../../components/card-grid-reflect";
 import CardDetails from "../../components/cardDetails";
 import {
   getOpinionsWithFilter,
-  type GroupedFormResponse,
 } from "../../services/opiniao/opiniaoService";
 import SlideComponent, { type SlideItem } from "../../components/slide";
 import PresentationModal from "../../components/modal";
@@ -36,14 +35,11 @@ import {
   type FilterSelectOptions,
   type SelectOption,
 } from "./inputs/inputListFilter";
-import {
-} from "../../utils/createDynamicFilter";
 import { useForm } from "react-hook-form";
 import type { FilterFormValues } from "../../types/filter";
 import { Layout } from "../../components/layout/Layout";
 import {
   getFiltros,
-  getFiltrosPorFormulario,
   getMetricas,
 } from "../../services/metricas/metricasService";
 import { getProjectById } from "../../services/projeto/ProjetoService";
@@ -61,23 +57,6 @@ import {
   normalizeAccessKey,
 } from "@/utils/userProjectAccess";
 type FilterApiItem = { label: string; value: string; count?: number };
-type DynamicFilterValue = {
-  label?: unknown;
-  value?: unknown;
-  count?: unknown;
-  total?: unknown;
-};
-type DynamicFilterField = {
-  fieldName?: unknown;
-  name?: unknown;
-  label?: unknown;
-  suggestedFilter?: unknown;
-  values?: unknown;
-};
-type DynamicFormFiltersPayload = {
-  forms?: unknown;
-  fields?: unknown;
-};
 
 const DEFAULT_VALUE_KEYS = ["value", "total", "count"] as const;
 const MIN_FILTER_LOADING_MS = 1000;
@@ -383,160 +362,34 @@ const getMetricCardSpan = (count: number) => {
 const formatMetricChip = (label: string, value: number) =>
   value > 0 ? `${label} (${value})` : label;
 
-const toDynamicSelectOptions = (
-  fieldsPayload: DynamicFormFiltersPayload,
-  aliases: string[],
-): SelectOption<string>[] => {
-  const normalizedAliases = aliases.map(normalizeOptionKey);
-  const rootFields = Array.isArray(fieldsPayload.fields)
-    ? (fieldsPayload.fields as unknown[])
-    : [];
-  const nestedFields = Array.isArray(fieldsPayload.forms)
-    ? (fieldsPayload.forms as unknown[]).flatMap((formEntry) => {
-        const formData = asRecord(formEntry);
-        return Array.isArray(formData.fields) ? formData.fields : [];
-      })
-    : [];
-
-  const fields = [...rootFields, ...nestedFields].filter(
-    (entry): entry is DynamicFilterField =>
-      Boolean(entry && typeof entry === "object"),
-  );
-
-  const matchedField = fields.find((entry) => {
-    const candidates = [
-      toText(entry.suggestedFilter),
-      toText(entry.fieldName),
-      toText(entry.name),
-      toText(entry.label),
-    ]
-      .map(normalizeOptionKey)
-      .filter(Boolean);
-
-    return candidates.some((candidate) =>
-      normalizedAliases.includes(candidate),
-    );
-  });
-
-  if (!matchedField || !Array.isArray(matchedField.values)) {
-    return [];
-  }
-
-  return matchedField.values.reduce<SelectOption<string>[]>(
-    (accumulator, item) => {
-      if (!item || typeof item !== "object") {
-        return accumulator;
-      }
-
-      const valueEntry = item as DynamicFilterValue;
-      const label = toText(
-        valueEntry.label,
-        String(valueEntry.value ?? ""),
-      ).trim();
-      const value = toText(valueEntry.value, label).trim();
-
-      if (!label || !value) {
-        return accumulator;
-      }
-
-      const exists = accumulator.some(
-        (option) =>
-          normalizeOptionKey(option.value) === normalizeOptionKey(value) ||
-          normalizeOptionKey(option.label) === normalizeOptionKey(label),
-      );
-
-      if (!exists) {
-        accumulator.push({ label, value });
-      }
-
-      return accumulator;
-    },
-    [],
-  );
-};
-
-const normalizeGroupedFormResponses = (
-  value: unknown,
-): GroupedFormResponse[] => {
+const normalizeOpinionsFromForms = (value: unknown): Opinion[] => {
   if (!Array.isArray(value)) {
     return [];
   }
 
   return value
-    .map((entry) => {
+    .flatMap((entry) => {
       if (!entry || typeof entry !== "object") {
-        return null;
+        return [];
       }
 
       const data = entry as Record<string, unknown>;
-      const formId =
-        toOptionalNumber(data.formId) ??
-        toOptionalNumber(data.id) ??
-        toOptionalNumber(
-          (data.form as Record<string, unknown> | undefined)?.id,
-        );
-
-      if (formId === null) {
-        return null;
-      }
-
-      const responses = Array.isArray(data.responses)
-        ? (data.responses as Opinion[])
-        : [];
-
-      return {
-        formId,
-        formName:
-          toText(data.formName) || toText(data.name) || `Formulario ${formId}`,
-        formVersionIds: Array.isArray(data.formVersionIds)
-          ? data.formVersionIds.reduce<number[]>((accumulator, versionId) => {
-              const parsed = toOptionalNumber(versionId);
-              if (parsed !== null) {
-                accumulator.push(parsed);
-              }
-              return accumulator;
-            }, [])
-          : [],
-        totalResponses:
-          toOptionalNumber(data.totalResponses) ?? responses.length,
-        latestResponseAt: toText(data.latestResponseAt) || null,
-        responses,
-      };
+      return Array.isArray(data.responses) ? (data.responses as Opinion[]) : [];
     })
-    .filter((item): item is GroupedFormResponse => item !== null);
+    .filter(Boolean);
 };
 
-const scopeGroupedFormResponsesByThemes = (
-  forms: GroupedFormResponse[],
+const scopeOpinionsByThemes = (
+  opinions: Opinion[],
   allowedThemes: string[],
 ) => {
   if (!allowedThemes.length) {
-    return forms;
+    return opinions;
   }
 
-  return forms
-    .map((form) => {
-      const scopedResponses = form.responses.filter((response) =>
-        hasThemeAccess(response.opiniao ?? "", allowedThemes),
-      );
-
-      if (!scopedResponses.length) {
-        return null;
-      }
-
-      return {
-        ...form,
-        responses: scopedResponses,
-        totalResponses: scopedResponses.length,
-        latestResponseAt:
-          scopedResponses[0]?.submittedAt ??
-          scopedResponses[0]?.completedAt ??
-          scopedResponses[0]?.createdAt ??
-          scopedResponses[0]?.startedAt ??
-          form.latestResponseAt,
-      };
-    })
-    .filter((item): item is GroupedFormResponse => item !== null);
+  return opinions.filter((response) =>
+    hasThemeAccess(response.opiniao ?? "", allowedThemes),
+  );
 };
 
 export default function Panorama() {
@@ -551,8 +404,7 @@ export default function Panorama() {
   const [panoramaTheme, setPanoramaTheme] = useState<PanoramaThemeConfig>(
     DEFAULT_PANORAMA_THEME,
   );
-  const [groupedForms, setGroupedForms] = useState<GroupedFormResponse[]>([]);
-  const [selectedFormId, setSelectedFormId] = useState<number | null>(null);
+  const [opinions, setOpinions] = useState<Opinion[]>([]);
   const [metricsPayload, setMetricsPayload] = useState<Record<string, unknown>>(
     {},
   );
@@ -563,10 +415,8 @@ export default function Panorama() {
     () => buildFilternDefaultValues(autoSelectedTheme || null),
   );
   const [error, setError] = useState("");
-  const [filterType] = useState<string>("all");
   const [filterExpanded, setFilterExpanded] = useState(false);
   const [isApplyingFilters, setIsApplyingFilters] = useState(false);
-  const [searchTerm] = useState("");
   const [itensPerPage] = useState(12);
   const [currentPage, setCurrentPage] = useState(5);
   const [showPresentationModal, setShowPresentationModal] = useState<boolean>(
@@ -620,7 +470,6 @@ export default function Panorama() {
 
   useEffect(() => {
     const defaults = buildFilternDefaultValues(autoSelectedTheme || null);
-    setSelectedFormId(null);
     setActiveFilterValues(defaults);
     resetFilterForm(defaults);
     setCurrentPage(1);
@@ -763,15 +612,8 @@ export default function Panorama() {
         offset: 0,
       });
 
-      /*       const response = await getGroupedOpinionsByProject(
-        projectId,
-        null,
-        allowedThemes,
-      ); */
-      const normalizedForms = normalizeGroupedFormResponses(response);
-      setGroupedForms(
-        scopeGroupedFormResponsesByThemes(normalizedForms, allowedThemes),
-      );
+      const normalizedOpinions = normalizeOpinionsFromForms(response);
+      setOpinions(scopeOpinionsByThemes(normalizedOpinions, allowedThemes));
     } catch {
       setError("Erro ao carregar opiniões.");
     }
@@ -784,35 +626,6 @@ export default function Panorama() {
         setError("Nenhum projeto vinculado ao usuário.");
         return;
       }
-      if (selectedFormId !== null) {
-        const response = await getFiltrosPorFormulario(
-          projectId,
-          selectedFormId,
-        );
-        const payload = (response?.data?.data ??
-          response?.data ??
-          {}) as DynamicFormFiltersPayload;
-
-        setFilterSelectOptions({
-          tipo: toDynamicSelectOptions(payload, [
-            "tipoOpiniao",
-            "tipo_opiniao",
-            "tipo",
-          ]),
-          tema: filterOptionsByAllowedThemes(
-            toDynamicSelectOptions(payload, ["tema", "temas", "opiniao"]),
-            allowedThemes,
-          ),
-          genero: toDynamicSelectOptions(payload, ["genero"]),
-          faixaEtaria: toDynamicSelectOptions(payload, [
-            "faixaEtaria",
-            "faixa_etaria",
-            "faixa etaria",
-          ]),
-        });
-        return;
-      }
-
       const response = await getFiltros(projectId);
       const payload = response?.data?.data ?? response?.data ?? {};
       setFilterSelectOptions({
@@ -826,16 +639,8 @@ export default function Panorama() {
       });
     } catch (err) {
       console.error("Erro ao carregar filtros.", err);
-      if (selectedFormId !== null) {
-        setFilterSelectOptions({
-          tipo: [],
-          tema: [],
-          genero: [],
-          faixaEtaria: [],
-        });
-      }
     }
-  }, [allowedThemes, selectedFormId, selectedProjectId]);
+  }, [allowedThemes, selectedProjectId]);
 
   const handleGetMetricas = useCallback(async () => {
     const projectId = selectedProjectId;
@@ -951,73 +756,18 @@ export default function Panorama() {
     return () => observer.disconnect();
   }, []);
 
-  useEffect(() => {
-    if (selectedFormId === null) {
-      return;
-    }
-
-    const formStillExists = groupedForms.some(
-      (form) => form.formId === selectedFormId,
-    );
-    if (!formStillExists) {
-      setSelectedFormId(null);
-    }
-  }, [groupedForms, selectedFormId]);
-
   const normalizeText = (value?: string | null) =>
     (value || "").normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().trim();
 
-  const normalizeType = (item: Opinion) =>
-    normalizeText(item.tipo_opiniao || item.opiniao);
-
-  const opinions = useMemo(
-    () =>
-      groupedForms.flatMap((form) =>
-        selectedFormId === null || form.formId === selectedFormId
-          ? form.responses
-          : [],
-      ),
-    [groupedForms, selectedFormId],
-  );
-
-  const sourceOpinions = useMemo(
-    () =>
-      allowedThemes.length
-        ? opinions.filter((opinion) =>
-            hasThemeAccess(opinion.opiniao ?? "", allowedThemes),
-          )
-        : opinions,
-    [allowedThemes, opinions],
-  );
-
-  const filteredOpinions = useMemo(() => {
-    const term = normalizeText(searchTerm);
-    const selectedType = normalizeText(filterType);
-    return sourceOpinions.filter((item) => {
-      const matchesType =
-        filterType === "all" || normalizeType(item) === selectedType;
-      const matchesSearch =
-        !term ||
-        [item.nome, item.bairro, item.texto_opiniao, item.opiniao]
-          .map(normalizeText)
-          .some((value) => value.includes(term));
-
-      return matchesType && matchesSearch;
-    });
-  }, [filterType, searchTerm, sourceOpinions]);
-
-  const totalPages = Math.max(
-    1,
-    Math.ceil(filteredOpinions.length / itensPerPage),
-  );
+  const totalPages = Math.max(1, Math.ceil(opinions.length / itensPerPage));
 
   const paginatedOpinions = useMemo(
     () =>
-      filteredOpinions.slice(
+      opinions.slice(
         IInicial(currentPage, itensPerPage),
         IFinal(currentPage, itensPerPage),
       ),
-    [filteredOpinions, currentPage, itensPerPage],
+    [opinions, currentPage, itensPerPage],
   );
 
   useEffect(() => {
