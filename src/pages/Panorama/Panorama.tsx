@@ -22,7 +22,7 @@ import CardGrid from "../../components/card-grid";
 import CardGridReflect from "../../components/card-grid-reflect";
 import CardDetails from "../../components/cardDetails";
 import {
-  getGroupedOpinionsByProject,
+  getOpinionsWithFilter,
   type GroupedFormResponse,
 } from "../../services/opiniao/opiniaoService";
 import SlideComponent, { type SlideItem } from "../../components/slide";
@@ -37,11 +37,9 @@ import {
   type SelectOption,
 } from "./inputs/inputListFilter";
 import {
-  applyFilters,
-  mapFilterFormToState,
 } from "../../utils/createDynamicFilter";
 import { useForm } from "react-hook-form";
-import type { FilterFormValues, FiltersState } from "../../types/filter";
+import type { FilterFormValues } from "../../types/filter";
 import { Layout } from "../../components/layout/Layout";
 import {
   getFiltros,
@@ -99,6 +97,29 @@ const buildFilternDefaultValues = (
   faixaEtaria: "",
   texto_opiniao: "",
 });
+
+const toApiDateValue = (value: Date | string | null | undefined) => {
+  if (!value) return undefined;
+
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    return trimmed || undefined;
+  }
+
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    const year = value.getFullYear();
+    const month = String(value.getMonth() + 1).padStart(2, "0");
+    const day = String(value.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+
+  return undefined;
+};
+
+const toArrayParam = (value: string | null | undefined) => {
+  const trimmed = typeof value === "string" ? value.trim() : "";
+  return trimmed ? [trimmed] : undefined;
+};
 
 type HeroCardConfig = {
   metric: PanoramaMetricKey;
@@ -275,9 +296,8 @@ const normalizeMetricList = (data: unknown, labelKeys: string[]) => {
       };
     })
     .filter(
-      (
-        item,
-      ): item is { key: string; label: string; value: number } => item !== null,
+      (item): item is { key: string; label: string; value: number } =>
+        item !== null,
     );
 };
 
@@ -539,8 +559,8 @@ export default function Panorama() {
   const [filterSelectOptions, setFilterSelectOptions] = useState<
     Partial<FilterSelectOptions>
   >({});
-  const [filters, setFilters] = useState<FiltersState>(() =>
-    mapFilterFormToState(buildFilternDefaultValues(autoSelectedTheme || null)),
+  const [activeFilterValues, setActiveFilterValues] = useState<FilterFormValues>(
+    () => buildFilternDefaultValues(autoSelectedTheme || null),
   );
   const [error, setError] = useState("");
   const [filterType] = useState<string>("all");
@@ -601,8 +621,8 @@ export default function Panorama() {
   useEffect(() => {
     const defaults = buildFilternDefaultValues(autoSelectedTheme || null);
     setSelectedFormId(null);
+    setActiveFilterValues(defaults);
     resetFilterForm(defaults);
-    setFilters(mapFilterFormToState(defaults));
     setCurrentPage(1);
   }, [autoSelectedTheme, resetFilterForm, selectedProjectId]);
 
@@ -651,14 +671,19 @@ export default function Panorama() {
       const cardItems = configuredItems
         .slice(0, rawCount ?? configuredItems.length)
         .map((item) => asRecord(item));
-      const nextCards = (cardItems.length ? cardItems : DEFAULT_PANORAMA_THEME.cards)
+      const nextCards = (
+        cardItems.length ? cardItems : DEFAULT_PANORAMA_THEME.cards
+      )
         .map((item, index) => {
-          const defaultCard = DEFAULT_PANORAMA_THEME.cards[index] ??
-            DEFAULT_PANORAMA_THEME.cards[DEFAULT_PANORAMA_THEME.cards.length - 1];
+          const defaultCard =
+            DEFAULT_PANORAMA_THEME.cards[index] ??
+            DEFAULT_PANORAMA_THEME.cards[
+              DEFAULT_PANORAMA_THEME.cards.length - 1
+            ];
           const currentCard = asRecord(item);
           const metric = isMetricKey(currentCard.metric)
             ? currentCard.metric
-            : defaultCard?.metric ?? "";
+            : (defaultCard?.metric ?? "");
 
           if (!metric) return null;
 
@@ -714,27 +739,43 @@ export default function Panorama() {
     }
   }, [selectedProjectId]);
 
-  const fetchOpinions = useCallback(async () => {
+  const fetchOpinions = useCallback(async (filterValues?: FilterFormValues) => {
     try {
       const projectId = selectedProjectId;
       if (!projectId) {
         setError("Nenhum projeto vinculado ao usuário.");
         return;
       }
-      const response = await getGroupedOpinionsByProject(
+
+      const resolvedFilters = filterValues ?? activeFilterValues;
+
+      const response = await getOpinionsWithFilter({
+        projetoId: projectId,
+        start: toApiDateValue(resolvedFilters.dataInicio),
+        end: toApiDateValue(resolvedFilters.dataFim),
+        tema: toArrayParam(resolvedFilters.tema),
+        tipo: toArrayParam(resolvedFilters.tipo),
+        genero: toArrayParam(resolvedFilters.genero),
+        bairro: toArrayParam(resolvedFilters.bairro),
+        faixaEtaria: toArrayParam(resolvedFilters.faixaEtaria),
+        busca: toArrayParam(resolvedFilters.texto_opiniao),
+        limit: 150,
+        offset: 0,
+      });
+
+      /*       const response = await getGroupedOpinionsByProject(
         projectId,
         null,
         allowedThemes,
-      );
-      const payload = response?.data ?? response ?? {};
-      const normalizedForms = normalizeGroupedFormResponses(payload.forms);
+      ); */
+      const normalizedForms = normalizeGroupedFormResponses(response);
       setGroupedForms(
         scopeGroupedFormResponsesByThemes(normalizedForms, allowedThemes),
       );
     } catch {
       setError("Erro ao carregar opiniões.");
     }
-  }, [allowedThemes, selectedProjectId]);
+  }, [activeFilterValues, allowedThemes, selectedProjectId]);
 
   const fetchFilterOptions = useCallback(async () => {
     try {
@@ -812,6 +853,29 @@ export default function Panorama() {
     }
   }, [selectedProjectId]);
 
+  /* function getMetricsWithFilters(data: FilterFormValues){
+     try {
+      const projectId = selectedProjectId;
+      if (!projectId) {
+        setError("Nenhum projeto vinculado ao usuário.");
+        return;
+      }
+
+      const response = await getOpinionsWithFilter({
+        projetoId: projectId,
+        tema: tema,
+        tipo: tipo,
+        genero: genero,
+        bairro: bairro,
+        faixaEtaria: faixaEtaria,
+        busca: palavraChave,
+        limit: 150,
+        offset: 0,
+      });
+  }
+
+  } */
+
   useProjectRealtime({
     projetoId: selectedProjectId,
     entities: ["form", "formVersion", "formField", "formResponse"],
@@ -828,9 +892,16 @@ export default function Panorama() {
 
   useEffect(() => {
     void fetchProjectTheme();
-    void fetchOpinions();
+    void fetchOpinions(activeFilterValues);
     void handleGetMetricas();
-  }, [fetchOpinions, fetchProjectTheme, handleGetMetricas]);
+  }, [
+    activeFilterValues,
+    allowedThemes,
+    fetchOpinions,
+    fetchProjectTheme,
+    handleGetMetricas,
+    selectedProjectId,
+  ]);
 
   useEffect(() => {
     void fetchFilterOptions();
@@ -899,7 +970,6 @@ export default function Panorama() {
   const normalizeType = (item: Opinion) =>
     normalizeText(item.tipo_opiniao || item.opiniao);
 
-
   const opinions = useMemo(
     () =>
       groupedForms.flatMap((form) =>
@@ -920,15 +990,10 @@ export default function Panorama() {
     [allowedThemes, opinions],
   );
 
-  const filteredByForm = useMemo(
-    () => applyFilters<Opinion>(sourceOpinions, filters),
-    [sourceOpinions, filters],
-  );
-
   const filteredOpinions = useMemo(() => {
     const term = normalizeText(searchTerm);
     const selectedType = normalizeText(filterType);
-    return filteredByForm.filter((item) => {
+    return sourceOpinions.filter((item) => {
       const matchesType =
         filterType === "all" || normalizeType(item) === selectedType;
       const matchesSearch =
@@ -939,7 +1004,7 @@ export default function Panorama() {
 
       return matchesType && matchesSearch;
     });
-  }, [filterType, searchTerm, filteredByForm]);
+  }, [filterType, searchTerm, sourceOpinions]);
 
   const totalPages = Math.max(
     1,
@@ -968,16 +1033,19 @@ export default function Panorama() {
     if (key === "elogio") return <StarBorderRounded fontSize="small" />;
     return <ChatBubbleOutline fontSize="small" />;
   };
-  const onSubmitUser = useCallback((data: FilterFormValues) => {
-    setFilters(mapFilterFormToState(data));
-    setCurrentPage(1);
-    triggerFilterLoading();
-  }, [triggerFilterLoading]);
+  const onSubmitUser = useCallback(
+    async (data: FilterFormValues) => {
+      setActiveFilterValues(data);
+      setCurrentPage(1);
+      triggerFilterLoading();
+    },
+    [triggerFilterLoading],
+  );
 
-  const handleClearFilters = () => {
+  const handleClearFilters = async () => {
     const defaults = buildFilternDefaultValues(autoSelectedTheme || null);
+    setActiveFilterValues(defaults);
     resetFilterForm(defaults);
-    setFilters(mapFilterFormToState(defaults));
     setCurrentPage(1);
     triggerFilterLoading();
   };
@@ -985,7 +1053,6 @@ export default function Panorama() {
   const handleApplyFilters = useCallback(() => {
     void handleFilterSubmit(onSubmitUser)();
   }, [handleFilterSubmit, onSubmitUser]);
-
 
   const configuredMetricCards = useMemo(
     () => panoramaTheme.cards.filter((card) => Boolean(card.metric)),
@@ -1050,7 +1117,9 @@ export default function Panorama() {
           {getMetricIcon(card.metric)}
           <div>
             <div className={styles.statLabel}>{title}</div>
-            {subtitle ? <div className={styles.statHint}>{subtitle}</div> : null}
+            {subtitle ? (
+              <div className={styles.statHint}>{subtitle}</div>
+            ) : null}
           </div>
         </div>
         {metricDisplay ? (
