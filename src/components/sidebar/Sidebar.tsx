@@ -22,6 +22,7 @@ import {
   buildThemeRoutePath,
   extractThemesFromProject,
   filterThemesByScope,
+  formatThemeLabel,
   getProjectIdFromSource,
   isScreenHidden,
   normalizeAccessKey,
@@ -98,7 +99,7 @@ export function Sidebar({ estaAberta, aoFechar }: PropriedadesSidebar) {
           (theme) => !isScreenHidden(hiddenTabs, buildThemeRoutePath(theme)),
         )
         .map((theme) => ({
-          label: theme,
+          label: formatThemeLabel(theme),
           path: buildThemeRoutePath(theme),
         })),
     [hiddenTabs, projectThemes, temasPermitidos],

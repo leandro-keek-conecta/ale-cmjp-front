@@ -38,6 +38,7 @@ import { getOpinionFilterOptions } from "@/services/relatorioPage/relatorioServi
 import {
   buildThemeRoutePath,
   extractThemesFromProject,
+  formatThemeLabel,
   getAccessibleProjectIds,
   normalizeStringList,
   toScreenToken,
@@ -340,7 +341,7 @@ export default function RegisterUser() {
   const toThemeOptions = useCallback(
     (themes: string[]): SelectOption<string>[] =>
       themes.map((theme) => ({
-        label: theme,
+        label: formatThemeLabel(theme),
         value: theme,
       })),
     [],
@@ -434,7 +435,7 @@ export default function RegisterUser() {
       return [
         ...baseOptions,
         ...visibleThemeOptions.map((theme) => ({
-          label: `Relatorio de opinioes - ${theme.label}`,
+          label: `Relatório de opiniões - ${formatThemeLabel(theme.label)}`,
           value: toScreenToken(buildThemeRoutePath(theme.value)),
         })),
       ];

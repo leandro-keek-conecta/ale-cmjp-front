@@ -35,6 +35,7 @@ import { useParams } from "react-router-dom";
 import { useProjectContext } from "@/context/ProjectContext";
 import {
   filterOptionsByAllowedThemes,
+  formatThemeLabel,
   getStoredAllowedThemes,
 } from "@/utils/userProjectAccess";
 
@@ -509,7 +510,7 @@ export default function RelatorioOpiniao() {
     <Layout
       titulo={
         hasFixedTheme
-          ? `Tela de Relatório de Opiniões - ${fixedTheme}`
+          ? `Tela de Relatório de Opiniões - ${formatThemeLabel(fixedTheme)}`
           : "Tela de Relatório de Opiniões"
       }
     >

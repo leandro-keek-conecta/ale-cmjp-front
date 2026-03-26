@@ -27,6 +27,25 @@ export const normalizeAccessKey = (value: unknown) => {
     .trim();
 };
 
+const THEME_LABEL_OVERRIDES: Record<string, string> = {
+  educacao: "Educação",
+  saude: "Saúde",
+  seguranca: "Segurança",
+};
+
+export const formatThemeLabel = (value: unknown) => {
+  if (typeof value !== "string") {
+    return "";
+  }
+
+  const label = value.trim();
+  if (!label) {
+    return "";
+  }
+
+  return THEME_LABEL_OVERRIDES[normalizeAccessKey(label)] ?? label;
+};
+
 export const normalizeStringList = (value: unknown): string[] => {
   if (!Array.isArray(value)) {
     return [];
