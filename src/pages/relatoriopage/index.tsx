@@ -5,7 +5,6 @@ import CardGridReflect from "../../components/card-grid-reflect";
 import { BarChart } from "../../components/charts/bar/BarChart";
 import { ClimaIcon } from "../../icons/Filter";
 import { LineChart } from "../../components/charts/line/LineChart";
-import { PieChart } from "../../components/charts/pie/PieChart";
 import { BarRaceChart } from "../../components/charts/barRace/BarRaceChart";
 import AnimatedNumber from "../../components/animated-number";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -40,7 +39,7 @@ type ReportCards = {
   totalOpinionFormResponses?: number | string;
   totalPraise?: number | string;
   totalSuggestions?: number | string;
-  completionRate?: number | string;
+/*   completionRate?: number | string; */
 };
 
 type ReportCard = {
@@ -202,7 +201,7 @@ const buildCards = (cards?: ReportCards) => [
   },
   {
     id: 2,
-    title: "Total de Opinião",
+    title: "Total de Opiniões",
     subtitle: toNumber(cards?.totalOpinionFormResponses),
   },
   {
@@ -212,7 +211,7 @@ const buildCards = (cards?: ReportCards) => [
   },
   {
     id: 4,
-    title: "Total de Sugestoes",
+    title: "Total de Sugestões",
     subtitle: toNumber(cards?.totalSuggestions),
   },
 ];
@@ -393,7 +392,7 @@ const buildStatusOptions = (counts: Map<ResponseStatus, number>) =>
     label: formatLabelWithCount(STATUS_LABELS[option.value], counts.get(option.value)),
   }));
 
-const deriveCompletionRate = (
+/* const deriveCompletionRate = (
   statusCounts: Map<ResponseStatus, number>,
   cards?: ReportCards,
 ) => {
@@ -410,7 +409,7 @@ const deriveCompletionRate = (
   if (total <= 0) return 0;
 
   return Math.round((completed / total) * 100);
-};
+}; */
 
 const getSharedBarRaceHeight = (...series: ChartDatum[][]) => {
   const maxItems = Math.max(0, ...series.map((items) => items.length));
@@ -433,7 +432,7 @@ export default function RelatorioPage() {
   const [responsesByOriginData, setResponsesByOriginData] = useState<ChartDatum[]>([]);
   const [statusFunnelData, setStatusFunnelData] = useState<ChartDatum[]>([]);
   const [filterExpanded, setFilterExpanded] = useState(false);
-  const [completionData, setCompletionData] = useState<ChartDatum[]>([]);
+/*   const [completionData, setCompletionData] = useState<ChartDatum[]>([]); */
   const [filterSelectOptions, setFilterSelectOptions] = useState<
     Partial<FilterSelectOptions>
   >({
@@ -526,12 +525,12 @@ export default function RelatorioPage() {
       setStatusFunnelData(normalizedStatusFunnel);
 
       const statusCounts = extractStatusCounts(typedReport.statusFunnel);
-      const completionRate = deriveCompletionRate(statusCounts, cards);
-      setCompletionData([
+/*       const completionRate = deriveCompletionRate(statusCounts, cards); */
+/*       setCompletionData([
         { label: "Concluídas", value: completionRate },
         { label: "Não concluídas", value: Math.max(0, 100 - completionRate) },
       ]);
-
+ */
       const formCounts = extractFormCounts(filters as FormFiltersResponse | null);
       const formOptionsWithCounts = mergeFormOptionsWithCounts(
         formOptionsRef.current,
@@ -552,7 +551,7 @@ export default function RelatorioPage() {
         setLineByDayData([]);
         setResponsesByOriginData([]);
         setStatusFunnelData([]);
-        setCompletionData([]);
+/*         setCompletionData([]); */
       } finally {
       if (activeRef.current) {
         setMetricsLoading(false);
@@ -696,7 +695,7 @@ export default function RelatorioPage() {
           </CardGridReflect>
         </Box>
         <Box className={styles.gridContainer} sx={{ marginTop: "1rem" }}>
-          <CardGridReflect span={4}>
+          <CardGridReflect span={12}>
             <h5>Quantidade de Respostas por Origem</h5>
             <Box sx={{ marginTop: "1rem" }}>
               <BarChart
@@ -707,19 +706,7 @@ export default function RelatorioPage() {
             </Box>
           </CardGridReflect>
 
-          <CardGridReflect span={4}>
-            <h5>Status das Respostas</h5>
-            <Box sx={{ marginTop: "1rem" }}>
-              <PieChart data={statusFunnelData} height={220} loading={metricsLoading} />
-            </Box>
-          </CardGridReflect>
 
-          <CardGridReflect span={4}>
-            <h5>Taxa de Conclusao</h5>
-            <Box sx={{ marginTop: "1rem" }}>
-              <PieChart data={completionData} height={220} loading={metricsLoading} />
-            </Box>
-          </CardGridReflect>
         </Box>
 
         <Box className={styles.gridContainerOndeLine} sx={{ marginTop: "1rem" }}>

@@ -37,15 +37,12 @@ const withThemeScope = (
 };
 
 export async function getTema(projetoId: number) {
-  const { today, oneYearAgo } = getDateRange();
   const scopedParams = withThemeScope(projetoId);
 
   return api.get("/form-response/metrics/distribution", {
     params: cleanParams({
       fieldName: "opiniao",
       projetoId: scopedParams.projetoId,
-      start: oneYearAgo,
-      end: today,
       temas: scopedParams.temas,
     }),
   });

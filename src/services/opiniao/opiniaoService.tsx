@@ -1,5 +1,6 @@
 import { api } from "../api/api";
 import { apiPublic } from "../apiPublic/api";
+import qs from "qs";
 import type { Opinion } from "../../types/opinion";
 import type { OpinionFormValues } from "../../types/opiniao";
 import {
@@ -55,10 +56,7 @@ const cleanParams = (params: Record<string, unknown>) =>
     ),
   );
 
-const withThemeScope = (
-  projetoId: number,
-  temas?: string | string[],
-) => {
+const withThemeScope = (projetoId: number, temas?: string | string[]) => {
   const allowedThemes = getStoredAllowedThemes(projetoId);
 
   return {
@@ -109,6 +107,22 @@ export type SubmitPublicFormPayload = Omit<
   "projetoId" | "formVersionId"
 >;
 
+type GetOpinionsParams = {
+  
+  projetoId: number;
+  start?: string;
+  end?: string;
+  status?: "STARTED" | "COMPLETED" | "ABANDONED";
+  limit?: number;
+  offset?: number;
+  tema?: string[];
+  tipo?: string[];
+  genero?: string[];
+  bairro?: string[];
+  faixaEtaria?: string[];
+  busca?: string[];
+};
+
 export type GroupedFormResponse = {
   formId: number;
   formName: string;
@@ -132,12 +146,15 @@ export async function getGroupedOpinionsByProject(
   temas?: string | string[],
 ) {
   const scopedParams = withThemeScope(projectId, temas);
-  const response = await api.get(`/form-response/project/${projectId}/grouped`, {
-    params: cleanParams({
-      formId,
-      temas: scopedParams.temas,
-    }),
-  });
+  const response = await api.get(
+    `/form-response/project/${projectId}/grouped`,
+    {
+      params: cleanParams({
+        formId,
+        temas: scopedParams.temas,
+      }),
+    },
+  );
 
   return response?.data;
 }
@@ -147,17 +164,14 @@ export async function getAllOpinions(
   temas?: string | string[],
 ) {
   const scopedParams = withThemeScope(projectId, temas);
-  const response = await api.get(
-    "/form-response/raw",
-    {
-      params: cleanParams({
-        projetoId: projectId,
-        temas: scopedParams.temas,
-        select:
-          "nome,telefone,ano_nascimento,genero,bairro,campanha,opiniao,outra_opiniao,tipo_opiniao,texto_opiniao,startedAt,submittedAt,createdAt",
-      }),
-    },
-  );
+  const response = await api.get("/form-response/raw", {
+    params: cleanParams({
+      projetoId: projectId,
+      temas: scopedParams.temas,
+      select:
+        "nome,telefone,ano_nascimento,genero,bairro,campanha,opiniao,outra_opiniao,tipo_opiniao,texto_opiniao,startedAt,submittedAt,createdAt",
+    }),
+  });
   return response?.data;
 }
 
@@ -209,4 +223,14 @@ export async function submitPublicFormResponse(
   );
 
   return response.data;
+}
+
+export async function getOpinionsWithFilter(params: GetOpinionsParams) {
+  const response = await api.get("/form-response/opinions", {
+    params: cleanParams(params),
+    paramsSerializer: (requestParams) =>
+      qs.stringify(requestParams, { arrayFormat: "repeat" }),
+  });
+
+  return response?.data?.data?.forms ?? [];
 }
