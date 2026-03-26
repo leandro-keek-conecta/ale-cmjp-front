@@ -199,7 +199,7 @@ const buildCards = (cards?: ReportCards) => [
   },
   {
     id: 2,
-    title: "Quantidade Total de Reclamacoes",
+    title: "Quantidade Total de Reclamações",
     subtitle: toNumber(cards?.totalComplaints),
   },
   {
@@ -209,7 +209,7 @@ const buildCards = (cards?: ReportCards) => [
   },
   {
     id: 4,
-    title: "Quantidade Total de Sugestoes",
+    title: "Quantidade Total de Sugestões",
     subtitle: toNumber(cards?.totalSuggestions),
   },
 ];
@@ -224,7 +224,10 @@ const toChartLabel = (value: unknown): string | null => {
   return null;
 };
 
-const normalizeChartData = (data: unknown, labelKeys: string[]): ChartDatum[] => {
+const normalizeChartData = (
+  data: unknown,
+  labelKeys: string[],
+): ChartDatum[] => {
   if (!Array.isArray(data)) return [];
 
   return data
@@ -289,7 +292,10 @@ const getSharedBarRaceHeight = (...series: ChartDatum[][]) => {
 
   return Math.min(
     BAR_RACE_DEFAULT_HEIGHT,
-    Math.max(BAR_RACE_MIN_HEIGHT, BAR_RACE_BASE_HEIGHT + maxItems * BAR_RACE_ROW_HEIGHT),
+    Math.max(
+      BAR_RACE_MIN_HEIGHT,
+      BAR_RACE_BASE_HEIGHT + maxItems * BAR_RACE_ROW_HEIGHT,
+    ),
   );
 };
 
@@ -313,7 +319,9 @@ export default function RelatorioOpiniao() {
   const [opinionsByMonth, setOpinionsByMonth] = useState<ChartDatum[]>([]);
   const [opinionsByGender, setOpinionsByGender] = useState<ChartDatum[]>([]);
   const [filterExpanded, setFilterExpanded] = useState(false);
-  const [campaignAcceptance, setCampaignAcceptance] = useState<ChartDatum[]>([]);
+  const [campaignAcceptance, setCampaignAcceptance] = useState<ChartDatum[]>(
+    [],
+  );
   const [opinionsByAge, setOpinionsByAge] = useState<ChartDatum[]>([]);
   const [topTemas, setTopTemas] = useState<ChartDatum[]>([]);
   const [topBairros, setTopBairros] = useState<ChartDatum[]>([]);
@@ -338,13 +346,12 @@ export default function RelatorioOpiniao() {
         setMetricsLoading(true);
 
         const requestParams = params ?? {};
-        const scopedParams =
-          effectiveForcedTheme
-            ? {
-                ...requestParams,
-                temas: effectiveForcedTheme,
-              }
-            : requestParams;
+        const scopedParams = effectiveForcedTheme
+          ? {
+              ...requestParams,
+              temas: effectiveForcedTheme,
+            }
+          : requestParams;
 
         const [report, filters] = await Promise.all([
           getOpinionReportMetrics(scopedParams),
@@ -399,7 +406,11 @@ export default function RelatorioOpiniao() {
         );
 
         setTopBairros(
-          normalizeChartData(typedReport.topBairros, ["label", "bairro", "name"]),
+          normalizeChartData(typedReport.topBairros, [
+            "label",
+            "bairro",
+            "name",
+          ]),
         );
 
         setOpinionsByAge(
@@ -619,7 +630,7 @@ export default function RelatorioOpiniao() {
           </CardGridReflect>
 
           <CardGridReflect span={4}>
-            <h5>Autorizacao de comunicacao</h5>
+            <h5>Autorização de comunicação</h5>
             <Box sx={{ marginTop: "1rem" }}>
               <PieChart
                 data={campaignAcceptance}
@@ -630,10 +641,17 @@ export default function RelatorioOpiniao() {
           </CardGridReflect>
         </Box>
 
-        <Box className={styles.gridContainerOndeLine} sx={{ marginTop: "1rem" }}>
+        <Box
+          className={styles.gridContainerOndeLine}
+          sx={{ marginTop: "1rem" }}
+        >
           <CardGridReflect
             span={6}
-            style={{ marginBottom: 0, display: "flex", flexDirection: "column" }}
+            style={{
+              marginBottom: 0,
+              display: "flex",
+              flexDirection: "column",
+            }}
             disablePadding
           >
             <h5 style={{ margin: "1rem" }}>Top 10 bairros com mais opiniões</h5>
@@ -664,4 +682,3 @@ export default function RelatorioOpiniao() {
     </Layout>
   );
 }
-

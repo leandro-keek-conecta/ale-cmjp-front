@@ -202,7 +202,7 @@ const buildCards = (cards?: ReportCards) => [
   },
   {
     id: 2,
-    title: "Total de Opinião",
+    title: "Total de Opiniões",
     subtitle: toNumber(cards?.totalOpinionFormResponses),
   },
   {
@@ -212,7 +212,7 @@ const buildCards = (cards?: ReportCards) => [
   },
   {
     id: 4,
-    title: "Total de Sugestoes",
+    title: "Total de Sugestões",
     subtitle: toNumber(cards?.totalSuggestions),
   },
 ];
@@ -696,7 +696,7 @@ export default function RelatorioPage() {
           </CardGridReflect>
         </Box>
         <Box className={styles.gridContainer} sx={{ marginTop: "1rem" }}>
-          <CardGridReflect span={4}>
+          <CardGridReflect span={12}>
             <h5>Quantidade de Respostas por Origem</h5>
             <Box sx={{ marginTop: "1rem" }}>
               <BarChart
@@ -707,19 +707,7 @@ export default function RelatorioPage() {
             </Box>
           </CardGridReflect>
 
-          <CardGridReflect span={4}>
-            <h5>Status das Respostas</h5>
-            <Box sx={{ marginTop: "1rem" }}>
-              <PieChart data={statusFunnelData} height={220} loading={metricsLoading} />
-            </Box>
-          </CardGridReflect>
 
-          <CardGridReflect span={4}>
-            <h5>Taxa de Conclusao</h5>
-            <Box sx={{ marginTop: "1rem" }}>
-              <PieChart data={completionData} height={220} loading={metricsLoading} />
-            </Box>
-          </CardGridReflect>
         </Box>
 
         <Box className={styles.gridContainerOndeLine} sx={{ marginTop: "1rem" }}>
