@@ -87,6 +87,20 @@ const getDistrict = (item: any) => {
   return String(raw ?? "");
 };
 
+const getOrigin = (item: any) => {
+  const raw =
+    item?.origem ??
+    item?.origin ??
+    item?.channel ??
+    item?.source ??
+    item?.metadata?.origem ??
+    item?.metadata?.origin ??
+    item?.metadata?.channel ??
+    item?.metadata?.source ??
+    "";
+  return String(raw ?? "");
+};
+
 export const mapFilterFormToState = (form: FilterFormValues): FiltersState => ({
   data: (() => {
     const inicio = toDate(form.dataInicio);
@@ -97,6 +111,7 @@ export const mapFilterFormToState = (form: FilterFormValues): FiltersState => ({
   tema: form.tema || undefined,
   genero: form.genero || undefined,
   bairro: form.bairro || undefined,
+  origem: form.origem || undefined,
   faixaEtaria: getFaixaEtariaRange(form.faixaEtaria),
   texto: form.texto_opiniao || undefined,
 });
@@ -146,6 +161,11 @@ export const filterMappers: Record<string, FilterFn<any>> = {
     if (!query) return items;
     return items.filter((i) => normalizeText(getDistrict(i)).includes(query));
   },
+
+  origem: (items, origem) =>
+    origem
+      ? items.filter((i) => normalizeText(getOrigin(i)) === normalizeText(origem))
+      : items,
 
   tipo: (items, tipo) =>
     tipo

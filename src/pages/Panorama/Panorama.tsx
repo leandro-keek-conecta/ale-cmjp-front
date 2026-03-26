@@ -72,6 +72,7 @@ const buildFilternDefaultValues = (
   tipo: "",
   tema: forcedTema ?? "",
   bairro: "",
+  origem: "",
   genero: "",
   faixaEtaria: "",
   texto_opiniao: "",
@@ -450,6 +451,19 @@ export default function Panorama() {
         }, [])
       : [];
 
+  const getFilterItems = (
+    payload: Record<string, unknown>,
+    keys: string[],
+  ): FilterApiItem[] | undefined => {
+    for (const key of keys) {
+      if (Array.isArray(payload[key])) {
+        return payload[key] as FilterApiItem[];
+      }
+    }
+
+    return undefined;
+  };
+
   function IInicial(currentPage: number, itensPerPage: number) {
     return (currentPage - 1) * itensPerPage;
   }
@@ -606,6 +620,7 @@ export default function Panorama() {
         tipo: toArrayParam(resolvedFilters.tipo),
         genero: toArrayParam(resolvedFilters.genero),
         bairro: toArrayParam(resolvedFilters.bairro),
+        origem: toArrayParam(resolvedFilters.origem),
         faixaEtaria: toArrayParam(resolvedFilters.faixaEtaria),
         busca: toArrayParam(resolvedFilters.texto_opiniao),
         limit: 150,
@@ -629,13 +644,27 @@ export default function Panorama() {
       const response = await getFiltros(projectId);
       const payload = response?.data?.data ?? response?.data ?? {};
       setFilterSelectOptions({
-        tipo: mapSelectOptions(payload?.tipoOpiniao),
+        tipo: mapSelectOptions(getFilterItems(payload, ["tipoOpiniao", "tipo"])),
         tema: filterOptionsByAllowedThemes(
-          mapSelectOptions(payload?.temas),
+          mapSelectOptions(getFilterItems(payload, ["temas", "tema"])),
           allowedThemes,
         ),
-        genero: mapSelectOptions(payload?.genero),
-        faixaEtaria: mapSelectOptions(payload?.faixaEtaria),
+        genero: mapSelectOptions(getFilterItems(payload, ["genero", "generos"])),
+        origem: mapSelectOptions(
+          getFilterItems(payload, [
+            "origem",
+            "origens",
+            "origin",
+            "origins",
+            "channel",
+            "channels",
+            "source",
+            "sources",
+          ]),
+        ),
+        faixaEtaria: mapSelectOptions(
+          getFilterItems(payload, ["faixaEtaria", "faixasEtarias"]),
+        ),
       });
     } catch (err) {
       console.error("Erro ao carregar filtros.", err);

@@ -8,6 +8,7 @@ export type FilterSelectOptions = {
   tema: SelectOption<string>[];
   genero: SelectOption<string>[];
   faixaEtaria: SelectOption<string>[];
+  origem: SelectOption<string>[];
 };
 
 type FilterInputsConfig = {
@@ -28,6 +29,10 @@ const defaultSelectOptions: FilterSelectOptions = {
     { label: "Outros", value: "Outros" },
     { label: "Saude", value: "saude" },
     { label: "Seguranca", value: "Seguranca" },
+  ],
+  origem:[
+    { label: "WhastApp", value: "whatsapp"},
+    { label: "Web", value: "web"},
   ],
   genero: [
     { label: "Feminino", value: "Feminino" },
@@ -57,6 +62,7 @@ export const getFilterInputs = (
     tipo: options.tipo ?? defaultSelectOptions.tipo,
     tema: options.tema ?? defaultSelectOptions.tema,
     genero: options.genero ?? defaultSelectOptions.genero,
+    origem: options.origem ?? defaultSelectOptions.origem,
     faixaEtaria: options.faixaEtaria ?? defaultSelectOptions.faixaEtaria,
   };
 
@@ -108,14 +114,22 @@ export const getFilterInputs = (
       title: "Bairro",
       placeholder: "Digite o bairro",
       type: "text",
-      colSpan: 6,
+      colSpan: 4,
+    },
+    {
+      name: "origem",
+      title: "Origem",
+      placeholder: "Escolha uma Opção",
+      type: "Select",
+      colSpan: 4,
+      selectOptions: resolved.origem,
     },
     {
       name: "faixaEtaria",
       title: "Faixa etaria",
       placeholder: "Selecione a faixa",
       type: "Select",
-      colSpan: 6,
+      colSpan: 4,
       selectOptions: resolved.faixaEtaria,
     },
     {

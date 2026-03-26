@@ -76,6 +76,7 @@ const buildFilternDefaultValues = (): FilterFormValues => ({
   tipo: "",
   tema: "",
   bairro: "",
+  origem: "",
   genero: "",
   faixaEtaria: "",
   texto_opiniao: "",
