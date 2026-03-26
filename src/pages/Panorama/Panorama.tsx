@@ -101,6 +101,11 @@ const toArrayParam = (value: string | null | undefined) => {
   return trimmed ? [trimmed] : undefined;
 };
 
+const toLowercaseArrayParam = (value: string | null | undefined) => {
+  const trimmed = typeof value === "string" ? value.trim().toLowerCase() : "";
+  return trimmed ? [trimmed] : undefined;
+};
+
 type HeroCardConfig = {
   metric: PanoramaMetricKey;
   title: string;
@@ -620,7 +625,7 @@ export default function Panorama() {
         tipo: toArrayParam(resolvedFilters.tipo),
         genero: toArrayParam(resolvedFilters.genero),
         bairro: toArrayParam(resolvedFilters.bairro),
-        origem: toArrayParam(resolvedFilters.origem),
+        origem: toLowercaseArrayParam(resolvedFilters.origem),
         faixaEtaria: toArrayParam(resolvedFilters.faixaEtaria),
         busca: toArrayParam(resolvedFilters.texto_opiniao),
         limit: 150,
