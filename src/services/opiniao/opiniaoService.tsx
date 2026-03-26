@@ -108,7 +108,6 @@ export type SubmitPublicFormPayload = Omit<
 >;
 
 type GetOpinionsParams = {
-  
   projetoId: number;
   start?: string;
   end?: string;
@@ -119,6 +118,7 @@ type GetOpinionsParams = {
   tipo?: string[];
   genero?: string[];
   bairro?: string[];
+  origem?: string[];
   faixaEtaria?: string[];
   busca?: string[];
 };

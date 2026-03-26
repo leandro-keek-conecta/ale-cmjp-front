@@ -1,10 +1,10 @@
-
 export type FilterFormValues = {
   dataInicio: Date | null;
   dataFim: Date | null;
   tipo: string;
   tema: string;
   bairro: string;
+  origem: string;
   genero: string;
   faixaEtaria: string;
   texto_opiniao: string;
@@ -21,6 +21,7 @@ export type FiltersState = {
   tema?: string;
   genero?: string;
   bairro?: string;
+  origem?: string;
   faixaEtaria?: {
     min: number;
     max: number;

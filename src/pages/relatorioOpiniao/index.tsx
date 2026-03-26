@@ -73,6 +73,7 @@ const buildFilternDefaultValues = (
   tipo: "",
   tema: forcedTema ?? "",
   bairro: "",
+  origem: "",
   genero: "",
   faixaEtaria: "",
   texto_opiniao: "",
